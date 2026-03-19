@@ -65,7 +65,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
-              Investment thinking, portfolio intelligence, and modern wealth insight. For educational purposes only.
+              A personal macro and portfolio intelligence platform. Investment thinking for a modern era.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
@@ -125,8 +125,8 @@ export default function Footer() {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Northstone Macro Capital. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground/60">
-            For educational purposes only. Not financial advice. Opinions, not recommendations.
+          <p className="text-xs text-muted-foreground/40">
+            For educational purposes only. Opinions expressed are not financial advice or investment recommendations.
           </p>
         </div>
       </div>
