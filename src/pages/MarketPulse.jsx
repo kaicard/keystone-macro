@@ -1,172 +1,156 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Activity } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { LineChart, Line, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { useMarketData, MarketTile, RefreshBar } from '@/components/marketpulse/LiveMarketData';
+import RegimePanel from '@/components/marketpulse/RegimePanel';
+import MarketSummary from '@/components/marketpulse/MarketSummary';
 
-const indices = [
-  { name: 'S&P 500', value: '5,892.41', change: '+0.74%', up: true, data: [40, 42, 38, 45, 43, 48, 47, 50, 52, 49, 53, 55] },
-  { name: 'NASDAQ', value: '18,421.30', change: '+1.12%', up: true, data: [30, 35, 32, 38, 36, 42, 40, 45, 43, 47, 50, 52] },
-  { name: 'FTSE 100', value: '8,234.56', change: '-0.18%', up: false, data: [50, 48, 52, 49, 47, 50, 48, 45, 47, 46, 44, 43] },
-  { name: 'Euro Stoxx 50', value: '5,123.78', change: '+0.45%', up: true, data: [38, 40, 37, 42, 41, 44, 43, 46, 45, 47, 48, 49] },
-  { name: 'Nikkei 225', value: '38,456.12', change: '+0.89%', up: true, data: [35, 38, 34, 40, 38, 42, 41, 44, 43, 46, 48, 50] },
-  { name: 'DAX', value: '18,234.90', change: '+0.32%', up: true, data: [42, 44, 41, 45, 43, 47, 46, 48, 47, 49, 50, 51] },
-];
+function SectionGrid({ items, cols = 6, keyField = 'name', valueField, changeField, directionField, subtextField, withSpark }) {
+  const gridClass = {
+    2: 'grid-cols-2 md:grid-cols-2',
+    4: 'grid-cols-2 md:grid-cols-4',
+    6: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6',
+  }[cols] || 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
 
-const bonds = [
-  { name: 'US 10Y', value: '4.32%', change: '+3bps', up: true },
-  { name: 'US 2Y', value: '4.65%', change: '+1bp', up: true },
-  { name: 'UK 10Y Gilt', value: '4.18%', change: '-2bps', up: false },
-  { name: 'German Bund', value: '2.45%', change: '+1bp', up: true },
-  { name: 'US HY Spread', value: '340bps', change: '-5bps', up: false },
-  { name: 'IG Spread', value: '98bps', change: '-2bps', up: false },
-];
-
-const commodities = [
-  { name: 'Gold', value: '$2,987.20', change: '+0.55%', up: true, data: [35, 38, 36, 40, 42, 39, 44, 43, 46, 48, 47, 50] },
-  { name: 'Brent Oil', value: '$71.45', change: '-1.32%', up: false, data: [60, 58, 62, 56, 58, 54, 56, 52, 55, 50, 52, 48] },
-  { name: 'WTI Oil', value: '$67.82', change: '-1.18%', up: false, data: [58, 56, 60, 54, 56, 52, 54, 50, 53, 48, 50, 46] },
-  { name: 'Silver', value: '$33.45', change: '+0.82%', up: true, data: [28, 30, 27, 32, 31, 34, 33, 35, 34, 36, 37, 38] },
-  { name: 'Copper', value: '$4.12', change: '+1.45%', up: true, data: [32, 34, 31, 36, 35, 38, 37, 40, 39, 41, 42, 44] },
-  { name: 'Natural Gas', value: '$2.34', change: '-2.1%', up: false, data: [40, 38, 42, 36, 38, 34, 36, 32, 35, 30, 32, 28] },
-];
-
-const fx = [
-  { name: 'EUR/USD', value: '1.0842', change: '+0.12%', up: true },
-  { name: 'GBP/USD', value: '1.2654', change: '-0.08%', up: false },
-  { name: 'USD/JPY', value: '149.23', change: '+0.34%', up: true },
-  { name: 'DXY', value: '104.52', change: '+0.15%', up: true },
-];
-
-const regimeIndicators = [
-  { label: 'Current Regime', value: 'Risk-On', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  { label: 'Growth Signal', value: 'Expanding', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  { label: 'Inflation Signal', value: 'Moderating', color: 'text-amber-400', bg: 'bg-amber-400/10' },
-  { label: 'Policy Stance', value: 'Restrictive', color: 'text-red-400', bg: 'bg-red-400/10' },
-  { label: 'Volatility', value: 'Low', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  { label: 'Leadership', value: 'Growth / Tech', color: 'text-purple-400', bg: 'bg-purple-400/10' },
-];
-
-function MarketCard({ item }) {
-  return (
-    <div className="glass rounded-xl p-4 hover:border-primary/20 transition-all group">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-muted-foreground">{item.name}</span>
-        <span className={`text-xs font-medium flex items-center gap-1 ${item.up ? 'text-emerald-400' : 'text-red-400'}`}>
-          {item.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-          {item.change}
-        </span>
+  if (!items?.length) {
+    return (
+      <div className={`grid ${gridClass} gap-4`}>
+        {[...Array(cols)].map((_, i) => (
+          <div key={i} className="glass rounded-xl p-4 animate-pulse h-20" />
+        ))}
       </div>
-      <p className="text-lg font-semibold">{item.value}</p>
-      {item.data && (
-        <div className="h-10 mt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={item.data.map((v, i) => ({ v, i }))}>
-              <Line type="monotone" dataKey="v" stroke={item.up ? '#34d399' : '#f87171'} strokeWidth={1.5} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+    );
+  }
+
+  return (
+    <div className={`grid ${gridClass} gap-4`}>
+      {items.map(item => (
+        <MarketTile
+          key={item[keyField] || item.pair}
+          name={item.name || item.pair}
+          value={item.price || item.yield || item.rate}
+          change={item.change_pct || item.change_bps || item.change || '—'}
+          direction={item.direction}
+          subtext={item.change_abs || subtextField}
+          sparkData={withSpark ? [...Array(12)].map((_, i) => ({ v: Math.random() * 20 + 40 })) : undefined}
+        />
+      ))}
     </div>
   );
 }
 
 export default function MarketPulse() {
+  const { data, loading, lastUpdated, refresh } = useMarketData();
+
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Market Pulse</h1>
-          <p className="text-muted-foreground text-lg">Global market snapshot and regime indicators. Illustrative data.</p>
+          <div className="flex items-center gap-3 mb-3">
+            <h1 className="font-display text-4xl sm:text-5xl font-semibold">Market Pulse</h1>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 ml-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs text-emerald-400 font-medium">Live</span>
+            </div>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            AI-generated indicative market data and regime analysis. Refreshes every 15 minutes.
+          </p>
         </motion.div>
 
-        {/* Regime panel */}
-        <motion.div
-          className="glass rounded-xl p-6 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold">Regime Monitor</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {regimeIndicators.map(r => (
-              <div key={r.label} className={`rounded-lg p-3 ${r.bg}`}>
-                <p className="text-xs text-muted-foreground mb-1">{r.label}</p>
-                <p className={`text-sm font-semibold ${r.color}`}>{r.value}</p>
-              </div>
-            ))}
-          </div>
+        <RefreshBar lastUpdated={lastUpdated} loading={loading} onRefresh={refresh} />
+
+        {/* Regime Panel */}
+        <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <RegimePanel regime={data?.regime} loading={loading} />
         </motion.div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="glass border-border/30">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="equities">Equities</TabsTrigger>
-            <TabsTrigger value="bonds">Bonds & Yields</TabsTrigger>
-            <TabsTrigger value="commodities">Commodities</TabsTrigger>
-            <TabsTrigger value="fx">FX</TabsTrigger>
-          </TabsList>
+        {/* Market Summary */}
+        <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <MarketSummary summary={data?.market_summary} loading={loading} />
+        </motion.div>
 
-          <TabsContent value="overview">
-            <div className="space-y-8">
-              <div>
-                <h3 className="font-semibold mb-4">Global Indices</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {indices.map(item => <MarketCard key={item.name} item={item} />)}
+        {/* Tabs */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="equities">Equities</TabsTrigger>
+              <TabsTrigger value="bonds">Bonds & Yields</TabsTrigger>
+              <TabsTrigger value="commodities">Commodities</TabsTrigger>
+              <TabsTrigger value="fx">FX</TabsTrigger>
+              <TabsTrigger value="crypto">Crypto</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview">
+              <div className="space-y-8">
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
+                  <SectionGrid items={data?.indices} cols={6} withSpark />
                 </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Commodities</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {commodities.map(item => <MarketCard key={item.name} item={item} />)}
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
+                  <SectionGrid items={data?.bonds} cols={6} />
                 </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Bonds & Yields</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {bonds.map(item => <MarketCard key={item.name} item={item} />)}
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
+                  <SectionGrid items={data?.commodities} cols={6} withSpark />
                 </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">FX</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {fx.map(item => <MarketCard key={item.name} item={item} />)}
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
+                  <SectionGrid items={data?.fx} cols={4} keyField="pair" />
                 </div>
+                {data?.vix && (
+                  <div>
+                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <MarketTile
+                        name="VIX"
+                        value={data.vix.value}
+                        change={data.vix.change}
+                        direction={data.vix.direction}
+                        subtext={data.vix.regime}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="equities">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {indices.map(item => <MarketCard key={item.name} item={item} />)}
-            </div>
-          </TabsContent>
+            <TabsContent value="equities">
+              <div className="space-y-4">
+                <SectionGrid items={data?.indices} cols={6} withSpark />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="bonds">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {bonds.map(item => <MarketCard key={item.name} item={item} />)}
-            </div>
-          </TabsContent>
+            <TabsContent value="bonds">
+              <SectionGrid items={data?.bonds} cols={6} />
+            </TabsContent>
 
-          <TabsContent value="commodities">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {commodities.map(item => <MarketCard key={item.name} item={item} />)}
-            </div>
-          </TabsContent>
+            <TabsContent value="commodities">
+              <SectionGrid items={data?.commodities} cols={6} withSpark />
+            </TabsContent>
 
-          <TabsContent value="fx">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {fx.map(item => <MarketCard key={item.name} item={item} />)}
-            </div>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="fx">
+              <SectionGrid items={data?.fx} cols={4} keyField="pair" />
+            </TabsContent>
 
-        <p className="text-xs text-muted-foreground/50 mt-8 text-center">
-          All data is illustrative and for demonstration purposes only. Not real-time market data.
+            <TabsContent value="crypto">
+              {data?.crypto?.length ? (
+                <SectionGrid items={data.crypto} cols={4} withSpark />
+              ) : (
+                <div className="glass rounded-xl p-8 text-center text-muted-foreground text-sm">
+                  Crypto data loading...
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+
+        <p className="text-xs text-muted-foreground/40 mt-10 text-center">
+          All data is AI-generated indicative pricing for illustrative purposes. Not real-time market data. Not financial advice.
         </p>
       </div>
     </div>
