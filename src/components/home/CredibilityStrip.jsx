@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { TrendingUp, FileText, Briefcase, BarChart3, Clock } from 'lucide-react';
 
 const metrics = [
-  { icon: TrendingUp, value: 3.5, suffix: '+', label: 'Years Trading Experience', decimals: 1 },
+  { icon: TrendingUp, value: 5, suffix: '+', label: 'Years Market Experience', decimals: 0 },
   { icon: FileText, value: 50, suffix: '+', label: 'Macro Views Published', decimals: 0 },
   { icon: Briefcase, value: 12, suffix: '', label: 'Portfolio Case Studies', decimals: 0 },
   { icon: BarChart3, value: 80, suffix: '+', label: 'Market Research Notes', decimals: 0 },

@@ -14,7 +14,7 @@ const principles = [
 ];
 
 const timeline = [
-  { year: '2022', title: 'Started Active Trading', description: 'Began systematic trading across equities, FX, and commodities. Developed initial risk frameworks.' },
+  { year: '2021', title: 'Entered the Markets', description: 'Began systematic trading across equities, FX, and commodities. Developed initial risk frameworks and market instincts.' },
   { year: '2023', title: 'Deep Macro Research', description: 'Focused on macro analysis, regime identification, and multi-asset allocation strategies.' },
   { year: '2024', title: 'Portfolio Construction Focus', description: 'Shifted toward institutional-style portfolio construction, SAA/TAA frameworks, and client suitability.' },
   { year: '2025', title: 'Wealth Management Study', description: 'Expanded into wealth management concepts, client case studies, and educational content creation.' },
