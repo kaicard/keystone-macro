@@ -24,6 +24,7 @@ const HEADLINE_SCHEMA = {
         type: "object",
         properties: {
           headline: { type: "string" },
+          source: { type: "string" },
           category: { type: "string" },
           sentiment: { type: "string" },
           impact: { type: "string" },
@@ -35,17 +36,20 @@ const HEADLINE_SCHEMA = {
   }
 };
 
-const PROMPT = `Generate 8 realistic, current-feeling macro market news headlines for today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}). 
-These should sound like real Bloomberg/Reuters headlines covering rates, equities, commodities, geopolitics, FX, and macro themes.
-For each headline provide:
-- headline: short punchy headline (max 15 words)
+const PROMPT = `You are a macro market intelligence editor. Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories breaking today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}). 
+
+Pull REAL headlines from verified sources: Bloomberg, Reuters, Financial Times, Wall Street Journal, CNBC, BBC News, or similar. Only include stories published today or within the last 24 hours.
+
+For each real story provide:
+- headline: the actual headline or a close paraphrase (max 15 words)
+- source: the publication name (e.g. "Reuters", "Bloomberg", "FT")
 - category: one of [Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit]
 - sentiment: "positive" | "negative" | "neutral"
 - impact: 1-sentence market impact summary
-- desk_view: 2-3 sentence analysis (what happened, why it matters, market implications)
-- what_to_watch: the key follow-on variable to monitor
+- desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
+- what_to_watch: the key follow-on variable or event to monitor
 
-Make them feel realistic and varied. Include some tension (rate decisions, geopolitical tension, earnings surprises, commodity moves).`;
+Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data releases. Only use real verified events.`;
 
 export default function LiveNewsFeed() {
   const [headlines, setHeadlines] = useState([]);
@@ -58,6 +62,8 @@ export default function LiveNewsFeed() {
     setLoading(true);
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: PROMPT,
+      add_context_from_internet: true,
+      model: 'gemini_3_flash',
       response_json_schema: HEADLINE_SCHEMA,
     });
     if (res?.headlines) {
