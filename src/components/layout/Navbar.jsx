@@ -49,14 +49,11 @@ export default function Navbar() {
             {/* Logo */}
             <Link to="/Home" className="flex items-center gap-3 group">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">N</span>
+                <span className="text-primary-foreground font-bold text-sm">M</span>
               </div>
               <div className="hidden sm:block">
                 <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-                  Northstone
-                </span>
-                <span className="text-muted-foreground font-light text-xs block -mt-1 tracking-widest uppercase">
-                  Macro Capital
+                  Macro Memoir
                 </span>
               </div>
             </Link>

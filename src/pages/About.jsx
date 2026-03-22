@@ -18,7 +18,7 @@ const timeline = [
   { year: '2023', title: 'Deep Macro Research', description: 'Focused on macro analysis, regime identification, and multi-asset allocation strategies.' },
   { year: '2024', title: 'Portfolio Construction Focus', description: 'Shifted toward institutional-style portfolio construction, SAA/TAA frameworks, and client suitability.' },
   { year: '2025', title: 'Wealth Management Study', description: 'Expanded into wealth management concepts, client case studies, and educational content creation.' },
-  { year: '2026', title: 'Northstone Macro Capital', description: 'Launched this platform to share research, portfolio ideas, and educational wealth strategy content.' },
+  { year: '2026', title: 'Macro Memoir', description: 'Launched this platform to share research, portfolio ideas, and educational wealth strategy content.' },
 ];
 
 export default function About() {
@@ -36,7 +36,7 @@ export default function About() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6">
-            About Northstone
+            About Macro Memoir
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             A platform built from genuine passion for markets, portfolio construction, and the intersection of 
@@ -54,7 +54,7 @@ export default function About() {
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">Why I Built This</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Northstone Macro Capital started as a way to document my journey in markets — from early trading 
+              Macro Memoir started as a way to document my journey in markets — from early trading 
               experiences to developing a deeper understanding of macro regimes, asset allocation, and 
               portfolio construction.
             </p>

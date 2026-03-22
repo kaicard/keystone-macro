@@ -55,13 +55,10 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">N</span>
+                <span className="text-primary-foreground font-bold text-sm">M</span>
               </div>
               <div>
-                <span className="font-display text-lg font-semibold">Northstone</span>
-                <span className="text-muted-foreground font-light text-xs block -mt-1 tracking-widest uppercase">
-                  Macro Capital
-                </span>
+                <span className="font-display text-lg font-semibold">Macro Memoir</span>
               </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
@@ -123,7 +120,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Northstone Macro Capital. All rights reserved.
+            © {new Date().getFullYear()} Macro Memoir. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground/40">
             For educational purposes only. Opinions expressed are not financial advice or investment recommendations.
