@@ -58,14 +58,27 @@ export default function AIPortfolioLab() {
     setLoading(true);
     setResult(null);
     const prefLabels = preferences.map(id => preferenceOptions.find(p => p.id === id)?.label).filter(Boolean);
+    const selectedCurrency = currencyOptions.find(c => c.code === currency);
+    const capitalNum = parseFloat(capital.replace(/[^0-9.]/g, ''));
+    const capitalFormatted = `${selectedCurrency?.symbol}${Number(capitalNum).toLocaleString()}`;
 
-    const prompt = `You are an institutional portfolio construction expert. Generate a detailed ILLUSTRATIVE educational portfolio for:
+    const prompt = `You are an institutional portfolio construction expert. Generate a detailed educational portfolio for:
 
+Capital to Invest: ${capitalFormatted} ${currency}
 Risk Tolerance: ${risk}
 Time Horizon: ${horizon}
 Objective: ${objective}
 Market Regime: ${regime}
 Preferences: ${prefLabels.join(', ') || 'None specified'}
+
+CRITICAL CAPITAL CONSTRAINTS - You MUST apply these rules based on the capital amount (${capitalFormatted}):
+- Under ${selectedCurrency?.symbol}10,000: Focus on liquid ETFs and index funds only. No direct property, private equity, hedge funds, or alternatives. Keep it simple with 3-4 asset classes max.
+- ${selectedCurrency?.symbol}10,000–${selectedCurrency?.symbol}50,000: ETFs, index funds, and liquid securities. Minimal alternatives. No direct real estate or private assets.
+- ${selectedCurrency?.symbol}50,000–${selectedCurrency?.symbol}250,000: Can include diversified equities, bonds, some liquid alternatives (REITs, commodity ETFs). No direct property or private equity.
+- ${selectedCurrency?.symbol}250,000–${selectedCurrency?.symbol}1,000,000: Can include a broader alternatives sleeve. Possibly some direct property exposure. Modest illiquid allocation.
+- Above ${selectedCurrency?.symbol}1,000,000: Full institutional toolkit available — private equity, hedge funds, direct real estate, infrastructure, private credit.
+
+All instrument examples must be appropriate for this capital level. Express all monetary examples in ${currency} (${selectedCurrency?.symbol}). All weights must sum to exactly 100%.
 
 For the Strategic Asset Allocation (SAA), each asset class must include:
 - asset_class name
