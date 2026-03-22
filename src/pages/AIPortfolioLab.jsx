@@ -206,12 +206,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               </Button>
             </div>
 
-            {/* Disclaimer */}
-            <div className="rounded-xl p-4 border border-border/30 bg-muted/10">
-              <p className="text-xs text-muted-foreground/70 leading-relaxed">
-                This tool generates illustrative, educational portfolio ideas. Outputs are not financial advice or investment recommendations. Consult a regulated financial adviser.
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground/30 text-center px-2">Educational. Not financial advice.</p>
           </div>
 
           {/* Results */}

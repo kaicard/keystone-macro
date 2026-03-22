@@ -224,12 +224,7 @@ export default function AILabResults({ result }) {
         <p className="text-sm text-muted-foreground leading-relaxed">{result.if_conditions_change}</p>
       </div>
 
-      {/* Disclaimer */}
-      <div className="rounded-xl p-4 border border-border/30 bg-muted/10">
-        <p className="text-xs text-muted-foreground/60 leading-relaxed">
-          <strong className="text-muted-foreground">Disclaimer:</strong> AI-generated illustrative portfolio for educational purposes only. Not financial advice, not a recommendation to invest. All instruments mentioned are illustrative examples only. Consult a regulated adviser for personal investment decisions.
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground/30 text-center">Educational. Not financial advice.</p>
     </motion.div>
   );
 }
