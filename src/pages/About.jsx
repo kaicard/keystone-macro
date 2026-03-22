@@ -54,7 +54,7 @@ export default function About() {
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">Why I Built This</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Macro Memoir started as a way to document my journey in markets — from early trading 
+              Macro Memoir started as a way to document a journey in markets — from early trading 
               experiences to developing a deeper understanding of macro regimes, asset allocation, and 
               portfolio construction.
             </p>
