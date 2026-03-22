@@ -78,7 +78,8 @@ export default function MarketPulse() {
             <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="equities">Equities</TabsTrigger>
-              <TabsTrigger value="bonds">Bonds & Yields</TabsTrigger>
+              <TabsTrigger value="etfs">ETFs</TabsTrigger>
+              <TabsTrigger value="bonds">Bonds</TabsTrigger>
               <TabsTrigger value="commodities">Commodities</TabsTrigger>
               <TabsTrigger value="fx">FX</TabsTrigger>
               <TabsTrigger value="crypto">Crypto</TabsTrigger>
@@ -88,7 +89,7 @@ export default function MarketPulse() {
               <div className="space-y-8">
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                  <SectionGrid items={data?.indices} cols={6} withSpark />
+                  <SectionGrid items={data?.indices} cols={4} withSpark />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
@@ -100,19 +101,13 @@ export default function MarketPulse() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
-                  <SectionGrid items={data?.fx} cols={4} keyField="pair" />
+                  <SectionGrid items={data?.fx} cols={6} keyField="pair" />
                 </div>
                 {data?.vix && (
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <MarketTile
-                        name="VIX"
-                        value={data.vix.value}
-                        change={data.vix.change}
-                        direction={data.vix.direction}
-                        subtext={data.vix.regime}
-                      />
+                      <MarketTile name="VIX" value={data.vix.value} change={data.vix.change} direction={data.vix.direction} subtext={data.vix.regime} />
                     </div>
                   </div>
                 )}
@@ -120,9 +115,20 @@ export default function MarketPulse() {
             </TabsContent>
 
             <TabsContent value="equities">
-              <div className="space-y-4">
-                <SectionGrid items={data?.indices} cols={6} withSpark />
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
+                  <SectionGrid items={data?.indices} cols={4} withSpark />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Single Names</h3>
+                  <SectionGrid items={data?.equities?.map(e => ({ ...e, name: e.ticker || e.name }))} cols={4} withSpark />
+                </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="etfs">
+              <SectionGrid items={data?.etfs?.map(e => ({ ...e, name: e.ticker || e.name }))} cols={4} withSpark />
             </TabsContent>
 
             <TabsContent value="bonds">
@@ -134,16 +140,14 @@ export default function MarketPulse() {
             </TabsContent>
 
             <TabsContent value="fx">
-              <SectionGrid items={data?.fx} cols={4} keyField="pair" />
+              <SectionGrid items={data?.fx} cols={6} keyField="pair" />
             </TabsContent>
 
             <TabsContent value="crypto">
               {data?.crypto?.length ? (
                 <SectionGrid items={data.crypto} cols={4} withSpark />
               ) : (
-                <div className="glass rounded-xl p-8 text-center text-muted-foreground text-sm">
-                  Crypto data loading...
-                </div>
+                <div className="glass rounded-xl p-8 text-center text-muted-foreground text-sm">Loading...</div>
               )}
             </TabsContent>
           </Tabs>
