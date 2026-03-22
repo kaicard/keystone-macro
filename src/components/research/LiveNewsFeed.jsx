@@ -27,7 +27,7 @@ const HEADLINE_SCHEMA = {
           category: { type: "string" },
           sentiment: { type: "string" },
           impact: { type: "string" },
-          northstone_take: { type: "string" },
+          desk_view: { type: "string" },
           what_to_watch: { type: "string" }
         }
       }
@@ -42,7 +42,7 @@ For each headline provide:
 - category: one of [Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit]
 - sentiment: "positive" | "negative" | "neutral"
 - impact: 1-sentence market impact summary
-- northstone_take: 2-3 sentence analysis (what happened, why it matters, market implications)
+- desk_view: 2-3 sentence analysis (what happened, why it matters, market implications)
 - what_to_watch: the key follow-on variable to monitor
 
 Make them feel realistic and varied. Include some tension (rate decisions, geopolitical tension, earnings surprises, commodity moves).`;
@@ -160,8 +160,8 @@ export default function LiveNewsFeed() {
                   >
                     <div className="px-6 pb-4 ml-10 space-y-3 border-l-2 border-primary/20 ml-9">
                       <div className="bg-primary/5 rounded-lg p-4">
-                        <p className="text-xs font-semibold text-primary mb-1.5 uppercase tracking-wide">Northstone Take</p>
-                        <p className="text-sm text-foreground leading-relaxed">{item.northstone_take}</p>
+                        <p className="text-xs font-semibold text-primary mb-1.5 uppercase tracking-wide">Desk View</p>
+                        <p className="text-sm text-foreground leading-relaxed">{item.desk_view}</p>
                       </div>
                       {item.what_to_watch && (
                         <div className="flex items-start gap-2">

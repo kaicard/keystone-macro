@@ -15,7 +15,18 @@ function generateSparkline(base, count = 12, volatility = 0.015) {
 }
 
 const MARKET_DATA_PROMPT = `Generate realistic current market data for today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}). 
-Return plausible values for these financial instruments. Make prices realistic and changes small (within normal daily ranges).
+Return plausible, realistic values for these financial instruments. Make prices and changes realistic (small daily moves).
+Include these specific instruments:
+- indices: S&P 500, NASDAQ 100, Dow Jones, FTSE 100, DAX, CAC 40, Nikkei 225, Hang Seng (8 entries)
+- bonds: US 2Y Treasury, US 10Y Treasury, UK 10Y Gilt, German 10Y Bund, US 30Y Treasury, UK 2Y Gilt (6 entries)
+- commodities: Brent Crude, WTI Crude, Gold, Silver, Copper, Natural Gas (6 entries)
+- fx: GBP/USD, EUR/USD, USD/JPY, USD/CHF, AUD/USD, EUR/GBP (6 entries)
+- equities: Apple (AAPL), Microsoft (MSFT), NVIDIA (NVDA), Amazon (AMZN), Alphabet (GOOGL), Tesla (TSLA), Shell (SHEL.L), HSBC (HSBA.L), BP (BP.L) (9 entries)
+- etfs: SPY, QQQ, VOO, IEF (US Bonds ETF), GLD (Gold ETF), EEM (EM ETF) (6 entries)
+- crypto: Bitcoin (BTC), Ethereum (ETH), Solana (SOL) (3 entries)
+- vix: current value and regime
+- regime: current macro regime label, description, and signals
+- market_summary: 2-3 sentence professional market overview for today
 Return as structured JSON.`;
 
 const MARKET_SCHEMA = {
@@ -25,6 +36,8 @@ const MARKET_SCHEMA = {
     bonds: { type: "array", items: { type: "object", properties: { name: { type: "string" }, yield: { type: "string" }, change_bps: { type: "string" }, direction: { type: "string" } } } },
     commodities: { type: "array", items: { type: "object", properties: { name: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     fx: { type: "array", items: { type: "object", properties: { pair: { type: "string" }, rate: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
+    equities: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
+    etfs: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     vix: { type: "object", properties: { value: { type: "string" }, change: { type: "string" }, direction: { type: "string" }, regime: { type: "string" } } },
     crypto: { type: "array", items: { type: "object", properties: { name: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     regime: { type: "object", properties: { label: { type: "string" }, description: { type: "string" }, growth: { type: "string" }, inflation: { type: "string" }, policy: { type: "string" }, volatility: { type: "string" }, leadership: { type: "string" } } },
