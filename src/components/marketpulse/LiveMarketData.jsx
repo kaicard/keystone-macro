@@ -14,19 +14,19 @@ function generateSparkline(base, count = 12, volatility = 0.015) {
   return data;
 }
 
-const MARKET_DATA_PROMPT = `Generate realistic current market data for today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}). 
-Return plausible, realistic values for these financial instruments. Make prices and changes realistic (small daily moves).
-Include these specific instruments:
+const MARKET_DATA_PROMPT = `You are a financial data aggregator. Using real-time web data, fetch the ACTUAL current prices and changes for today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}) for all of the following instruments. Use live market data from sources like Yahoo Finance, Google Finance, MarketWatch, or Bloomberg. Return ONLY real current values — do not fabricate or estimate.
+
+Instruments to fetch:
 - indices: S&P 500, NASDAQ 100, Dow Jones, FTSE 100, DAX, CAC 40, Nikkei 225, Hang Seng (8 entries)
-- bonds: US 2Y Treasury, US 10Y Treasury, UK 10Y Gilt, German 10Y Bund, US 30Y Treasury, UK 2Y Gilt (6 entries)
-- commodities: Brent Crude, WTI Crude, Gold, Silver, Copper, Natural Gas (6 entries)
+- bonds: US 2Y Treasury yield, US 10Y Treasury yield, UK 10Y Gilt yield, German 10Y Bund yield, US 30Y Treasury yield, UK 2Y Gilt yield (6 entries)
+- commodities: Brent Crude, WTI Crude, Gold spot, Silver spot, Copper, Natural Gas (6 entries)
 - fx: GBP/USD, EUR/USD, USD/JPY, USD/CHF, AUD/USD, EUR/GBP (6 entries)
 - equities: Apple (AAPL), Microsoft (MSFT), NVIDIA (NVDA), Amazon (AMZN), Alphabet (GOOGL), Tesla (TSLA), Shell (SHEL.L), HSBC (HSBA.L), BP (BP.L) (9 entries)
-- etfs: SPY, QQQ, VOO, IEF (US Bonds ETF), GLD (Gold ETF), EEM (EM ETF) (6 entries)
+- etfs: SPY, QQQ, VOO, IEF, GLD, EEM (6 entries)
 - crypto: Bitcoin (BTC), Ethereum (ETH), Solana (SOL) (3 entries)
-- vix: current value and regime
-- regime: current macro regime label, description, and signals
-- market_summary: 2-3 sentence professional market overview for today
+- vix: current VIX value and regime characterisation
+- regime: based on current macro conditions, characterise the regime (label, description, growth/inflation/policy/volatility signals)
+- market_summary: 2-3 sentence professional summary of today's actual market conditions based on real data
 Return as structured JSON.`;
 
 const MARKET_SCHEMA = {
@@ -54,6 +54,8 @@ export function useMarketData() {
     setLoading(true);
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: MARKET_DATA_PROMPT,
+      add_context_from_internet: true,
+      model: 'gemini_3_flash',
       response_json_schema: MARKET_SCHEMA,
     });
     if (res) {
