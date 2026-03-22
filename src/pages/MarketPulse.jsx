@@ -56,7 +56,7 @@ export default function MarketPulse() {
             </div>
           </div>
           <p className="text-muted-foreground text-lg">
-            Indicative market data and macro regime analysis. Updates every 15 minutes.
+            Real-time market prices and macro regime analysis. Updates every 15 minutes.
           </p>
         </motion.div>
 
@@ -154,7 +154,7 @@ export default function MarketPulse() {
         </motion.div>
 
         <p className="text-xs text-muted-foreground/30 mt-10 text-center">
-          Indicative data. Educational only. Not financial advice.
+          Educational only. Not financial advice.
         </p>
       </div>
     </div>

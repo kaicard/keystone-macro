@@ -137,7 +137,12 @@ export default function LiveNewsFeed() {
                         <Badge variant="outline" className={`text-xs shrink-0 ${CATEGORY_STYLES[item.category] || 'bg-muted text-muted-foreground'}`}>
                           {item.category}
                         </Badge>
-                        <span className="text-xs text-muted-foreground/60">
+                        {item.source && (
+                          <span className="text-xs font-medium text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded">
+                            {item.source}
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground/50">
                           {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
