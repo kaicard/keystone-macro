@@ -54,7 +54,7 @@ export default function WealthCasesPreview() {
         >
           <div>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Wealth Case Studies</h2>
-            <p className="text-muted-foreground">Illustrative client scenarios and suitability-driven allocation.</p>
+            <p className="text-muted-foreground">Suitability-driven allocation across a range of investor profiles.</p>
           </div>
           <Link to="/WealthCases">
             <Button variant="ghost" className="gap-2 text-primary hover:text-primary">
@@ -89,9 +89,7 @@ export default function WealthCasesPreview() {
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground/50 mt-6 text-center">
-          Hypothetical scenarios for educational purposes. Not personal advice.
-        </p>
+
       </div>
     </section>
   );
