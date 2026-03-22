@@ -102,7 +102,7 @@ export default function Research() {
         >
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Research & Intelligence</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Live market intelligence, macro themes, and original research. For educational purposes.
+            Live market intelligence, macro themes, and original research notes.
           </p>
         </motion.div>
 
@@ -191,7 +191,7 @@ export default function Research() {
         {filtered.length === 0 && (
           <div className="text-center py-20 text-muted-foreground">
             <p className="text-lg mb-2">No research notes found</p>
-            <p className="text-sm">Try adjusting your search or filters</p>
+            <p className="text-sm">Adjust your search or filters</p>
           </div>
         )}
       </div>

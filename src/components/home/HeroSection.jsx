@@ -74,12 +74,12 @@ export default function HeroSection() {
         </motion.div>
 
         <motion.p
-          className="text-xs text-muted-foreground/60"
+          className="text-xs text-muted-foreground/40"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          Educational only. Not financial advice.
+          Educational. Not financial advice.
         </motion.p>
       </div>
 

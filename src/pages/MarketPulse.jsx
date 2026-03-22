@@ -56,7 +56,7 @@ export default function MarketPulse() {
             </div>
           </div>
           <p className="text-muted-foreground text-lg">
-            AI-generated indicative market data and regime analysis. Refreshes every 15 minutes.
+            Indicative market data and macro regime analysis. Updates every 15 minutes.
           </p>
         </motion.div>
 
@@ -153,8 +153,8 @@ export default function MarketPulse() {
           </Tabs>
         </motion.div>
 
-        <p className="text-xs text-muted-foreground/40 mt-10 text-center">
-          All data is AI-generated indicative pricing for illustrative purposes. Not real-time market data. Not financial advice.
+        <p className="text-xs text-muted-foreground/30 mt-10 text-center">
+          Indicative data. Educational only. Not financial advice.
         </p>
       </div>
     </div>
