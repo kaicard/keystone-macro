@@ -7,7 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import AILabResults from '@/components/ailab/AILabResults';
+
+const currencyOptions = [
+  { code: 'GBP', symbol: '£', label: 'GBP (£)' },
+  { code: 'USD', symbol: '$', label: 'USD ($)' },
+  { code: 'EUR', symbol: '€', label: 'EUR (€)' },
+  { code: 'AUD', symbol: 'A$', label: 'AUD (A$)' },
+  { code: 'CHF', symbol: 'CHF', label: 'CHF' },
+  { code: 'SGD', symbol: 'S$', label: 'SGD (S$)' },
+];
 
 const riskOptions = ['Conservative', 'Moderate', 'Growth', 'Aggressive'];
 const horizonOptions = ['Short (1-3 years)', 'Medium (3-7 years)', 'Long (7+ years)'];
@@ -33,6 +43,8 @@ export default function AIPortfolioLab() {
   const [objective, setObjective] = useState('');
   const [regime, setRegime] = useState('');
   const [preferences, setPreferences] = useState([]);
+  const [capital, setCapital] = useState('');
+  const [currency, setCurrency] = useState('GBP');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -40,7 +52,7 @@ export default function AIPortfolioLab() {
     setPreferences(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
   };
 
-  const canGenerate = risk && horizon && objective && regime;
+  const canGenerate = risk && horizon && objective && regime && capital;
 
   const generate = async () => {
     setLoading(true);
