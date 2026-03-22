@@ -183,6 +183,36 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
             <div className="glass rounded-xl p-6 space-y-5">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Configure Inputs</h3>
 
+              {/* Capital Amount */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Capital to Invest</Label>
+                <div className="flex gap-2">
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger className="glass border-border/30 w-28 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencyOptions.map(c => (
+                        <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 25000"
+                    value={capital}
+                    onChange={e => setCapital(e.target.value)}
+                    className="glass border-border/30 flex-1"
+                    min="0"
+                  />
+                </div>
+                {capital && !isNaN(parseFloat(capital)) && (
+                  <p className="text-xs text-primary/70">
+                    {currencyOptions.find(c => c.code === currency)?.symbol}{Number(parseFloat(capital)).toLocaleString()} {currency}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Risk Tolerance</Label>
                 <Select value={risk} onValueChange={setRisk}>
