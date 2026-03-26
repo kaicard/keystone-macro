@@ -338,9 +338,7 @@ export default function EconomicCalendar() {
           </div>
         </motion.div>
 
-        <p className="text-xs text-muted-foreground/30 mt-6 text-center">
-          Curated high-impact events only. Times in London (BST/GMT). Not financial advice.
-        </p>
+
       </div>
     </div>
   );
