@@ -18,15 +18,20 @@ const MARKET_DATA_PROMPT = `You are a financial data aggregator. Using real-time
 
 Instruments to fetch:
 - indices: S&P 500, NASDAQ 100, Dow Jones, FTSE 100, DAX, CAC 40, Nikkei 225, Hang Seng (8 entries)
-- bonds: US 2Y Treasury yield, US 10Y Treasury yield, UK 10Y Gilt yield, German 10Y Bund yield, US 30Y Treasury yield, UK 2Y Gilt yield (6 entries)
-- commodities: Brent Crude, WTI Crude, Gold spot, Silver spot, Copper, Natural Gas (6 entries)
-- fx: GBP/USD, EUR/USD, USD/JPY, USD/CHF, AUD/USD, EUR/GBP (6 entries)
-- equities: Apple (AAPL), Microsoft (MSFT), NVIDIA (NVDA), Amazon (AMZN), Alphabet (GOOGL), Tesla (TSLA), Shell (SHEL.L), HSBC (HSBA.L), BP (BP.L) (9 entries)
-- etfs: SPY, QQQ, VOO, IEF, GLD, EEM (6 entries)
+- bonds: US 2Y Treasury yield, US 10Y Treasury yield, UK 10Y Gilt yield, German 10Y Bund yield, US 30Y Treasury yield, UK 2Y Gilt yield, Japan 10Y JGB yield, Italy 10Y BTP yield (8 entries)
+- commodities: Brent Crude, WTI Crude, Gold spot, Silver spot, Copper, Natural Gas, Wheat, Platinum (8 entries)
+- fx: GBP/USD, EUR/USD, USD/JPY, USD/CHF, AUD/USD, EUR/GBP, USD/CNH, USD/CAD (8 entries)
+- equities: Apple (AAPL), Microsoft (MSFT), NVIDIA (NVDA), Amazon (AMZN), Alphabet (GOOGL), Tesla (TSLA), Meta (META), JPMorgan (JPM), Goldman Sachs (GS), Shell (SHEL.L), HSBC (HSBA.L), BP (BP.L), AstraZeneca (AZN.L), Barclays (BARC.L) (14 entries)
+- etfs: SPY, QQQ, VOO, IEF, GLD, EEM, LQD (IG Corporate Bond ETF), HYG (High Yield Bond ETF), TLT (Long-Term Treasury ETF), IEMG (EM ETF), VNQ (REIT ETF) (11 entries)
 - crypto: Bitcoin (BTC), Ethereum (ETH), Solana (SOL) (3 entries)
-- vix: current VIX value and regime characterisation
-- regime: based on current macro conditions, characterise the regime (label, description, growth/inflation/policy/volatility signals)
-- market_summary: 2-3 sentence professional summary of today's actual market conditions based on real data
+- sectors: provide current day performance (% change) for each GICS sector: Technology, Financials, Healthcare, Energy, Consumer Discretionary, Consumer Staples, Industrials, Materials, Utilities, Real Estate, Communication Services (11 entries)
+- credit_spreads: US Investment Grade spread (bps), US High Yield spread (bps), EUR Investment Grade spread (bps), EUR High Yield spread (bps) — with direction (tightening/widening)
+- dxy: Dollar Index value, change_pct, direction
+- yield_curve: US 2Y10Y spread (bps), UK 2Y10Y spread (bps), direction (steepening/flattening/inverted)
+- top_movers: top 3 gainers and top 3 losers across all equities and ETFs today (name, ticker, change_pct, direction)
+- vix: current VIX value, change, direction, and regime characterisation
+- regime: based on current macro conditions, characterise the regime (label, description, growth/inflation/policy/volatility signals, leadership)
+- market_summary: 3-4 sentence professional summary of today's actual market conditions based on real data
 Return as structured JSON.`;
 
 const MARKET_SCHEMA = {
@@ -38,6 +43,14 @@ const MARKET_SCHEMA = {
     fx: { type: "array", items: { type: "object", properties: { pair: { type: "string" }, rate: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     equities: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     etfs: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
+    sectors: { type: "array", items: { type: "object", properties: { name: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
+    credit_spreads: { type: "array", items: { type: "object", properties: { name: { type: "string" }, value_bps: { type: "string" }, direction: { type: "string" }, trend: { type: "string" } } } },
+    dxy: { type: "object", properties: { value: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } },
+    yield_curve: { type: "array", items: { type: "object", properties: { name: { type: "string" }, spread_bps: { type: "string" }, direction: { type: "string" }, shape: { type: "string" } } } },
+    top_movers: { type: "object", properties: {
+      gainers: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, change_pct: { type: "string" } } } },
+      losers: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, change_pct: { type: "string" } } } }
+    }},
     vix: { type: "object", properties: { value: { type: "string" }, change: { type: "string" }, direction: { type: "string" }, regime: { type: "string" } } },
     crypto: { type: "array", items: { type: "object", properties: { name: { type: "string" }, price: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
     regime: { type: "object", properties: { label: { type: "string" }, description: { type: "string" }, growth: { type: "string" }, inflation: { type: "string" }, policy: { type: "string" }, volatility: { type: "string" }, leadership: { type: "string" } } },
@@ -109,8 +122,8 @@ export function RefreshBar({ lastUpdated, loading, onRefresh }) {
     <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
       <span>
         {lastUpdated
-          ? `Last updated: ${lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
-          : 'Loading market data...'}
+          ? `Live data · Updated ${lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+          : 'Fetching live market data...'}
       </span>
       <button
         onClick={onRefresh}

@@ -325,17 +325,27 @@ export default function WealthCases() {
             </div>
 
             {/* Analysis sections */}
-            {selected.taa_adjustments && (
-              <div className="glass rounded-xl p-6">
-                <h3 className="font-semibold mb-3">Tactical Adjustments (TAA)</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{selected.taa_adjustments}</p>
+            {/* Portfolio Construction Rationale */}
+            <div className="glass rounded-xl p-6 border border-primary/10">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1 h-5 rounded-full bg-primary" />
+                <h3 className="font-semibold">Portfolio Construction Rationale</h3>
               </div>
-            )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-2">Why This Allocation</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.rationale}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Trade-offs & What Was Avoided</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.taa_adjustments}</p>
+                </div>
+              </div>
+            </div>
 
             {[
-              { title: 'Investment Rationale', content: selected.rationale },
               { title: 'Key Risks', content: selected.key_risks },
-              { title: 'Rebalancing Approach', content: selected.rebalancing_considerations },
+              { title: 'Rebalancing Framework', content: selected.rebalancing_considerations },
               { title: 'Behavioural Considerations', content: selected.behavioural_considerations },
               { title: 'Regime Change Sensitivity', content: selected.regime_changes },
             ].map(s => s.content && (
@@ -357,7 +367,7 @@ export default function WealthCases() {
         <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Wealth Case Studies</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Suitability-driven portfolio construction across a range of investor profiles, objectives, and constraints.
+            Institutional-grade portfolio construction across a range of client mandates, objectives, and constraints. Each case reflects real-world suitability analysis.
           </p>
         </motion.div>
 

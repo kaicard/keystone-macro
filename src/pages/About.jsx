@@ -5,20 +5,20 @@ import { ArrowRight, Linkedin, Shield, TrendingUp, Eye, Users, BookOpen, Target 
 import { Button } from '@/components/ui/button';
 
 const principles = [
-  { icon: Shield, title: 'Process Over Noise', description: 'Systematic thinking and disciplined frameworks matter more than headlines and hot takes.' },
-  { icon: Eye, title: 'Risk Before Return', description: 'Understanding what can go wrong is the foundation of understanding what can go right.' },
-  { icon: TrendingUp, title: 'Macro Matters', description: 'Top-down context shapes every asset class. Regimes, cycles, and policy drive markets.' },
-  { icon: Users, title: 'Client Suitability', description: 'The right portfolio depends on the person, not just the market. Objectives and constraints come first.' },
-  { icon: BookOpen, title: 'Continuous Learning', description: 'Markets evolve constantly. Staying curious, humble, and adaptive is non-negotiable.' },
-  { icon: Target, title: 'Clarity of Thought', description: 'Complex ideas communicated simply. If you can\'t explain it clearly, you don\'t understand it well enough.' },
+  { icon: Shield, title: 'Process Over Noise', description: 'Systematic thinking and disciplined frameworks cut through market noise. Rigour and repeatability outperform reactive decision-making.' },
+  { icon: Eye, title: 'Risk Before Return', description: 'Understanding tail risks, drawdown dynamics, and correlation regimes is the foundation of any serious portfolio construction process.' },
+  { icon: TrendingUp, title: 'Macro Drives Everything', description: 'Regime identification shapes asset allocation across every cycle. Central bank policy, fiscal impulse, and growth inflections set the context.' },
+  { icon: Users, title: 'Suitability First', description: 'The right portfolio is defined by the investor\'s objectives, constraints, and behavioural profile — not by the market environment alone.' },
+  { icon: BookOpen, title: 'First-Principles Thinking', description: 'Challenging consensus views and building investment theses from the ground up produces differentiated, high-conviction research.' },
+  { icon: Target, title: 'Clarity of Thought', description: 'Institutional-quality ideas demand precise communication. If a framework cannot be explained clearly, it is not yet fully understood.' },
 ];
 
 const timeline = [
-  { year: '2021', title: 'Entered the Markets', description: 'Began systematic trading across equities, FX, and commodities. Developed initial risk frameworks and market instincts.' },
-  { year: '2023', title: 'Deep Macro Research', description: 'Focused on macro analysis, regime identification, and multi-asset allocation strategies.' },
-  { year: '2024', title: 'Portfolio Construction Focus', description: 'Shifted toward institutional-style portfolio construction, SAA/TAA frameworks, and client suitability.' },
-  { year: '2025', title: 'Wealth Management Study', description: 'Expanded into wealth management concepts, client case studies, and educational content creation.' },
-  { year: '2026', title: 'Macro Memoir', description: 'Launched this platform to share research, portfolio ideas, and educational wealth strategy content.' },
+  { year: '2021', title: 'Active Market Participation', description: 'Began systematic trading across equities, FX, and commodities. Built early risk frameworks through hands-on exposure to live market conditions.' },
+  { year: '2023', title: 'Macro Research Focus', description: 'Deep dive into macro regime analysis — studying central bank policy, yield curve dynamics, cross-asset correlations, and cycle identification frameworks.' },
+  { year: '2024', title: 'Institutional Portfolio Construction', description: 'Applied SAA/TAA methodologies, factor analysis, and client suitability frameworks aligned with institutional wealth management standards.' },
+  { year: '2025', title: 'Multi-Asset Research & Wealth Strategy', description: 'Developed comprehensive wealth case studies covering high-net-worth clients, family office structures, and complex cross-border mandates.' },
+  { year: '2026', title: 'Macro Memoir Platform', description: 'Launched a professional-grade macro and portfolio intelligence platform integrating live market data, AI-assisted portfolio construction, and institutional research.' },
 ];
 
 export default function About() {
@@ -39,8 +39,7 @@ export default function About() {
             About Macro Memoir
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            A platform built from genuine passion for markets, portfolio construction, and the intersection of 
-            investment thinking and wealth management.
+            A professional macro and multi-asset intelligence platform, built through hands-on market experience and independent investment research.
           </p>
         </motion.div>
 
@@ -51,26 +50,26 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">Why I Built This</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">The Platform</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Macro Memoir started as a way to document a journey in markets — from early trading 
-              experiences to developing a deeper understanding of macro regimes, asset allocation, and 
-              portfolio construction.
+              Macro Memoir is a professional-grade macro and multi-asset research platform, built from 
+              the ground up through active market participation, independent research, and rigorous study 
+              of institutional investment frameworks.
             </p>
             <p>
-              Over time, it evolved into something more: a platform to share research, illustrate portfolio 
-              thinking, and explore wealth management concepts in a way that combines rigour with accessibility.
+              The platform integrates live market data, AI-assisted portfolio construction, institutional 
+              wealth case studies, and original macro research — reflecting the full analytical toolkit 
+              used by asset managers and multi-asset teams.
             </p>
             <p>
-              My interest lies at the intersection of macro analysis, multi-asset investing, risk management, 
-              and client suitability. I believe the best investment thinking combines top-down awareness with 
-              bottom-up discipline, and always starts with understanding the person behind the portfolio.
+              The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding 
+              central bank dynamics, and constructing portfolios that are genuinely calibrated to client 
+              objectives, constraints, and behavioural realities — not just market conditions.
             </p>
             <p>
-              This platform serves as both a learning tool and a demonstration of how I think about markets, 
-              allocate risk, and approach the challenge of building portfolios that are genuinely suitable for 
-              different objectives and constraints.
+              Every section of this platform reflects a practitioner's approach to investment research — 
+              process-driven, risk-aware, and grounded in real-world portfolio construction thinking.
             </p>
           </div>
         </motion.div>
@@ -99,7 +98,7 @@ export default function About() {
 
         {/* Timeline */}
         <div className="mb-16">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Journey</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Experience</h2>
           <div className="relative">
             <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px bg-border" />
             {timeline.map((t, i) => (
@@ -151,9 +150,9 @@ export default function About() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-display text-2xl font-semibold mb-4">Let's Connect</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4">Get In Touch</h2>
           <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-            Interested in discussing markets, portfolio strategy, or potential opportunities? I'd love to hear from you.
+            Open to conversations on macro markets, portfolio strategy, asset allocation, and professional opportunities in investment management.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link to="/Contact">

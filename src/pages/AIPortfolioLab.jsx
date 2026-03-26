@@ -169,11 +169,11 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-4">
             <FlaskConical className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Educational Portfolio Constructor</span>
+            <span className="text-xs font-medium text-primary">AI Portfolio Constructor</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">AI Portfolio Lab</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Construct illustrative multi-asset portfolios with strategic allocation, tactical tilts, and scenario analysis.
+            Construct institutional-style multi-asset portfolios with strategic allocation, tactical tilts, scenario analysis, and capital-appropriate exposures.
           </p>
         </motion.div>
 
@@ -261,7 +261,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground/30 text-center px-2">Educational. Not financial advice.</p>
+            <p className="text-xs text-muted-foreground/30 text-center px-2">Illustrative exposures only. Not investment recommendations.</p>
           </div>
 
           {/* Results */}

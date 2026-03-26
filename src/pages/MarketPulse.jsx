@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Activity } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useMarketData, MarketTile, RefreshBar } from '@/components/marketpulse/LiveMarketData';
 import RegimePanel from '@/components/marketpulse/RegimePanel';
 import MarketSummary from '@/components/marketpulse/MarketSummary';
+import TopMovers from '@/components/marketpulse/TopMovers';
+import SectorHeatmap from '@/components/marketpulse/SectorHeatmap';
+import CreditAndCurve from '@/components/marketpulse/CreditAndCurve';
 
 function SectionGrid({ items, cols = 6, keyField = 'name', valueField, changeField, directionField, subtextField, withSpark }) {
   const gridClass = {
@@ -78,8 +80,9 @@ export default function MarketPulse() {
             <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="equities">Equities</TabsTrigger>
+              <TabsTrigger value="sectors">Sectors</TabsTrigger>
               <TabsTrigger value="etfs">ETFs</TabsTrigger>
-              <TabsTrigger value="bonds">Bonds</TabsTrigger>
+              <TabsTrigger value="bonds">Bonds & Credit</TabsTrigger>
               <TabsTrigger value="commodities">Commodities</TabsTrigger>
               <TabsTrigger value="fx">FX</TabsTrigger>
               <TabsTrigger value="crypto">Crypto</TabsTrigger>
@@ -91,17 +94,33 @@ export default function MarketPulse() {
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
                   <SectionGrid items={data?.indices} cols={4} withSpark />
                 </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
+                  <TopMovers topMovers={data?.top_movers} loading={loading} />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance</h3>
+                  <SectorHeatmap sectors={data?.sectors} loading={loading} />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit, Yield Curve & Dollar</h3>
+                  <CreditAndCurve creditSpreads={data?.credit_spreads} yieldCurve={data?.yield_curve} dxy={data?.dxy} loading={loading} />
+                </div>
+
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
-                  <SectionGrid items={data?.bonds} cols={6} />
+                  <SectionGrid items={data?.bonds} cols={4} />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
-                  <SectionGrid items={data?.commodities} cols={6} withSpark />
+                  <SectionGrid items={data?.commodities} cols={4} withSpark />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
-                  <SectionGrid items={data?.fx} cols={6} keyField="pair" />
+                  <SectionGrid items={data?.fx} cols={4} keyField="pair" />
                 </div>
                 {data?.vix && (
                   <div>
@@ -131,8 +150,26 @@ export default function MarketPulse() {
               <SectionGrid items={data?.etfs?.map(e => ({ ...e, name: e.ticker || e.name }))} cols={4} withSpark />
             </TabsContent>
 
+            <TabsContent value="sectors">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance — Today</h3>
+                  <SectorHeatmap sectors={data?.sectors} loading={loading} />
+                </div>
+              </div>
+            </TabsContent>
+
             <TabsContent value="bonds">
-              <SectionGrid items={data?.bonds} cols={6} />
+              <div className="space-y-8">
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Government Yields</h3>
+                  <SectionGrid items={data?.bonds} cols={4} />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit Spreads, Yield Curve & Dollar</h3>
+                  <CreditAndCurve creditSpreads={data?.credit_spreads} yieldCurve={data?.yield_curve} dxy={data?.dxy} loading={loading} />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="commodities">
@@ -154,7 +191,7 @@ export default function MarketPulse() {
         </motion.div>
 
         <p className="text-xs text-muted-foreground/30 mt-10 text-center">
-          Educational only. Not financial advice.
+          Live market data. Delayed where applicable. Not investment advice.
         </p>
       </div>
     </div>

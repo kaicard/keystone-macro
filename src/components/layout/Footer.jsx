@@ -62,14 +62,14 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
-              A personal macro and portfolio intelligence platform. Investment thinking for a modern era.
+              Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors">
                 <Linkedin className="w-4 h-4" />
               </a>
-              <a href="mailto:hello@northstone.io"
+              <a href="mailto:hello@macromemoir.com"
                 className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors">
                 <Mail className="w-4 h-4" />
               </a>
@@ -123,7 +123,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Macro Memoir. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground/40">
-            For educational purposes only. Opinions expressed are not financial advice or investment recommendations.
+            Live market data. Delayed where applicable. Opinions expressed are not investment recommendations.
           </p>
         </div>
       </div>

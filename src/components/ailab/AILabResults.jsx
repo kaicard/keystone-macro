@@ -66,8 +66,8 @@ function AllocationBar({ item, index, total }) {
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground/50 mt-2 italic">
-                    These are illustrative examples only — not recommendations to invest in any specific instrument.
+                  <p className="text-xs text-muted-foreground/40 mt-2 italic">
+                    Illustrative exposures only. Not investment recommendations.
                   </p>
                 </div>
               )}
@@ -96,7 +96,7 @@ export default function AILabResults({ result }) {
     >
       {/* Portfolio name & rationale */}
       <div className="glass rounded-xl p-6">
-        <Badge className="bg-primary/10 text-primary border-0 mb-3">Illustrative Suggestion</Badge>
+        <Badge className="bg-primary/10 text-primary border-0 mb-3">Portfolio Analysis</Badge>
         <h2 className="font-display text-2xl font-semibold mb-2">{result.portfolio_name}</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">{result.overall_rationale}</p>
       </div>
@@ -224,7 +224,7 @@ export default function AILabResults({ result }) {
         <p className="text-sm text-muted-foreground leading-relaxed">{result.if_conditions_change}</p>
       </div>
 
-      <p className="text-xs text-muted-foreground/30 text-center">Educational. Not financial advice.</p>
+      <p className="text-xs text-muted-foreground/30 text-center">Live market data. Delayed where applicable. Illustrative exposures only — not investment recommendations.</p>
     </motion.div>
   );
 }

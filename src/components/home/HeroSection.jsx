@@ -20,9 +20,9 @@ export default function HeroSection() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-              Investment Research & Portfolio Intelligence
+              Macro Research · Portfolio Intelligence · Live Market Data
             </span>
           </div>
         </motion.div>
@@ -33,9 +33,9 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          Investment Thinking,{' '}
-          <span className="text-gradient">Portfolio Intelligence</span>
-          {', '}and Modern Wealth Insight
+          Macro Research.{' '}
+          <span className="text-gradient">Portfolio Intelligence.</span>
+          {' '}Real-Time Market Insight.
         </motion.h1>
 
         <motion.p
@@ -44,7 +44,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          A modern platform for market commentary, portfolio ideas, macro insight, and educational wealth strategy.
+          A platform for macro analysis, asset allocation, and modern wealth strategy.
         </motion.p>
 
         <motion.div
@@ -62,7 +62,7 @@ export default function HeroSection() {
           </Link>
           <Link to="/Portfolios">
             <Button size="lg" variant="outline" className="px-6 gap-2 rounded-full glass">
-              Explore Portfolios
+              View Model Portfolios
             </Button>
           </Link>
           <Link to="/AIPortfolioLab">
