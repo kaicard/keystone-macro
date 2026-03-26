@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, TrendingDown, RefreshCw, Minus } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
@@ -93,8 +93,24 @@ export function MarketTile({ name, value, change, direction, subtext, sparkData 
   const color = isFlat ? 'text-muted-foreground' : isUp ? 'text-emerald-400' : 'text-red-400';
   const strokeColor = isFlat ? '#888' : isUp ? '#34d399' : '#f87171';
 
+  // Flash animation on price change
+  const prevValue = useRef(value);
+  const [flash, setFlash] = useState(null);
+  useEffect(() => {
+    if (prevValue.current !== value && prevValue.current != null) {
+      setFlash(isUp ? 'up' : isFlat ? null : 'down');
+      const t = setTimeout(() => setFlash(null), 600);
+      prevValue.current = value;
+      return () => clearTimeout(t);
+    }
+    prevValue.current = value;
+  }, [value]);
+
+  const flashBg = flash === 'up' ? 'bg-emerald-400/10' : flash === 'down' ? 'bg-red-400/10' : '';
+
   return (
-    <div className="glass rounded-xl p-4 hover:border-primary/20 transition-all group">
+    <div className={`glass rounded-xl p-4 hover:border-primary/20 transition-all group ${flashBg}`}
+         style={{ transition: 'background-color 0.3s ease' }}>
       <div className="flex items-start justify-between mb-1">
         <span className="text-xs text-muted-foreground font-medium leading-tight">{name}</span>
         <span className={`text-xs font-semibold flex items-center gap-0.5 ${color}`}>
@@ -102,7 +118,7 @@ export function MarketTile({ name, value, change, direction, subtext, sparkData 
           {change}
         </span>
       </div>
-      <p className="text-base font-bold tracking-tight mb-0.5">{value}</p>
+      <p className="text-base font-bold tracking-tight mb-0.5 font-mono">{value}</p>
       {subtext && <p className="text-xs text-muted-foreground/60">{subtext}</p>}
       {sparkData && (
         <div className="h-8 mt-2">
