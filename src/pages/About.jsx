@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import PageBackground from '@/components/layout/PageBackground';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Linkedin, Shield, TrendingUp, Eye, Users, BookOpen, Target } from 'lucide-react';
@@ -26,8 +27,9 @@ export default function About() {
   const inView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+      <PageBackground />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Hero */}
         <motion.div
           className="text-center mb-20"

@@ -1,4 +1,5 @@
 import React from 'react';
+import PageBackground from '@/components/layout/PageBackground';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RefreshCw } from 'lucide-react';
@@ -76,13 +77,14 @@ export default function MarketPulse() {
   const loading = liveLoading || llmLoading;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <PageBackground />
       {/* Live Ticker Bar at top */}
-      <div className="pt-16 lg:pt-20">
+      <div className="pt-16 lg:pt-20 relative z-10">
         <LiveTickerBar data={live} />
       </div>
 
-      <div className="pt-6 pb-20">
+      <div className="pt-6 pb-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

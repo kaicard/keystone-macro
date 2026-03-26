@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageBackground from '@/components/layout/PageBackground';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
@@ -90,8 +91,9 @@ export default function Research() {
   const featured = filtered.find(n => n.is_featured) || filtered[0];
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+      <PageBackground />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* Header */}
         <motion.div

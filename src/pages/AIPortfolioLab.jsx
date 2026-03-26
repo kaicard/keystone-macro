@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, FlaskConical } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -164,8 +165,9 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+      <PageBackground />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-4">
             <FlaskConical className="w-3.5 h-3.5 text-primary" />
