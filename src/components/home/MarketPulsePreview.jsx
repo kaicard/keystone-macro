@@ -25,7 +25,7 @@ function MiniTile({ item, delay, inView }) {
 
   return (
     <motion.div
-      className="glass rounded-xl p-4 hover:border-primary/20 transition-all duration-300 group"
+      className="glass rounded-xl p-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/8 hover:-translate-y-0.5 group"
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay }}
@@ -63,7 +63,8 @@ export default function MarketPulsePreview() {
     : [];
 
   return (
-    <section ref={ref} className="py-20 sm:py-28 bg-muted/30">
+    <section ref={ref} className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"

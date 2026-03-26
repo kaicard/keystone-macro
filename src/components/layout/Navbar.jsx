@@ -49,11 +49,12 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <div className="relative w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300">
                 <span className="text-primary-foreground font-bold text-sm">M</span>
+                <div className="absolute inset-0 rounded-lg bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
               <div className="hidden sm:block">
-                <span className="font-display text-lg font-semibold tracking-tight text-foreground">
+                <span className="font-display text-lg font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                   Macro Memoir
                 </span>
               </div>
@@ -67,7 +68,7 @@ export default function Navbar() {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200"
+                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200 group/link"
                   >
                     <span className={isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}>
                       {link.label}
@@ -75,9 +76,12 @@ export default function Navbar() {
                     {isActive && (
                       <motion.div
                         layoutId="nav-indicator"
-                        className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full"
+                        className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full shadow-sm shadow-primary/50"
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
+                    )}
+                    {!isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-foreground/20 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-transform duration-200 origin-left" />
                     )}
                   </Link>
                 );

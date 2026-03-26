@@ -106,6 +106,12 @@
   .glow-accent {
     box-shadow: 0 0 40px -10px hsl(var(--accent) / 0.3);
   }
+  .glow-line {
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 /* Smooth scrolling */

@@ -45,18 +45,19 @@ export default function CredibilityStrip() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-16 sm:py-20 border-y border-border/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+    <section ref={ref} className="py-16 sm:py-20 border-y border-border/50 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/3 via-transparent to-accent/3 pointer-events-none" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {metrics.map((metric, i) => (
             <motion.div
               key={metric.label}
-              className="text-center"
+              className="text-center glass rounded-2xl p-6 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group"
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                 <metric.icon className="w-5 h-5 text-primary" />
               </div>
               <div className="mb-1">

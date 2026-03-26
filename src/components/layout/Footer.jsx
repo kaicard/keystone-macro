@@ -48,7 +48,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t border-border bg-card/50">
+    <footer className="border-t border-border bg-card/50 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
@@ -66,11 +67,11 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors">
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Linkedin className="w-4 h-4" />
               </a>
               <a href="mailto:hello@macromemoir.com"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors">
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Mail className="w-4 h-4" />
               </a>
             </div>
@@ -85,8 +86,9 @@ export default function Footer() {
               <ul className="space-y-3">
                 {section.links.map(link => (
                   <li key={link.label}>
-                    <Link to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {link.label}
+                    <Link to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group/fl">
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/fl:opacity-100 group-hover/fl:translate-x-0 transition-all duration-200" />
                     </Link>
                   </li>
                 ))}

@@ -9,7 +9,8 @@ export default function AILabPreview() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-20 sm:py-28">
+    <section ref={ref} className="py-20 sm:py-28 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-accent/5 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div
@@ -65,7 +66,8 @@ export default function AILabPreview() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="glass rounded-2xl p-6 glow-accent">
+            <div className="glass rounded-2xl p-6 glow-accent relative overflow-hidden">
+              <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-primary/8 blur-3xl pointer-events-none" />
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-3 h-3 rounded-full bg-red-400/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
