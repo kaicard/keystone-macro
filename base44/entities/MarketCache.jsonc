@@ -1,0 +1,21 @@
+{
+  "name": "MarketCache",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Cache key, e.g. 'liveQuotes' or 'newsHeadlines'"
+    },
+    "payload": {
+      "type": "string",
+      "description": "JSON stringified cached data"
+    },
+    "fetched_at": {
+      "type": "string",
+      "description": "ISO timestamp of when this was last fetched"
+    }
+  },
+  "required": [
+    "key"
+  ]
+}

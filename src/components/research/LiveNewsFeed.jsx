@@ -15,41 +15,7 @@ const CATEGORY_STYLES = {
   Credit: 'bg-cyan-400/10 text-cyan-400',
 };
 
-const HEADLINE_SCHEMA = {
-  type: "object",
-  properties: {
-    headlines: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          headline: { type: "string" },
-          source: { type: "string" },
-          category: { type: "string" },
-          sentiment: { type: "string" },
-          impact: { type: "string" },
-          desk_view: { type: "string" },
-          what_to_watch: { type: "string" }
-        }
-      }
-    }
-  }
-};
 
-const PROMPT = `You are a macro market intelligence editor. Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories breaking today (${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}). 
-
-Pull REAL headlines from verified sources: Bloomberg, Reuters, Financial Times, Wall Street Journal, CNBC, BBC News, or similar. Only include stories published today or within the last 24 hours.
-
-For each real story provide:
-- headline: the actual headline or a close paraphrase (max 15 words)
-- source: the publication name (e.g. "Reuters", "Bloomberg", "FT")
-- category: one of [Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit]
-- sentiment: "positive" | "negative" | "neutral"
-- impact: 1-sentence market impact summary
-- desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
-- what_to_watch: the key follow-on variable or event to monitor
-
-Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data releases. Only use real verified events.`;
 
 export default function LiveNewsFeed() {
   const [headlines, setHeadlines] = useState([]);
@@ -60,15 +26,10 @@ export default function LiveNewsFeed() {
 
   const fetchHeadlines = useCallback(async () => {
     setLoading(true);
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: PROMPT,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
-      response_json_schema: HEADLINE_SCHEMA,
-    });
-    if (res?.headlines) {
-      setHeadlines(res.headlines);
-      setLastUpdated(new Date());
+    const res = await base44.functions.invoke('liveNews', {});
+    if (res?.data?.headlines?.length) {
+      setHeadlines(res.data.headlines);
+      setLastUpdated(res.data.fetched_at ? new Date(res.data.fetched_at) : new Date());
     }
     setLoading(false);
   }, []);

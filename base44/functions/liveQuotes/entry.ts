@@ -72,13 +72,29 @@ const CATEGORY_MAP = {
   '^VIX': 'vix', 'DX-Y.NYB': 'dxy',
 };
 
+// Cache TTL: 10 minutes for quotes
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_KEY = 'liveQuotes';
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Check cache first
+    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
+    if (cached?.length > 0) {
+      const entry = cached[0];
+      const age = Date.now() - new Date(entry.fetched_at).getTime();
+      if (age < CACHE_TTL_MS && entry.payload) {
+        const data = JSON.parse(entry.payload);
+        return Response.json({ ok: true, data, cached: true, ts: new Date(entry.fetched_at).getTime() });
+      }
+    }
+
+    // Cache miss or stale — fetch fresh
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' });
 
-    // Fetch all 3 groups in parallel
     const results = await Promise.all(GROUPS.map(group => {
       const tickerList = group.tickers.map(t => `${t.sym} = ${t.name}`).join(', ');
       const prompt = `Today is ${today}, New York time is ${time}. Using live web data from Yahoo Finance or Google Finance, fetch REAL current prices for these financial instruments: ${tickerList}. For each return: ticker (the symbol exactly as given), price (current price as number), change_pct (today's % change as number, e.g. 1.23), direction ("up"/"down"/"flat"). Return all ${group.tickers.length} instruments with real values.`;
@@ -93,28 +109,33 @@ Deno.serve(async (req) => {
     const allQuotes = {};
     for (const res of results) {
       for (const q of (res?.quotes || [])) {
-        if (q.ticker && q.price) {
-          allQuotes[q.ticker] = q;
-        }
+        if (q.ticker && q.price) allQuotes[q.ticker] = q;
       }
     }
 
-    // Organize by category
     const organized = {
       indices: [], equities: [], etfs: [], fx: [], commodities: [], crypto: [],
-      vix: null, dxy: null, all: allQuotes,
+      vix: null, dxy: null,
     };
 
     for (const [sym, q] of Object.entries(allQuotes)) {
       const cat = CATEGORY_MAP[sym] || 'other';
       const enriched = { ...q, name: GROUPS.flatMap(g => g.tickers).find(t => t.sym === sym)?.name || sym, category: cat };
-      organized.all[sym] = enriched;
       if (cat === 'vix') organized.vix = enriched;
       else if (cat === 'dxy') organized.dxy = enriched;
       else if (organized[cat]) organized[cat].push(enriched);
     }
 
-    return Response.json({ ok: true, data: organized, ts: Date.now() });
+    // Save to cache
+    const payload = JSON.stringify(organized);
+    const fetched_at = new Date().toISOString();
+    if (cached?.length > 0) {
+      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
+    } else {
+      await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
+    }
+
+    return Response.json({ ok: true, data: organized, cached: false, ts: Date.now() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
