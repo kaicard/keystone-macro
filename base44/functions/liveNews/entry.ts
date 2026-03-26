@@ -17,7 +17,8 @@ const HEADLINE_SCHEMA = {
           sentiment: { type: "string" },
           impact: { type: "string" },
           desk_view: { type: "string" },
-          what_to_watch: { type: "string" }
+          what_to_watch: { type: "string" },
+          published_time: { type: "string" }
         }
       }
     }
@@ -51,8 +52,9 @@ For each real story provide:
 - category: one of [Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit]
 - sentiment: "positive" | "negative" | "neutral"
 - impact: 1-sentence market impact summary
-- desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
-- what_to_watch: the key follow-on variable or event to monitor
+  - desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
+  - what_to_watch: the key follow-on variable or event to monitor
+  - published_time: the actual time this story was published or reported today, in HH:MM format (24h, London time). Estimate from context clues in the article if needed.
 
 Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data releases. Only use real verified events.`;
 

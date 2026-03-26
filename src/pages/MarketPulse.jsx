@@ -27,14 +27,36 @@ function fmtChange(changePct) {
   return `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%`;
 }
 
+const YAHOO_SYMBOL_MAP = {
+  'S&P 500': '%5EGSPC', 'NASDAQ 100': '%5ENDX', 'Dow Jones': '%5EDJI',
+  'FTSE 100': '%5EFTSE', 'DAX': '%5EGDAXI', 'CAC 40': '%5EFCHI',
+  'Nikkei 225': '%5EN225', 'Hang Seng': '%5EHSI',
+  'Bitcoin': 'BTC-USD', 'Ethereum': 'ETH-USD', 'Solana': 'SOL-USD',
+  'VIX': '%5EVIX', 'DXY': 'DX-Y.NYB',
+  'Apple': 'AAPL', 'Microsoft': 'MSFT', 'NVIDIA': 'NVDA', 'Amazon': 'AMZN',
+  'Alphabet': 'GOOGL', 'Tesla': 'TSLA', 'Meta': 'META', 'JPMorgan': 'JPM', 'Goldman Sachs': 'GS',
+  'SPY': 'SPY', 'QQQ': 'QQQ', 'GLD': 'GLD', 'TLT': 'TLT', 'HYG': 'HYG',
+  'GBP/USD': 'GBPUSD%3DX', 'EUR/USD': 'EURUSD%3DX', 'USD/JPY': 'USDJPY%3DX',
+  'USD/CHF': 'USDCHF%3DX', 'AUD/USD': 'AUDUSD%3DX', 'EUR/GBP': 'EURGBP%3DX',
+  'Gold': 'GC%3DF', 'Silver': 'SI%3DF', 'WTI Crude': 'CL%3DF', 'Brent Crude': 'BZ%3DF',
+  'Natural Gas': 'NG%3DF', 'Copper': 'HG%3DF',
+};
+
+function getYahooUrl(item) {
+  const sym = YAHOO_SYMBOL_MAP[item.name] || item.ticker;
+  return `https://finance.yahoo.com/quote/${sym}`;
+}
+
 function LiveTile({ item }) {
   return (
-    <MarketTile
-      name={item.name || item.ticker}
-      value={fmtPrice(item.price, item.name)}
-      change={fmtChange(item.change_pct)}
-      direction={item.direction}
-    />
+    <a href={getYahooUrl(item)} target="_blank" rel="noopener noreferrer">
+      <MarketTile
+        name={item.name || item.ticker}
+        value={fmtPrice(item.price, item.name)}
+        change={fmtChange(item.change_pct)}
+        direction={item.direction}
+      />
+    </a>
   );
 }
 
@@ -96,7 +118,7 @@ export default function MarketPulse() {
               </div>
             </div>
             <p className="text-muted-foreground text-lg">
-              Real-time prices updating every 2 seconds. Prices from live market sources.
+              Live prices from global market sources.
             </p>
           </motion.div>
 
@@ -244,9 +266,7 @@ export default function MarketPulse() {
             </Tabs>
           </motion.div>
 
-          <p className="text-xs text-muted-foreground/30 mt-10 text-center">
-            Live market data. Prices update every 2 seconds. Not investment advice.
-          </p>
+
         </div>
       </div>
     </div>

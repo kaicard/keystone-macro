@@ -136,7 +136,7 @@ For investors who want to maintain core US equity exposure but reduce concentrat
     category: 'Wealth Strategy',
     tags: ['Tax', 'ISA', 'SIPP', 'UK', 'Pension'],
     publish_date: '2026-03-08',
-    read_time_minutes: 7,
+    read_time_minutes: 9,
     executive_summary: 'An educational overview of UK tax wrappers and how to sequence them for maximum long-term wealth accumulation — from ISA prioritisation to pension allowance optimisation.',
     body: `## The Tax Wrapper Hierarchy
 
@@ -222,7 +222,7 @@ Academic optimisation suggests a gold weight of 5-15% in a diversified portfolio
     category: 'Behavioural Finance',
     tags: ['Psychology', 'Drawdown', 'Risk', 'Decision-Making'],
     publish_date: '2026-03-02',
-    read_time_minutes: 6,
+    read_time_minutes: 7,
     executive_summary: 'How cognitive biases systematically affect investment decisions during market stress and a practical framework for maintaining process discipline when the instinct is to act.',
     body: `## The Biological Problem
 
@@ -472,7 +472,7 @@ The hedge ratio should increase when: (1) the investor's functional currency is 
     category: 'Equities',
     tags: ['Sectors', 'Rotation', 'Economic Cycle', 'TAA'],
     publish_date: '2026-02-05',
-    read_time_minutes: 7,
+    read_time_minutes: 8,
     executive_summary: 'A practical framework for sector allocation based on the economic cycle — identifying leadership transitions and avoiding the most common rotation timing errors.',
     body: `## The Cycle Rotation Framework
 
@@ -503,5 +503,145 @@ Use sector rotation as a risk management overlay, not a primary strategy:
     key_risks: 'Cycle timing is notoriously difficult; sectors can outperform their "expected" phase for extended periods driven by structural rather than cyclical factors.',
     takeaway: 'We are late-cycle — bias toward defensives, healthcare, and energy while maintaining selective tech exposure for the AI structural theme. Reduce exposure to rate-sensitive consumer discretionary and real estate.',
     what_would_change_mind: 'Early signs of economic reacceleration (strong PMI surprise, credit expansion, yield curve steepening) would shift the playbook toward early-cycle positioning in Financials and Industrials.'
+  },
+  {
+    id: 13,
+    title: 'The AI Capex Supercycle: Who Actually Wins?',
+    subtitle: 'Mapping the investment opportunity across the AI value chain',
+    category: 'Equities',
+    tags: ['AI', 'Technology', 'Capex', 'Semiconductors', 'Infrastructure'],
+    publish_date: '2026-01-30',
+    read_time_minutes: 11,
+    is_featured: false,
+    executive_summary: 'AI capex is running at historically unprecedented levels. We map the value chain to identify where the durable earnings power sits — and where enthusiasm has outrun fundamentals.',
+    body: `## The Scale of the Investment Cycle
+
+The numbers are staggering. Microsoft, Alphabet, Amazon, and Meta collectively announced capital expenditures exceeding $300 billion for 2025-2026. A significant portion is directed at AI infrastructure: data centres, GPUs, networking, and power. This is not a software cycle — it is a heavy infrastructure cycle unlike anything the technology sector has seen since the 2000 telecom buildout.
+
+The critical question for investors: in the 2000 buildout, the infrastructure owners (telcos) destroyed shareholder value while the application layer (Google, Amazon) captured the value. Who captures the value in the AI cycle?
+
+## Mapping the Value Chain
+
+**Layer 1 — Compute (Semiconductors):** NVIDIA is the clearest current winner. Its H100/H200 GPU architecture has no credible competition at scale. Gross margins above 75% on data centre AI chips represent extraordinary pricing power. The risk: AMD, Intel, and custom silicon from hyperscalers (Google TPUs, Amazon Trainium) are catching up. NVIDIA's competitive moat is wide but not permanent.
+
+**Layer 2 — Infrastructure (Data Centres, Power, Networking):** This is the most attractive risk-adjusted opportunity. Demand for data centre space, high-power electrical infrastructure, and specialised networking is structural and relatively price-inelastic. Companies like Vertiv, Eaton, and Schneider Electric supply critical power management. REITs like Equinix and Digital Realty benefit from datacenter demand with inflation-linked contracts.
+
+**Layer 3 — Hyperscalers (Cloud Providers):** Microsoft Azure, AWS, and Google Cloud are the monetisation layer. They are simultaneously the biggest spenders on AI infrastructure and the biggest beneficiaries — selling AI compute to enterprises at significant margins over their own cost of capital. The "picks and shovels" analogy: they are both the gold rush digger AND the shovel seller.
+
+**Layer 4 — Application Layer (Enterprise AI):** This is where the current valuation risk is highest. Many enterprise AI software companies trade at 20-30x revenue with limited demonstrated monetisation. The "killer app" for enterprise AI remains unclear. We are cautious here.
+
+## The Power Constraint
+
+One underappreciated bottleneck: electricity. Each new AI cluster requires enormous amounts of power that takes years to build out. Data centre power demand is expected to triple by 2030. This makes utilities — particularly those with nuclear and hydro assets — an indirect AI beneficiary. Companies with access to carbon-free baseload power will command significant premiums from hyperscalers seeking to meet ESG commitments.
+
+## Valuation Reality Check
+
+NVIDIA's current valuation prices in sustained dominance for 5+ years. That is possible but not certain. A more diversified approach — infrastructure, power, and selected semiconductor supply chain — offers AI exposure with less concentration risk and more attractive entry valuations.`,
+    key_risks: 'Slower-than-expected AI monetisation reduces hyperscaler capex; NVIDIA competitive disruption from custom silicon; regulatory constraints on AI data usage; power grid constraints delaying build-out.',
+    takeaway: 'The AI infrastructure buildout is real and durable. Favour power infrastructure, data centres, and networking over pure application-layer AI names, which are most exposed to a valuation correction.',
+    what_would_change_mind: 'A clear "killer app" at the enterprise application layer with demonstrated ROI would justify higher application-layer valuations. Until then, the value chain winners are in infrastructure, not software.'
+  },
+  {
+    id: 14,
+    title: 'Inflation: Structural or Cyclical? The 2026 Reassessment',
+    subtitle: 'Revisiting the inflation debate as the cycle matures',
+    category: 'Macro',
+    tags: ['Inflation', 'Central Banks', 'CPI', 'Rates', 'Macro'],
+    publish_date: '2026-01-20',
+    read_time_minutes: 10,
+    is_featured: false,
+    executive_summary: 'Inflation has fallen sharply from its 2022 peaks but is proving sticky above target. We reassess whether the remaining inflation is cyclical — and therefore transitory — or structural, with implications for the entire rate path.',
+    body: `## The State of Play
+
+Headline CPI across the G7 has fallen from peaks of 7-11% in 2022 to the 2-4% range in 2026. This is a significant disinflationary achievement. But the "last mile" — getting inflation from 3% to the 2% target — is proving far more difficult than the initial descent from 10%.
+
+The reason: the composition of remaining inflation is fundamentally different. We are no longer dealing with supply chain disruptions, energy price shocks, or goods inflation. We are dealing with **structural services inflation** — driven by wage growth, shelter costs, and services sector pricing — which has different persistence characteristics.
+
+## The Cyclical Case
+
+The optimistic (cyclical) interpretation: services inflation will follow goods inflation lower with a lag. As labour market conditions soften, wage growth normalises, which eases services CPI. The lags in shelter costs (which reflect contracts signed 12-18 months ago) will eventually reset lower as new lease rates feed through. On this view, patience is the appropriate central bank response.
+
+Evidence for this view:
+- Leading indicators of wage growth (quit rates, Indeed wage tracker) have eased materially
+- New tenant rent growth is running below 2% in most major US cities
+- Unemployment has ticked up modestly, reducing workers' bargaining power
+
+## The Structural Case
+
+The pessimistic (structural) interpretation: we have entered a new inflationary regime driven by factors that will not normalise without prolonged restrictive monetary policy.
+
+**Deglobalisation:** The reversal of globalisation — reshoring, supply chain diversification, tariffs — removes a structural deflationary force that suppressed goods prices for 30 years.
+
+**Energy transition costs:** The shift to renewables requires enormous capital investment, which is inflationary in the near-to-medium term even if deflationary long-term (lower marginal cost of energy at scale).
+
+**Demographic reversal:** Aging populations in developed markets reduce the labour supply, creating persistent wage pressure. Japan's lost decades were deflationary partly because of demographics; Europe is now facing the opposite dynamic.
+
+**Fiscal dominance risk:** Government debt levels are at peacetime records. The political incentive to inflate away debt is real, and there are limits to central bank independence under fiscal pressure.
+
+## Our Assessment
+
+We lean toward a **sticky-but-not-structural** view: inflation will settle above the 2% target (probably in the 2.5-3.5% range) for an extended period, but is not in a sustained re-acceleration. This means:
+
+- Fewer rate cuts than markets periodically hope for
+- Real yields remaining positive (a regime shift from 2010-2021)
+- Asset allocation implications: real assets outperform nominal fixed income over the cycle`,
+    key_risks: 'Energy price shock re-accelerating goods inflation; wage-price spiral in services-dominant economies; fiscal dominance forcing monetary accommodation; geopolitical supply disruptions.',
+    takeaway: 'Inflation is sticky above target, not re-accelerating. Position for a "higher neutral rate" world: shorter duration, inflation-linked assets, real assets. Do not bet on a rapid return to 2%.',
+    what_would_change_mind: 'Three consecutive months of core services CPI at or below 2.5% annualised, accompanied by a meaningful rise in unemployment, would shift our view toward a more aggressive rate cut path.'
+  },
+  {
+    id: 15,
+    title: 'Rebalancing: The Overlooked Alpha Source',
+    subtitle: 'How disciplined rebalancing systematically harvests volatility premium',
+    category: 'Risk Management',
+    tags: ['Rebalancing', 'Portfolio Construction', 'Volatility', 'Alpha', 'Systematic'],
+    publish_date: '2026-01-12',
+    read_time_minutes: 8,
+    is_featured: false,
+    executive_summary: 'Systematic portfolio rebalancing is one of the few genuine sources of free alpha in investing. We examine the mechanics, optimal frequency, and practical implementation — including when NOT to rebalance.',
+    body: `## The Rebalancing Premium
+
+Academic finance has long recognised that systematic rebalancing generates a "rebalancing bonus" — a premium in compounded returns versus a buy-and-hold portfolio — due to the systematic buying low and selling high that rebalancing mechanically enforces.
+
+The intuition: when equities outperform, you sell some (locking in gains); when they underperform, you buy more (averaging in at lower prices). Over a full cycle, this volatility harvesting adds measurable value.
+
+The magnitude? Academic research (Bernstein & Wilkinson, Dichtl et al.) suggests the rebalancing bonus is approximately 0.3-0.8% per annum for a diversified portfolio — before transaction costs. Net of costs, the benefit is lower but still positive for most portfolio sizes.
+
+## Threshold vs Calendar Rebalancing
+
+Two dominant approaches exist:
+
+**Calendar rebalancing:** Rebalance at fixed intervals — monthly, quarterly, annually. Simple to implement, but may cause unnecessary trading when markets are stable, or insufficient trading during volatile periods.
+
+**Threshold rebalancing:** Rebalance when any asset class drifts beyond a specified percentage from target (e.g., if equities drift >5% above target allocation, rebalance). More efficient — it concentrates trading during periods of high drift (which are also periods of higher expected rebalancing bonus).
+
+**The optimal approach:** Annual calendar rebalancing combined with threshold triggers (±5% from target allocation). This captures most of the rebalancing bonus with reasonable transaction costs.
+
+## The Transaction Cost Problem
+
+Rebalancing too frequently destroys the benefit through trading costs, bid-ask spreads, and tax drag. Key principles:
+
+- **Use inflows/outflows first:** Before selling existing holdings to rebalance, direct new contributions to underweight asset classes. This reduces realised gains and transaction costs significantly.
+- **Rebalance within tax-advantaged accounts first:** Realising gains in a SIPP or ISA has no immediate tax consequence; realise gains in a GIA last.
+- **Tolerate more drift in concentrated positions:** A 5% threshold for a 20% allocation to equities is reasonable; the same 5% threshold for a 5% alternative allocation would cause excessive trading.
+
+## When NOT to Rebalance
+
+The hardest question in rebalancing: when should you override the mechanical rule?
+
+**Market dislocations:** During the March 2020 COVID crash, a mechanical rebalancing rule would have forced equity buying at -35% — which proved correct in hindsight. But during the 2008-2009 financial crisis, rebalancing into equities in October 2008 would have required buying into further significant losses. Process discipline is essential.
+
+**Regime changes:** If your macro view is that a new deflationary regime has begun, the case for rebalancing into long-duration bonds strengthens. If a new inflationary regime, the case for rebalancing into real assets increases. SAA should reflect long-run regime views; TAA adjusts for near-term.
+
+## Implementation Checklist
+
+1. Define explicit target allocations and acceptable bands (e.g., equities: 60% ± 5%)
+2. Review quarterly; rebalance if any asset class has breached its band
+3. Use inflows to rebalance before selling existing holdings
+4. Execute rebalancing within ISA/SIPP first to minimise tax
+5. Document and follow your process — the value of rebalancing is in consistent execution`,
+    key_risks: 'High transaction costs in illiquid asset classes can eliminate the rebalancing bonus; tax drag in GIAs can make frequent rebalancing costly; momentum effects mean rebalancing can cut winners prematurely in trending markets.',
+    takeaway: 'Annual threshold rebalancing (±5% from target) generates meaningful compounding benefit over time. The key is consistent execution and using inflows to minimise unnecessary trading.',
+    what_would_change_mind: 'Evidence of persistent, multi-year momentum in a specific asset class (e.g., equities) would argue for wider tolerance bands and less frequent rebalancing to avoid cutting momentum trades too early.'
   },
 ];
