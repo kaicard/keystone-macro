@@ -2,24 +2,17 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Search, Grid3X3, List, Clock, Filter } from 'lucide-react';
+import { Search, Grid3X3, List, Clock, Filter, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LiveNewsFeed from '@/components/research/LiveNewsFeed';
 import TrendingThemes from '@/components/research/TrendingThemes';
+import ResearchNoteModal from '@/components/research/ResearchNoteModal';
+import { sampleNotes } from '@/lib/researchNotes';
 
 const categories = ['All', 'Macro', 'Equities', 'Fixed Income', 'Multi-Asset', 'Commodities', 'Wealth Strategy', 'Behavioural Finance', 'Risk Management', 'Trade Reviews'];
-
-const sampleNotes = [
-  { id: 1, title: 'The Rate Regime Shift: Navigating Higher-for-Longer', subtitle: 'Implications for multi-asset allocation', category: 'Macro', tags: ['Rates', 'Duration', 'Central Banks'], publish_date: '2026-03-15', read_time_minutes: 8, executive_summary: 'Central banks signal a prolonged period of elevated rates. We examine the implications for multi-asset allocation and duration positioning across developed markets.', is_featured: true },
-  { id: 2, title: 'Strategic vs Tactical: When to Deviate from SAA', subtitle: 'A framework for tactical tilts', category: 'Multi-Asset', tags: ['SAA', 'TAA', 'Risk Budget'], publish_date: '2026-03-12', read_time_minutes: 12, executive_summary: 'A framework for determining when tactical tilts are warranted, including regime signals and risk budget considerations.' },
-  { id: 3, title: 'Concentration Risk in US Equities', subtitle: 'Portfolio diversification challenges', category: 'Equities', tags: ['US Equity', 'Diversification', 'Tech'], publish_date: '2026-03-10', read_time_minutes: 10, executive_summary: 'The S&P 500 top-10 weight exceeds 35%. We assess diversification options and hedging strategies for equity-heavy portfolios.' },
-  { id: 4, title: 'Tax-Efficient Accumulation Strategies', subtitle: 'ISA, pension, and beyond', category: 'Wealth Strategy', tags: ['Tax', 'ISA', 'Pension', 'UK'], publish_date: '2026-03-08', read_time_minutes: 7, executive_summary: 'An educational overview of UK tax wrappers and their role in long-term wealth building for mid-career professionals.' },
-  { id: 5, title: 'Gold in a Multi-Asset Context', subtitle: 'Hedge, store of value, or both?', category: 'Commodities', tags: ['Gold', 'Inflation', 'Hedge'], publish_date: '2026-03-05', read_time_minutes: 9, executive_summary: "Examining gold's role as a portfolio diversifier across different macro regimes and its correlation properties." },
-  { id: 6, title: 'Behavioural Biases in Drawdowns', subtitle: 'Managing emotions in volatile markets', category: 'Behavioural Finance', tags: ['Psychology', 'Drawdown', 'Risk'], publish_date: '2026-03-02', read_time_minutes: 6, executive_summary: 'How cognitive biases affect investment decisions during market stress and frameworks for maintaining process discipline.' },
-];
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1',
@@ -33,15 +26,16 @@ const categoryColors = {
   'Trade Reviews': 'bg-cyan-400/10 text-cyan-400',
 };
 
-function NoteCard({ note, viewMode, delay }) {
+function NoteCard({ note, viewMode, delay, onClick }) {
   return (
     <motion.div
-      className={`glass rounded-xl p-6 hover:border-primary/20 transition-all duration-300 cursor-pointer group ${
+      className={`glass rounded-xl p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group ${
         viewMode === 'list' ? 'flex gap-6 items-start' : ''
       }`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
+      onClick={onClick}
     >
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -60,9 +54,14 @@ function NoteCard({ note, viewMode, delay }) {
             <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tag}</span>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground/50 mt-3">
-          {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </p>
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs text-muted-foreground/50">
+            {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
+          <span className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+            Read note <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
       </div>
     </motion.div>
   );
@@ -72,6 +71,7 @@ export default function Research() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
+  const [selectedNote, setSelectedNote] = useState(null);
 
   const { data: dbNotes } = useQuery({
     queryKey: ['research-notes'],
@@ -128,7 +128,10 @@ export default function Research() {
 
         {/* Research Notes Header */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
-          <h2 className="font-display text-2xl font-semibold">Research Notes</h2>
+          <div>
+            <h2 className="font-display text-2xl font-semibold">Research Notes</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Click any note to read in full</p>
+          </div>
           <div className="flex gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -164,13 +167,17 @@ export default function Research() {
         {/* Featured */}
         {featured && activeCategory === 'All' && !search && (
           <motion.div
-            className="glass rounded-2xl p-8 mb-8 hover:border-primary/20 transition-all cursor-pointer glow-primary"
+            className="glass rounded-2xl p-8 mb-8 hover:border-primary/30 transition-all cursor-pointer glow-primary group"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            onClick={() => setSelectedNote(featured)}
           >
-            <Badge className="bg-primary/10 text-primary border-0 mb-4">Featured</Badge>
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2">{featured.title}</h2>
+            <div className="flex items-start justify-between gap-4">
+              <Badge className="bg-primary/10 text-primary border-0 mb-4">Featured</Badge>
+              <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2 group-hover:text-primary transition-colors">{featured.title}</h2>
             {featured.subtitle && <p className="text-muted-foreground mb-4">{featured.subtitle}</p>}
             <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">{featured.executive_summary}</p>
             <div className="flex items-center gap-4 mt-6 text-xs text-muted-foreground flex-wrap">
@@ -184,7 +191,13 @@ export default function Research() {
         {/* Notes Grid */}
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
           {filtered.filter(n => n !== featured || search || activeCategory !== 'All').map((note, i) => (
-            <NoteCard key={note.id} note={note} viewMode={viewMode} delay={i * 0.05} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              viewMode={viewMode}
+              delay={i * 0.05}
+              onClick={() => setSelectedNote(note)}
+            />
           ))}
         </div>
 
@@ -195,6 +208,11 @@ export default function Research() {
           </div>
         )}
       </div>
+
+      {/* Note Reader Modal */}
+      {selectedNote && (
+        <ResearchNoteModal note={selectedNote} onClose={() => setSelectedNote(null)} />
+      )}
     </div>
   );
 }

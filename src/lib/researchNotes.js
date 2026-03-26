@@ -1,0 +1,507 @@
+// Curated research notes library — institutional-grade content
+
+export const sampleNotes = [
+  {
+    id: 1,
+    title: 'The Rate Regime Shift: Navigating Higher-for-Longer',
+    subtitle: 'Implications for multi-asset allocation in a persistently restrictive environment',
+    category: 'Macro',
+    tags: ['Rates', 'Duration', 'Central Banks', 'Multi-Asset'],
+    publish_date: '2026-03-15',
+    read_time_minutes: 8,
+    is_featured: true,
+    executive_summary: 'Central banks signal a prolonged period of elevated rates. We examine the implications for multi-asset allocation and duration positioning across developed markets.',
+    body: `## The Regime Has Changed
+
+For most of the post-GFC era, investors operated in a world where the path of least resistance for central banks was lower rates. That world is gone. The question is no longer whether rates will stay high — they will — but how long and how to position through it.
+
+## What "Higher-for-Longer" Actually Means
+
+The Fed's median dot plot now implies fewer than two cuts in 2026. The BOE is similarly cautious. Core inflation in services remains sticky, driven by wage growth that has not yet normalised. This is not a temporary blip — it is a structural repricing of the neutral rate.
+
+The key data point investors keep missing: **real rates are now meaningfully positive**. The US 10Y real yield is above 2%. That is a headwind for every risk asset — equities, credit, real estate, and private assets.
+
+## Portfolio Implications
+
+**Duration:** We recommend underweighting long-end government bonds versus benchmarks. The risk/reward on 30Y Treasuries and Gilts is unattractive when the supply of issuance continues to grow and the BOE/Fed are in quantitative tightening mode simultaneously.
+
+**Equities:** Equity multiples are under structural pressure. At 21x forward P/E, the S&P 500 requires either strong earnings growth to justify current valuations or a rate cut to re-rate higher. We get neither in the near term.
+
+**Credit:** Favour short-dated investment grade credit. IG 1-3Y offers attractive all-in yields with limited duration risk. High yield requires careful selection — refinancing risk is real for leveraged issuers.
+
+**Real Assets:** Infrastructure and commodities offer inflation linkage and are less rate-sensitive than traditional assets. We maintain a structural overweight.
+
+## The Yield Curve Signal
+
+The US 2Y/10Y spread has been inverted for over 18 months. Historically, uninversion precedes recession. We are watching for uninversion closely — when it happens, it typically signals that the market is pricing in aggressive cuts, which paradoxically comes with increased recession risk.`,
+    key_risks: 'Inflation reacceleration forcing further hikes; fiscal dominance scenarios where central banks are unable to maintain restrictive policy; credit events in high-yield or leveraged loan markets triggering broader risk-off.',
+    takeaway: 'Shorten duration, favour real yields over nominal, and ensure portfolios are not over-reliant on a rate cut narrative that may not materialise in 2026.',
+    what_would_change_mind: 'A sustained move lower in core services CPI to below 3% for three consecutive months, or a meaningful deterioration in labour markets that forces central banks to cut more aggressively than currently priced.'
+  },
+  {
+    id: 2,
+    title: 'Strategic vs Tactical: When to Deviate from SAA',
+    subtitle: 'A framework for determining when tactical tilts are warranted',
+    category: 'Multi-Asset',
+    tags: ['SAA', 'TAA', 'Risk Budget', 'Framework'],
+    publish_date: '2026-03-12',
+    read_time_minutes: 12,
+    executive_summary: 'A framework for determining when tactical tilts are warranted, including regime signals, risk budget considerations, and the cost of being wrong.',
+    body: `## The Tension Between Strategy and Tactics
+
+Every institutional investor has a Strategic Asset Allocation (SAA) — a long-term, policy-level allocation designed to meet their investment objectives across a full market cycle. The question of when and how much to deviate from that SAA through Tactical Asset Allocation (TAA) is one of the most debated topics in portfolio management.
+
+## When TAA Adds Value
+
+TAA is most effective when:
+
+1. **Valuation signals are extreme** — when asset classes are priced well above or below fair value, the expected return differential is large enough to justify the tracking error cost.
+
+2. **Regime changes are identifiable** — macro regime shifts (inflation shock, recession, risk-on/off) alter the return distribution of asset classes in predictable ways.
+
+3. **Correlation structures break down** — in risk-off environments, equity-bond correlations can turn positive, undermining the diversification premise of a 60/40 portfolio.
+
+## The Risk Budget Framework
+
+Before implementing a TAA tilt, ask: what is my risk budget?
+
+Risk budget = total tracking error tolerance vs SAA benchmark.
+
+A typical institutional investor might tolerate 1-2% annual tracking error. Each tactical position consumes a portion of that budget. A 5% overweight in equities at 15% equity volatility consumes approximately 0.75% of tracking error budget.
+
+## Common TAA Mistakes
+
+**Overconfidence:** The evidence base for short-term market timing is weak. Most active TAA tilts destroy value after costs.
+
+**Asymmetric regret:** Investors often hold TAA tilts too long because they fear the regret of giving up gains more than the pain of realised losses.
+
+**Ignoring rebalancing costs:** TAA generates transaction costs and tax drag. These must be incorporated in the hurdle rate for any tilt.
+
+## Our Framework
+
+We use a three-signal composite:
+- **Valuation** (30%): Is the asset class cheap or expensive vs history?
+- **Momentum** (40%): Is price action constructive over 3-12 months?
+- **Macro regime** (30%): Does the current macro backdrop favour the asset class?
+
+When all three signals align, we implement a full tilt. When two of three align, we implement a half tilt. One or fewer — we stay at SAA.`,
+    key_risks: 'Model overfitting to historical data; regime mis-identification; transaction costs eroding the theoretical alpha; behavioural drift away from process during periods of underperformance.',
+    takeaway: 'TAA adds value only when conviction is high, signals are aligned, and risk budget is not over-extended. A disciplined, process-driven approach beats discretionary tilts over time.',
+    what_would_change_mind: 'Persistent evidence that a single signal — particularly momentum — consistently outperforms the composite approach after costs and taxes.'
+  },
+  {
+    id: 3,
+    title: 'Concentration Risk in US Equities',
+    subtitle: 'Portfolio diversification challenges in a narrow market',
+    category: 'Equities',
+    tags: ['US Equity', 'Diversification', 'Tech', 'Concentration'],
+    publish_date: '2026-03-10',
+    read_time_minutes: 10,
+    executive_summary: 'The S&P 500 top-10 weight exceeds 35%. We assess the risks this creates for passive investors and examine diversification options and hedging strategies for equity-heavy portfolios.',
+    body: `## The Concentration Problem
+
+The S&P 500 is no longer a diversified equity index. The top 10 names now account for over 35% of the index by market capitalisation — the highest concentration in modern history. For an investor holding a passive US equity fund, they are making a large implicit bet on a small number of companies.
+
+## What Drives Concentration
+
+The current concentration is driven by the AI investment cycle. Microsoft, Apple, NVIDIA, Alphabet, Amazon, and Meta together are worth more than the entire equity markets of Japan, the UK, and France combined.
+
+This is not inherently problematic — these are exceptional businesses. The risk is valuation. When the market's return is being driven by a handful of names trading at 25-35x earnings, the margin of safety for the broader index is thin.
+
+## The Diversification Paradox
+
+Ironically, owning "the market" through an S&P 500 tracker is now one of the least diversified ways to access global equities. Compare:
+
+- **S&P 500**: 35% top-10 concentration
+- **MSCI World Equal Weight**: ~0.1% per stock
+- **MSCI World ex-US**: Inherently diversifies away from US tech dominance
+- **Value-weighted or factor indices**: Systematically reduce concentration
+
+## Practical Hedging Options
+
+For investors who want to maintain core US equity exposure but reduce concentration risk:
+
+1. **Equal-weight US equity ETF (RSP)**: Similar exposure, dramatically lower concentration
+2. **US Value tilt**: Value stocks have lower correlation with mega-cap growth
+3. **Covered calls on concentrated positions**: Monetise volatility premium in high-IV tech names
+4. **Geographic diversification**: Increasing Europe/Japan/EM weights reduces implicit tech exposure`,
+    key_risks: 'If AI capex cycle disappoints or revenue monetisation is slower than expected, the top-10 names could de-rate sharply, dragging the broad index regardless of performance in the other 490 names.',
+    takeaway: 'Passive US equity exposure is now a concentrated bet on a handful of AI-adjacent mega-caps. Investors should be intentional about this and consider equal-weight or geographic diversification.',
+    what_would_change_mind: 'A broadening of market leadership to small/mid-cap and value stocks would reduce the systemic risk from concentration; alternatively, if AI earnings justify current multiples, the risk is lower than it appears.'
+  },
+  {
+    id: 4,
+    title: 'Tax-Efficient Accumulation Strategies for UK Investors',
+    subtitle: 'ISA, SIPP, GIA — how to structure for long-term wealth',
+    category: 'Wealth Strategy',
+    tags: ['Tax', 'ISA', 'SIPP', 'UK', 'Pension'],
+    publish_date: '2026-03-08',
+    read_time_minutes: 7,
+    executive_summary: 'An educational overview of UK tax wrappers and how to sequence them for maximum long-term wealth accumulation — from ISA prioritisation to pension allowance optimisation.',
+    body: `## The Tax Wrapper Hierarchy
+
+For UK investors, the single most impactful decision in wealth management is not which fund to own — it is which wrapper to own it in. Tax drag compounds relentlessly over decades; avoiding it through intelligent wrapper selection is free alpha.
+
+## ISA: The Cornerstone
+
+The Stocks & Shares ISA remains the most flexible tax wrapper available. £20,000 annual allowance, unlimited tax-free growth and income, no capital gains tax on withdrawal, no inheritance tax planning complications.
+
+**Priority rule:** Max your ISA before investing in a GIA, every year, without exception.
+
+Key consideration: ISA assets are not particularly inheritance-tax efficient (though ISA allowances can transfer between spouses). For estate planning, pension beats ISA.
+
+## SIPP: The Power of Tax Relief
+
+The Self-Invested Personal Pension (SIPP) offers 20-45% upfront tax relief depending on your marginal rate. A higher-rate taxpayer contributing £10,000 net receives £16,667 gross — an immediate 66% return before any investment performance.
+
+The drawback: pension assets are locked until age 57 (rising to 58 by 2028). For investors with long horizons and stable income, this is not a constraint — it is a feature.
+
+## The Sequencing Question
+
+The optimal wrapper sequencing depends on your marginal rate, time horizon, and liquidity needs:
+
+- **High earner (40-45% rate):** SIPP first (tax relief is most valuable), then ISA, then GIA
+- **Basic rate taxpayer:** ISA first (simplicity, flexibility), then SIPP, then GIA
+- **Business owner:** Consider Personal Pension contributions from company — employer contributions are corporation-tax deductible
+
+## GIA: The Last Resort
+
+A General Investment Account should only hold assets that are ISA/SIPP ineligible, or overflow from maxed wrappers. Use it for assets with specific tax characteristics: offshore bonds, VCT/EIS investments, or lower-yielding assets that generate minimal taxable income.`,
+    key_risks: 'Tax legislation changes; pension age changes (already confirmed to 57 in 2028); annual allowance tapering for high earners; LTA complications for very large pensions.',
+    takeaway: 'Wrapper selection is the highest-impact, lowest-risk decision in UK wealth management. Max your ISA, optimise your SIPP based on your marginal rate, and only use the GIA for overflow.',
+    what_would_change_mind: 'Material changes to ISA or pension tax treatment by HMRC — which while politically risky, cannot be ruled out given fiscal pressures. Annual review of wrapper strategy is recommended.'
+  },
+  {
+    id: 5,
+    title: 'Gold in a Multi-Asset Context',
+    subtitle: 'Hedge, store of value, or tactical trade?',
+    category: 'Commodities',
+    tags: ['Gold', 'Inflation', 'Hedge', 'Portfolio Construction'],
+    publish_date: '2026-03-05',
+    read_time_minutes: 9,
+    executive_summary: "Examining gold's evolving role as a portfolio diversifier across macro regimes, its correlation properties versus equities and bonds, and the case for a structural versus tactical allocation.",
+    body: `## Gold's Changing Role
+
+Gold has historically occupied an awkward space in portfolio theory. It generates no income, has limited industrial use relative to its price, and its fundamental valuation is notoriously difficult. Yet it has persisted as a store of value for 5,000 years and has repeatedly demonstrated its worth during financial crises.
+
+## The Correlation Case
+
+The most compelling argument for gold in a multi-asset portfolio is its correlation properties:
+
+- **Gold vs Equities**: Near-zero average correlation, turning negative in severe risk-off events (2008, 2020)
+- **Gold vs Nominal Bonds**: Low positive correlation in normal regimes; both rally in deflation/flight-to-safety scenarios
+- **Gold vs Real Rates**: Strongest fundamental relationship — gold tends to rally when real yields fall
+
+In a world where equity-bond correlations have turned positive (as in the 2022 inflation shock), gold's negative correlation to equities at exactly the wrong time provides genuine diversification value that bonds no longer reliably provide.
+
+## The Central Bank Bid
+
+A structural shift has occurred since 2022: central banks — particularly from EM countries — have dramatically increased gold purchases as they diversify away from USD reserves. This buyer base is price-insensitive and counter-cyclical, providing a structural support that did not exist a decade ago.
+
+## Sizing Considerations
+
+Academic optimisation suggests a gold weight of 5-15% in a diversified portfolio maximises risk-adjusted returns over a full cycle. In practice:
+
+- **5%**: Core diversification position; reduces tail risk without meaningfully impacting return
+- **10%**: Active inflation/tail hedge; meaningful impact on portfolio characteristics
+- **15%+**: Conviction geopolitical/inflation hedge; should be justified by strong macro view
+
+## Implementation
+
+- **ETF (GLD, SGLN)**: Most liquid, low cost, no counterparty risk vs futures
+- **Physical gold**: Appropriate for very large portfolios or strong storage preference
+- **Gold miners (GDX)**: Leveraged play on gold price but adds equity beta — not a true gold substitute`,
+    key_risks: 'Rising real yields are gold\'s primary headwind; USD strength compresses gold prices for non-USD investors; opportunity cost vs income-generating assets during extended bull markets.',
+    takeaway: 'A 5-10% structural gold allocation is justified on diversification grounds alone in the current environment, independent of any inflation or geopolitical view.',
+    what_would_change_mind: 'A sustained decline in central bank gold purchases; or a regime of falling inflation and falling real rates where bonds resume their traditional equity hedge role.'
+  },
+  {
+    id: 6,
+    title: 'Behavioural Biases in Drawdowns',
+    subtitle: 'Managing cognitive errors when markets turn against you',
+    category: 'Behavioural Finance',
+    tags: ['Psychology', 'Drawdown', 'Risk', 'Decision-Making'],
+    publish_date: '2026-03-02',
+    read_time_minutes: 6,
+    executive_summary: 'How cognitive biases systematically affect investment decisions during market stress and a practical framework for maintaining process discipline when the instinct is to act.',
+    body: `## The Biological Problem
+
+The human brain was not designed for financial markets. Our cognitive architecture evolved to respond to immediate threats with fast, instinctive action. A 20% portfolio drawdown triggers the same neurological response as physical danger — the amygdala fires, cortisol floods the bloodstream, and the prefrontal cortex (responsible for rational decision-making) is partially suppressed.
+
+This is why the best investors are not necessarily the most intelligent — they are the ones who have built systems to override their biological programming.
+
+## The Five Critical Biases in Drawdowns
+
+**1. Loss Aversion (Kahneman & Tversky)**
+Losses feel approximately twice as painful as equivalent gains feel good. This leads investors to sell at exactly the wrong moment — crystallising losses to stop the pain — when patience would have been rewarded.
+
+**2. Recency Bias**
+After a significant drawdown, investors extrapolate the recent experience forward. The market is down 25%, so it will go down further. In reality, the best forward returns often follow the worst trailing returns.
+
+**3. Disposition Effect**
+Tendency to sell winners too early (to lock in gains and feel good) and hold losers too long (to avoid realising a loss). This systematically inverts the correct portfolio management action.
+
+**4. Herding**
+When markets are falling and financial media is apocalyptic, the social pressure to capitulate is enormous. The crowd is usually wrong at extremes.
+
+**5. Action Bias**
+The instinct that "doing something" is better than "doing nothing." In drawdowns, the correct action is usually to rebalance (buy more of what has fallen), but the feeling is that you must act to protect yourself.
+
+## A Process Framework
+
+The solution is not to eliminate emotion — that is impossible — but to build a pre-commitment framework that prevents emotion from driving decisions:
+
+1. **Write down your Investment Policy Statement** before markets move. What are your rebalancing triggers? What is your maximum drawdown tolerance?
+2. **Set rebalancing rules in advance** — e.g., rebalance when any asset class moves more than 5% from target. Execute mechanically.
+3. **Consume less financial media** during drawdowns. Noise destroys signal.
+4. **Have a pre-written "crisis letter"** to yourself. Read it before making any portfolio change during a drawdown.`,
+    key_risks: 'Behavioural frameworks break down under extreme stress or when drawdowns coincide with personal financial pressure (job loss, health costs); regular reinforcement through market cycles is needed.',
+    takeaway: 'Drawdown periods are where long-term returns are won or lost. A pre-committed process framework is the only reliable defence against the cognitive biases that will otherwise derail your portfolio.',
+    what_would_change_mind: 'Evidence from your own investment journal that discretionary overrides of your process have consistently added value — if so, incorporate them. Otherwise, trust the process.'
+  },
+  {
+    id: 7,
+    title: 'Fixed Income in the New Regime: Opportunities and Traps',
+    subtitle: 'Navigating bonds when yields are finally investable again',
+    category: 'Fixed Income',
+    tags: ['Bonds', 'Credit', 'Duration', 'Yields'],
+    publish_date: '2026-02-28',
+    read_time_minutes: 11,
+    executive_summary: 'After a decade of financial repression, fixed income finally offers genuine income. But navigating it requires understanding which parts of the credit and duration spectrum offer value — and which are traps.',
+    body: `## Bonds Are Back
+
+After the brutal 2022 bear market for fixed income — the worst in 40 years — the bond market has reset. All-in yields across investment grade credit, government bonds, and money markets are the highest since 2007. For the first time since the GFC, investors can genuinely "clip coupons" and earn real returns from fixed income.
+
+## The Duration Trade-Off
+
+Short-end government yields (2Y Treasuries: ~4.7%; 2Y Gilts: ~4.5%) offer near-equivalent yield to 10Y with dramatically less duration risk. The cash instrument argument — why take duration risk for minimal additional yield? — has rarely been stronger.
+
+## Where We See Value
+
+**Short-dated IG credit (1-3Y):** All-in yields of 5-6% with limited duration exposure and investment-grade credit quality. Best risk-adjusted return profile in fixed income today.
+
+**UK Index-Linked Gilts:** Real yields on index-linkers are the highest in 15 years. If inflation proves stickier than the market prices, these will significantly outperform nominal gilts.
+
+**Short-dated US Treasuries:** The 6M T-Bill offers 5%+ yield with zero credit risk. For tactical cash allocation, this is a compelling alternative to equities at current valuations.
+
+## Where We Are Cautious
+
+**Long-dated government bonds:** Supply pressure from QT and fiscal deficits is a structural headwind. The risk-reward on 30Y bonds is poor.
+
+**High yield in stressed sectors:** HY spreads have tightened significantly. The spread-for-risk trade is no longer compelling; selectivity is essential.
+
+**EM local currency debt:** Attractive real yields, but USD strength and geopolitical uncertainty create uncompensated currency risk for most investors.`,
+    key_risks: 'Inflation re-acceleration forcing further rate hikes; credit cycle turn increasing defaults in HY; duration risk if terminal rate expectations move higher.',
+    takeaway: 'Fixed income offers genuine value for the first time in a decade, but position in the short-to-medium end of the credit and duration spectrum. Long bonds and HY require specific conviction.',
+    what_would_change_mind: 'A confirmed pivot to rate cuts with inflation sustainably at target would make long-duration bonds attractive. We need to see multiple months of on-target or below-target CPI first.'
+  },
+  {
+    id: 8,
+    title: 'Sizing Positions Under Uncertainty: The Kelly Framework',
+    subtitle: 'Practical position sizing for asymmetric return distributions',
+    category: 'Risk Management',
+    tags: ['Position Sizing', 'Kelly Criterion', 'Risk', 'Portfolio Construction'],
+    publish_date: '2026-02-22',
+    read_time_minutes: 9,
+    executive_summary: 'How to think about position sizing when return distributions are uncertain, using the Kelly Criterion as a framework while accounting for its real-world limitations.',
+    body: `## The Position Sizing Problem
+
+Most investment frameworks focus on what to buy — the security selection problem. Far less attention is paid to how much to buy — the position sizing problem. Yet position sizing may be more important than security selection for long-term portfolio outcomes.
+
+## The Kelly Criterion
+
+The Kelly Criterion, derived from information theory, provides the theoretically optimal fraction of capital to allocate to a bet:
+
+**Kelly fraction (f) = (bp - q) / b**
+
+Where:
+- b = odds received on the bet (net profit on a £1 stake)
+- p = probability of winning
+- q = probability of losing (1-p)
+
+For a bet that pays 2:1 with a 60% win rate: f = (2×0.6 - 0.4) / 2 = 0.4 (40% of capital)
+
+## Why Full Kelly Is Too Aggressive
+
+Full Kelly maximises the long-run geometric growth rate but produces enormous volatility of outcomes. In practice, most investors use "fractional Kelly" — typically 25-50% of the Kelly optimal:
+
+- **Full Kelly**: Maximum long-run growth but extreme short-run volatility; psychologically very difficult to implement
+- **Half Kelly**: Achieves ~75% of Full Kelly growth rate with ~50% of the variance
+- **Quarter Kelly**: More conservative; appropriate when probability estimates are uncertain
+
+## Practical Implementation
+
+The Kelly formula requires an estimate of win probability and win/loss ratios. In investment contexts, these are inherently uncertain. Use the following heuristics:
+
+1. **Never exceed 5-10% of portfolio in a single position** regardless of what Kelly suggests — model uncertainty is always present
+2. **Scale positions inversely with uncertainty** — the less confident you are in your edge, the smaller the position
+3. **Consider correlation** — a "full portfolio Kelly" accounts for the covariance between positions
+
+## The Liquidity Constraint
+
+Kelly ignores liquidity. A 25% allocation to an illiquid asset that drops 50% is very different from a 25% allocation to a liquid position. Illiquid positions should always be sized conservatively relative to Kelly optimal.`,
+    key_risks: 'Model mis-specification of win probabilities; fat tails in return distributions not captured by normal distribution assumptions; liquidity constraints preventing rebalancing.',
+    takeaway: 'Use Half Kelly or Quarter Kelly as your position sizing framework. Never allocate more than 5-10% to any single position, and scale down for uncertainty and illiquidity.',
+    what_would_change_mind: 'If you can demonstrate through backtesting that your probability estimates are reliably calibrated, moving closer to Full Kelly may be justified. Very few investors meet this standard.'
+  },
+  {
+    id: 9,
+    title: 'Private Markets: Illiquidity Premium or Illiquidity Trap?',
+    subtitle: 'What the return evidence really says about private equity and private credit',
+    category: 'Multi-Asset',
+    tags: ['Private Equity', 'Private Credit', 'Alternatives', 'Illiquidity'],
+    publish_date: '2026-02-18',
+    read_time_minutes: 13,
+    executive_summary: 'A rigorous look at private market returns after fees and the illiquidity premium — when it exists, when it does not, and for whom private markets make sense.',
+    body: `## The Private Markets Narrative
+
+The institutional investment community has converged on a consensus: private markets — private equity, private credit, infrastructure, real estate — offer superior risk-adjusted returns to public markets, partly through the "illiquidity premium" and partly through access to the best managers.
+
+This narrative deserves scrutiny. Some of it is correct. Some of it is fund manager marketing.
+
+## The Illiquidity Premium: Does It Exist?
+
+In theory, investors should demand a premium for locking up capital. The empirical evidence is nuanced:
+
+**Private Equity vs Public Equity:** The most rigorous academic studies (Phalippou & Gottschalg, Harris et al.) find that top-quartile PE funds meaningfully outperform public equity benchmarks, but median PE funds perform comparably or slightly worse after fees. The **distribution of outcomes is enormous** — top quartile PE adds value; bottom quartile destroys it.
+
+**Private Credit vs Public Credit:** Here the evidence is more consistently positive. Direct lending to middle-market companies offers a genuine spread premium over equivalent public credit. The premium is 1-3% per annum over liquid IG credit, which compounds significantly over time.
+
+## The Fee Problem
+
+Standard PE fees are "2 and 20" (2% management fee, 20% carried interest). On a fund returning 15% gross, the net IRR to the investor is approximately 10-11%. Is that better than public equity? Depends on the vintage year.
+
+After a decade of low rates inflating all asset values, the question is whether the returns of PE funds from 2012-2022 are repeatable in a higher-rate environment. We are sceptical.
+
+## Who Should Access Private Markets?
+
+Private markets make sense for:
+
+1. **Long-horizon investors** who genuinely do not need liquidity (endowments, family offices, pension funds with long duration liabilities)
+2. **Large investors** who can access top-quartile managers with consistent track records
+3. **Private credit over private equity** in the current regime — the credit premium is more reliable and less dependent on manager skill
+
+They do not make sense for:
+- Investors with uncertain liquidity needs
+- Investors who cannot access top-quartile managers
+- Investors paying retail fee structures`,
+    key_risks: 'Vintage year risk; manager selection risk (very high dispersion of outcomes); leverage amplifies downside; denominator effect forces sales at worst times.',
+    takeaway: 'Private credit offers a reliable illiquidity premium over liquid credit. Private equity requires top-quartile manager access to outperform — the median fund does not justify the illiquidity and fee cost.',
+    what_would_change_mind: 'Persistent evidence of consistent alpha from a specific manager across multiple vintages and cycles would justify meaningful private equity allocation. Track record must include at least one full cycle including a downturn.'
+  },
+  {
+    id: 10,
+    title: 'The China Question: Structural Decline or Deep Value?',
+    subtitle: 'Assessing the case for Chinese equities in a global multi-asset portfolio',
+    category: 'Equities',
+    tags: ['China', 'EM', 'Equities', 'Geopolitics', 'Valuation'],
+    publish_date: '2026-02-14',
+    read_time_minutes: 10,
+    executive_summary: 'Chinese equities trade at a significant discount to global peers. The debate: is this justified by structural headwinds or is it the opportunity of a decade? We examine both sides rigorously.',
+    body: `## The Valuation Case
+
+MSCI China trades at approximately 10x forward earnings versus 21x for the S&P 500. This is not a small discount — it is a two-sigma cheap reading against history. If China simply re-rates to its own 10-year average multiple, the return from here is material.
+
+The property sector crisis, regulatory crackdown on tech, and geopolitical tensions have created a wall of worry that has driven foreign capital outflows. In markets, extreme pessimism and cheap valuations are the necessary conditions for outsized returns.
+
+## The Bear Case
+
+The bull case requires careful scrutiny against structural headwinds:
+
+**Property sector:** Chinese real estate represents 20-25% of GDP. The Evergrande crisis and subsequent property developer defaults have materially damaged household wealth and consumer confidence. Recovery timelines are measured in years, not quarters.
+
+**Demographics:** China's working-age population is now declining. The demographic tailwind that powered 30 years of growth is becoming a headwind.
+
+**Geopolitical risk:** US-China decoupling is accelerating across semiconductors, cloud computing, and critical infrastructure. The risk of a Taiwan escalation, while low probability, is high impact and unhedgeable in a portfolio context.
+
+**Regulatory uncertainty:** The 2021 tech crackdown demonstrated that regulatory risk is not priced by standard valuation models. Xi's "common prosperity" agenda creates ongoing unpredictability.
+
+## Our View
+
+We hold a small but non-zero allocation to Chinese equities as a valuation-driven position, with a strict sizing limit reflecting the geopolitical risk premium. The key condition: we want to see evidence of genuine property sector stabilisation before adding.
+
+The China question is ultimately a question about whether markets can function when geopolitical risk is structurally elevated. History suggests they can — but with a persistent valuation discount that is deserved.`,
+    key_risks: 'Taiwan escalation is the tail risk that no position size can adequately hedge — it would require full exit from Chinese assets; property sector deterioration worse than currently priced; further regulatory intervention in profitable sectors.',
+    takeaway: 'Chinese equities are cheap but for identifiable reasons. A small, strictly sized position is defensible on valuation grounds; a large position requires conviction that geopolitical risk is overpriced.',
+    what_would_change_mind: 'Property sector stabilisation (confirmed by 6 months of positive price data and declining developer defaults); or a sustained improvement in US-China diplomatic relations reducing the geopolitical risk premium.'
+  },
+  {
+    id: 11,
+    title: 'Currency Hedging: When Does It Add Value?',
+    subtitle: 'The case for and against FX hedging in international portfolios',
+    category: 'Risk Management',
+    tags: ['FX', 'Currency', 'Hedging', 'International'],
+    publish_date: '2026-02-10',
+    read_time_minutes: 8,
+    executive_summary: 'Currency risk is often the largest uncompensated risk in an internationally diversified portfolio. A framework for when and how much to hedge.',
+    body: `## The Currency Risk Nobody Talks About
+
+A UK investor holding an unhedged S&P 500 tracker is not just taking equity risk — they are taking a significant GBP/USD currency position. Over 1-3 year horizons, FX moves can be larger than equity market returns. Yet most retail investors never consciously consider their currency exposure.
+
+## The Case For Hedging
+
+**Volatility reduction:** For short-to-medium time horizons, hedging international equity exposure reduces portfolio volatility by removing an uncompensated risk factor.
+
+**Currency and equity negative correlation:** In risk-off environments, sterling typically weakens vs USD (USD is a safe haven). This means unhedged US equity actually provides a partial natural hedge — but this correlation is unreliable.
+
+**Predictability for liability matching:** For investors with known sterling liabilities (pension drawdown, property purchase), currency risk in assets is an active mismatch.
+
+## The Case Against Hedging
+
+**Hedging has a cost:** The forward rate reflects interest rate differentials. Currently, hedging USD back to GBP costs approximately 1-2% per annum (reflecting the interest rate differential). Over long horizons, this cost compounds.
+
+**Long-horizon diversification:** Over 10+ year horizons, currency moves tend to mean-revert, and the hedging cost exceeds the benefit.
+
+**Corporate revenue exposure:** Companies like Shell, HSBC, and AstraZeneca derive significant revenue in USD. For these stocks, hedging the share price back to GBP while the underlying revenue is USD-denominated creates a mismatch.
+
+## Practical Framework
+
+- **Short horizon (< 3 years):** Hedge 100% of international fixed income, 50-75% of international equity
+- **Medium horizon (3-7 years):** Hedge 50-75% of international fixed income, 25-50% of international equity  
+- **Long horizon (7+ years):** Hedge 25-50% of international fixed income, 0-25% of international equity
+
+The hedge ratio should increase when: (1) the investor's functional currency is appreciated and hedging is cheap, (2) portfolio drawdown risk is high, (3) the investor has near-term cash needs.`,
+    key_risks: 'Hedging locks in current rate differentials; if rates converge, hedging cost declines but you are locked into existing forwards; active FX views are notoriously difficult to get right.',
+    takeaway: 'Hedge international fixed income fully; hedge international equity 25-50% depending on time horizon. Ignore currency hedging entirely only if your investment horizon exceeds a decade.',
+    what_would_change_mind: 'A sustained period of negative correlation between GBP and international equity markets would reduce the need for hedging — but this relationship is historically unreliable.'
+  },
+  {
+    id: 12,
+    title: 'Sector Rotation: Reading the Economic Cycle',
+    subtitle: 'Which sectors lead and lag across economic regimes',
+    category: 'Equities',
+    tags: ['Sectors', 'Rotation', 'Economic Cycle', 'TAA'],
+    publish_date: '2026-02-05',
+    read_time_minutes: 7,
+    executive_summary: 'A practical framework for sector allocation based on the economic cycle — identifying leadership transitions and avoiding the most common rotation timing errors.',
+    body: `## The Cycle Rotation Framework
+
+One of the most enduring patterns in equity markets is the rotation of sector leadership across the economic cycle. Understanding this pattern is not a trading strategy — it is a risk management tool for ensuring your portfolio is not inadvertently positioned in sectors that are late-cycle as the macro backdrop deteriorates.
+
+## The Classic Rotation Map
+
+**Early Recovery:** Financials, Consumer Discretionary, Industrials lead. Rate cuts are stimulating the economy; credit conditions are improving; consumer confidence is rising.
+
+**Mid-Cycle Expansion:** Technology, Industrials, Materials. Peak earnings growth; capital investment cycle accelerating; commodities demand rising.
+
+**Late Cycle:** Energy, Materials, Healthcare defensives. Growth is decelerating; inflation is peaking; central banks are hiking or holding rates.
+
+**Recession/Contraction:** Utilities, Consumer Staples, Healthcare. Defensive cash flow generation; low sensitivity to economic activity; dividend income becomes relatively attractive.
+
+## Where Are We Now?
+
+Current macro indicators suggest we are in **late-cycle territory** — a period characterised by elevated rates, decelerating (but still positive) growth, and sticky inflation. The typical sector playbook for late-cycle suggests overweighting defensives and underweighting rate-sensitive growth sectors.
+
+However, the AI theme complicates this: Technology has outperformed dramatically despite being a late-cycle headwind sector. When a structural theme (AI capex) overlaps with a cyclical headwind (rates), the structural theme often wins in the short run.
+
+## Practical Implementation
+
+Use sector rotation as a risk management overlay, not a primary strategy:
+- Tilt toward late-cycle defensives if you believe the cycle is turning
+- Do not fight structural themes (AI) even if cyclically unfavourable
+- Monitor credit spreads as the primary leading indicator of cycle inflection`,
+    key_risks: 'Cycle timing is notoriously difficult; sectors can outperform their "expected" phase for extended periods driven by structural rather than cyclical factors.',
+    takeaway: 'We are late-cycle — bias toward defensives, healthcare, and energy while maintaining selective tech exposure for the AI structural theme. Reduce exposure to rate-sensitive consumer discretionary and real estate.',
+    what_would_change_mind: 'Early signs of economic reacceleration (strong PMI surprise, credit expansion, yield curve steepening) would shift the playbook toward early-cycle positioning in Financials and Industrials.'
+  },
+];
