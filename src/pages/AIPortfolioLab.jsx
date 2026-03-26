@@ -15,7 +15,7 @@ const currencyOptions = [
   { code: 'USD', symbol: '$', label: 'USD ($)' },
   { code: 'EUR', symbol: '€', label: 'EUR (€)' },
   { code: 'AUD', symbol: 'A$', label: 'AUD (A$)' },
-  { code: 'CHF', symbol: 'CHF', label: 'CHF' },
+  { code: 'CHF', symbol: 'Fr', label: 'CHF (Fr)' },
   { code: 'SGD', symbol: 'S$', label: 'SGD (S$)' },
 ];
 
@@ -202,7 +202,8 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
                     placeholder="e.g. 25000"
                     value={capital}
                     onChange={e => setCapital(e.target.value)}
-                    className="glass border-border/30 flex-1"
+                    className="glass border-border/30 flex-1 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:cursor-pointer [&::-webkit-outer-spin-button]:opacity-100"
+                    style={{ colorScheme: 'dark' }}
                     min="0"
                   />
                 </div>

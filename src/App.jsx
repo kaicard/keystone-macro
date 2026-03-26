@@ -16,6 +16,7 @@ import MarketPulse from '@/pages/MarketPulse';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';
+import EconomicCalendar from '@/pages/EconomicCalendar';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/About" element={<About />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/Admin" element={<Admin />} />
+        <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

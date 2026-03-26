@@ -1,5 +1,6 @@
-import React from 'react';
-import { TrendingUp, Zap, AlertTriangle, Globe, DollarSign, Building } from 'lucide-react';
+import React, { useState } from 'react';
+import { TrendingUp, Zap, AlertTriangle, Globe, DollarSign, Building, ChevronRight } from 'lucide-react';
+import ThemeModal from './ThemeModal';
 
 const themes = [
   {
@@ -53,33 +54,46 @@ const themes = [
 ];
 
 export default function TrendingThemes() {
+  const [activeTheme, setActiveTheme] = useState(null);
+
   return (
-    <div className="glass rounded-2xl p-6">
-      <div className="flex items-center gap-2 mb-5">
-        <TrendingUp className="w-4 h-4 text-primary" />
-        <h3 className="font-semibold">Trending Themes</h3>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {themes.map(theme => (
-          <div
-            key={theme.title}
-            className="p-4 rounded-xl bg-muted/20 border border-border/30 hover:border-primary/20 transition-all cursor-pointer group"
-          >
-            <div className="flex items-start gap-3">
-              <div className={`w-8 h-8 rounded-lg ${theme.bg} flex items-center justify-center shrink-0`}>
-                <theme.icon className={`w-4 h-4 ${theme.color}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="text-sm font-medium group-hover:text-primary transition-colors">{theme.title}</h4>
-                  <span className="text-xs text-muted-foreground shrink-0 ml-2">{theme.count} items</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{theme.description}</p>
-              </div>
-            </div>
+    <>
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h3 className="font-semibold">Trending Themes</h3>
           </div>
-        ))}
+          <span className="text-xs text-muted-foreground">Click any theme to explore</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {themes.map(theme => (
+            <button
+              key={theme.title}
+              onClick={() => setActiveTheme(theme)}
+              className="p-4 rounded-xl bg-muted/20 border border-border/30 hover:border-primary/30 hover:bg-muted/30 transition-all cursor-pointer group text-left"
+            >
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-lg ${theme.bg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                  <theme.icon className={`w-4 h-4 ${theme.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-sm font-medium group-hover:text-primary transition-colors">{theme.title}</h4>
+                    <ChevronRight className={`w-3.5 h-3.5 ${theme.color} opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 shrink-0 ml-1`} />
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{theme.description}</p>
+                  <p className={`text-xs font-medium mt-2 ${theme.color}`}>{theme.count} related items →</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+
+      {activeTheme && (
+        <ThemeModal theme={activeTheme} onClose={() => setActiveTheme(null)} />
+      )}
+    </>
   );
 }

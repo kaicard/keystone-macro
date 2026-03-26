@@ -12,6 +12,7 @@ const navLinks = [
   { label: 'Wealth Cases', path: '/WealthCases' },
   { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
   { label: 'Market Pulse', path: '/MarketPulse' },
+  { label: 'Calendar', path: '/EconomicCalendar' },
   { label: 'About', path: '/About' },
   { label: 'Contact', path: '/Contact' },
 ];
