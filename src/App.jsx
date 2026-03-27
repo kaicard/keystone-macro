@@ -25,9 +25,11 @@ const AuthenticatedApp = () => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold">N</span>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/c8e73f5af_IMG_3747.jpg"
+            alt="The Macro Sphere"
+            className="w-10 h-10 rounded-full object-cover object-top"
+          />
           <div className="w-8 h-8 border-2 border-muted-foreground/20 border-t-primary rounded-full animate-spin" />
         </div>
       </div>

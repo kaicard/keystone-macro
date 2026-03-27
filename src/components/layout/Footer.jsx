@@ -55,9 +55,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">M</span>
-              </div>
+              <img
+                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/c8e73f5af_IMG_3747.jpg"
+                alt="The Macro Sphere"
+                className="w-8 h-8 rounded-full object-cover object-top"
+              />
               <div>
                 <span className="font-display text-lg font-semibold">The Macro Sphere</span>
               </div>

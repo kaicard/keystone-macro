@@ -49,10 +49,11 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="flex items-center gap-3 group">
-              <div className="relative w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300">
-                <span className="text-primary-foreground font-bold text-sm">M</span>
-                <div className="absolute inset-0 rounded-lg bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+              <img
+                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/c8e73f5af_IMG_3747.jpg"
+                alt="The Macro Sphere"
+                className="w-8 h-8 rounded-full object-cover object-top"
+              />
               <div className="hidden sm:block">
                 <span className="font-display text-lg font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                   The Macro Sphere
