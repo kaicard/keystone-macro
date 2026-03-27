@@ -109,9 +109,9 @@ export default function Research() {
           </p>
         </motion.div>
 
-        {/* Intelligence Feed + News Hub side by side on large screens */}
+        {/* Intelligence Feed stacked above News by Beat */}
         <motion.div
-          className="mb-8 grid grid-cols-1 xl:grid-cols-2 gap-6"
+          className="mb-8 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
