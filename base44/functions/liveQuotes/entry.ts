@@ -1,86 +1,83 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const QUOTE_SCHEMA = {
-  type: "object",
-  properties: {
-    quotes: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          ticker: { type: "string" },
-          price: { type: "number" },
-          change_pct: { type: "number" },
-          direction: { type: "string" }
-        }
-      }
-    }
-  }
-};
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_KEY = 'liveQuotes';
 
-const GROUPS = [
-  {
-    label: 'Indices, Crypto & VIX',
-    tickers: [
-      { sym: '^GSPC', name: 'S&P 500' }, { sym: '^NDX', name: 'NASDAQ 100' },
-      { sym: '^DJI', name: 'Dow Jones' }, { sym: '^FTSE', name: 'FTSE 100' },
-      { sym: '^GDAXI', name: 'DAX' }, { sym: '^FCHI', name: 'CAC 40' },
-      { sym: '^N225', name: 'Nikkei 225' }, { sym: '^HSI', name: 'Hang Seng' },
-      { sym: 'BTC-USD', name: 'Bitcoin' }, { sym: 'ETH-USD', name: 'Ethereum' },
-      { sym: 'SOL-USD', name: 'Solana' }, { sym: '^VIX', name: 'VIX' },
-      { sym: 'DX-Y.NYB', name: 'DXY' },
-    ]
-  },
-  {
-    label: 'Equities & ETFs',
-    tickers: [
-      { sym: 'AAPL', name: 'Apple' }, { sym: 'MSFT', name: 'Microsoft' },
-      { sym: 'NVDA', name: 'NVIDIA' }, { sym: 'AMZN', name: 'Amazon' },
-      { sym: 'GOOGL', name: 'Alphabet' }, { sym: 'TSLA', name: 'Tesla' },
-      { sym: 'META', name: 'Meta' }, { sym: 'JPM', name: 'JPMorgan' },
-      { sym: 'GS', name: 'Goldman Sachs' },
-      { sym: 'SPY', name: 'SPY' }, { sym: 'QQQ', name: 'QQQ' },
-      { sym: 'GLD', name: 'GLD' }, { sym: 'TLT', name: 'TLT' },
-      { sym: 'HYG', name: 'HYG' },
-    ]
-  },
-  {
-    label: 'FX & Commodities',
-    tickers: [
-      { sym: 'GBPUSD=X', name: 'GBP/USD' }, { sym: 'EURUSD=X', name: 'EUR/USD' },
-      { sym: 'USDJPY=X', name: 'USD/JPY' }, { sym: 'USDCHF=X', name: 'USD/CHF' },
-      { sym: 'AUDUSD=X', name: 'AUD/USD' }, { sym: 'EURGBP=X', name: 'EUR/GBP' },
-      { sym: 'GC=F', name: 'Gold' }, { sym: 'SI=F', name: 'Silver' },
-      { sym: 'CL=F', name: 'WTI Crude' }, { sym: 'BZ=F', name: 'Brent Crude' },
-      { sym: 'NG=F', name: 'Natural Gas' }, { sym: 'HG=F', name: 'Copper' },
-    ]
-  }
+const TICKERS = [
+  { sym: '^GSPC',     name: 'S&P 500',       cat: 'indices' },
+  { sym: '^NDX',      name: 'NASDAQ 100',    cat: 'indices' },
+  { sym: '^DJI',      name: 'Dow Jones',     cat: 'indices' },
+  { sym: '^FTSE',     name: 'FTSE 100',      cat: 'indices' },
+  { sym: '^GDAXI',    name: 'DAX',           cat: 'indices' },
+  { sym: '^FCHI',     name: 'CAC 40',        cat: 'indices' },
+  { sym: '^N225',     name: 'Nikkei 225',    cat: 'indices' },
+  { sym: '^HSI',      name: 'Hang Seng',     cat: 'indices' },
+  { sym: 'AAPL',      name: 'Apple',         cat: 'equities' },
+  { sym: 'MSFT',      name: 'Microsoft',     cat: 'equities' },
+  { sym: 'NVDA',      name: 'NVIDIA',        cat: 'equities' },
+  { sym: 'AMZN',      name: 'Amazon',        cat: 'equities' },
+  { sym: 'GOOGL',     name: 'Alphabet',      cat: 'equities' },
+  { sym: 'TSLA',      name: 'Tesla',         cat: 'equities' },
+  { sym: 'META',      name: 'Meta',          cat: 'equities' },
+  { sym: 'JPM',       name: 'JPMorgan',      cat: 'equities' },
+  { sym: 'GS',        name: 'Goldman Sachs', cat: 'equities' },
+  { sym: 'SPY',       name: 'SPY',           cat: 'etfs' },
+  { sym: 'QQQ',       name: 'QQQ',           cat: 'etfs' },
+  { sym: 'GLD',       name: 'GLD',           cat: 'etfs' },
+  { sym: 'TLT',       name: 'TLT',           cat: 'etfs' },
+  { sym: 'HYG',       name: 'HYG',           cat: 'etfs' },
+  { sym: 'GBPUSD=X',  name: 'GBP/USD',       cat: 'fx' },
+  { sym: 'EURUSD=X',  name: 'EUR/USD',       cat: 'fx' },
+  { sym: 'USDJPY=X',  name: 'USD/JPY',       cat: 'fx' },
+  { sym: 'USDCHF=X',  name: 'USD/CHF',       cat: 'fx' },
+  { sym: 'AUDUSD=X',  name: 'AUD/USD',       cat: 'fx' },
+  { sym: 'EURGBP=X',  name: 'EUR/GBP',       cat: 'fx' },
+  { sym: 'GC=F',      name: 'Gold',          cat: 'commodities' },
+  { sym: 'SI=F',      name: 'Silver',        cat: 'commodities' },
+  { sym: 'CL=F',      name: 'WTI Crude',     cat: 'commodities' },
+  { sym: 'BZ=F',      name: 'Brent Crude',   cat: 'commodities' },
+  { sym: 'NG=F',      name: 'Natural Gas',   cat: 'commodities' },
+  { sym: 'HG=F',      name: 'Copper',        cat: 'commodities' },
+  { sym: 'BTC-USD',   name: 'Bitcoin',       cat: 'crypto' },
+  { sym: 'ETH-USD',   name: 'Ethereum',      cat: 'crypto' },
+  { sym: 'SOL-USD',   name: 'Solana',        cat: 'crypto' },
+  { sym: '^VIX',      name: 'VIX',           cat: 'vix' },
+  { sym: 'DX-Y.NYB',  name: 'DXY',           cat: 'dxy' },
 ];
 
-const CATEGORY_MAP = {
-  '^GSPC': 'indices', '^NDX': 'indices', '^DJI': 'indices', '^FTSE': 'indices',
-  '^GDAXI': 'indices', '^FCHI': 'indices', '^N225': 'indices', '^HSI': 'indices',
-  'BTC-USD': 'crypto', 'ETH-USD': 'crypto', 'SOL-USD': 'crypto',
-  'GC=F': 'commodities', 'SI=F': 'commodities', 'CL=F': 'commodities', 'BZ=F': 'commodities',
-  'NG=F': 'commodities', 'HG=F': 'commodities',
-  'GBPUSD=X': 'fx', 'EURUSD=X': 'fx', 'USDJPY=X': 'fx', 'USDCHF=X': 'fx',
-  'AUDUSD=X': 'fx', 'EURGBP=X': 'fx', 'USDCNH=X': 'fx', 'USDCAD=X': 'fx',
-  'AAPL': 'equities', 'MSFT': 'equities', 'NVDA': 'equities', 'AMZN': 'equities',
-  'GOOGL': 'equities', 'TSLA': 'equities', 'META': 'equities', 'JPM': 'equities', 'GS': 'equities',
-  'SPY': 'etfs', 'QQQ': 'etfs', 'VOO': 'etfs', 'GLD': 'etfs', 'TLT': 'etfs',
-  'HYG': 'etfs', 'LQD': 'etfs', 'EEM': 'etfs', 'VNQ': 'etfs',
-  '^VIX': 'vix', 'DX-Y.NYB': 'dxy',
-};
+// Fetch a single ticker via Yahoo Finance chart endpoint (no auth required)
+async function fetchChart(sym) {
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=2d`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'application/json',
+      'Accept-Language': 'en-US,en;q=0.9',
+    }
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  const meta = json?.chart?.result?.[0]?.meta;
+  if (!meta) return null;
 
-// Cache TTL: 10 minutes for quotes
-const CACHE_TTL_MS = 10 * 60 * 1000;
-const CACHE_KEY = 'liveQuotes';
+  const price = meta.regularMarketPrice ?? meta.chartPreviousClose;
+  const prev = meta.chartPreviousClose ?? meta.previousClose;
+  const changePct = prev && price ? ((price - prev) / prev) * 100 : 0;
+
+  return { price, change_pct: changePct };
+}
+
+function direction(change) {
+  if (change > 0.05) return 'up';
+  if (change < -0.05) return 'down';
+  return 'flat';
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Check cache first
+    // Check cache
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     if (cached?.length > 0) {
       const entry = cached[0];
@@ -91,44 +88,39 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cache miss or stale — fetch fresh
-    const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' });
-
-    const results = await Promise.all(GROUPS.map(group => {
-      const tickerList = group.tickers.map(t => `${t.sym} = ${t.name}`).join(', ');
-      const prompt = `Today is ${today}, New York time is ${time}. Using live web data from Yahoo Finance or Google Finance, fetch REAL current prices for these financial instruments: ${tickerList}. For each return: ticker (the symbol exactly as given), price (current price as number), change_pct (today's % change as number, e.g. 1.23), direction ("up"/"down"/"flat"). Return all ${group.tickers.length} instruments with real values.`;
-      return base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt,
-        add_context_from_internet: true,
-        model: 'gemini_3_flash',
-        response_json_schema: QUOTE_SCHEMA,
-      });
-    }));
-
-    const allQuotes = {};
-    for (const res of results) {
-      for (const q of (res?.quotes || [])) {
-        if (q.ticker && q.price) allQuotes[q.ticker] = q;
-      }
-    }
+    // Fetch all tickers concurrently
+    const results = await Promise.all(
+      TICKERS.map(async (t) => {
+        const q = await fetchChart(t.sym);
+        if (!q || q.price == null) return null;
+        return {
+          ticker: t.sym,
+          name: t.name,
+          price: q.price,
+          change_pct: q.change_pct,
+          direction: direction(q.change_pct),
+          category: t.cat,
+        };
+      })
+    );
 
     const organized = {
       indices: [], equities: [], etfs: [], fx: [], commodities: [], crypto: [],
       vix: null, dxy: null,
     };
 
-    for (const [sym, q] of Object.entries(allQuotes)) {
-      const cat = CATEGORY_MAP[sym] || 'other';
-      const enriched = { ...q, name: GROUPS.flatMap(g => g.tickers).find(t => t.sym === sym)?.name || sym, category: cat };
-      if (cat === 'vix') organized.vix = enriched;
-      else if (cat === 'dxy') organized.dxy = enriched;
-      else if (organized[cat]) organized[cat].push(enriched);
+    for (let i = 0; i < TICKERS.length; i++) {
+      const r = results[i];
+      if (!r) continue;
+      const cat = TICKERS[i].cat;
+      if (cat === 'vix') organized.vix = r;
+      else if (cat === 'dxy') organized.dxy = r;
+      else organized[cat]?.push(r);
     }
 
-    // Save to cache
     const payload = JSON.stringify(organized);
     const fetched_at = new Date().toISOString();
+
     if (cached?.length > 0) {
       await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
     } else {
