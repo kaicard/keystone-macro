@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Clock, Tag, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { sampleNotes } from '@/lib/researchNotes';
+import ResearchNoteModal from '@/components/research/ResearchNoteModal';
 
 // Show the 4 most recent notes (sorted by publish_date descending)
 const latestNotes = [...sampleNotes]
@@ -32,6 +33,7 @@ function isNew(dateStr) {
 export default function FeaturedResearch() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
+  const [selectedNote, setSelectedNote] = useState(null);
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -61,44 +63,49 @@ export default function FeaturedResearch() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <Link to="/Research" className="block group">
-                <div className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5">
-                  <div className="flex items-center gap-3 mb-4 flex-wrap">
-                    <Badge variant="outline" className={categoryColors[note.category] || 'bg-muted text-muted-foreground'}>
-                      <Tag className="w-3 h-3 mr-1" />
-                      {note.category}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {note.read_time_minutes} min read
+              <div
+                className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5 cursor-pointer group"
+                onClick={() => setSelectedNote(note)}
+              >
+                <div className="flex items-center gap-3 mb-4 flex-wrap">
+                  <Badge variant="outline" className={categoryColors[note.category] || 'bg-muted text-muted-foreground'}>
+                    <Tag className="w-3 h-3 mr-1" />
+                    {note.category}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {note.read_time_minutes} min read
+                  </span>
+                  {isNew(note.publish_date) && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
+                      <TrendingUp className="w-2.5 h-2.5" /> New
                     </span>
-                    {isNew(note.publish_date) && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
-                        <TrendingUp className="w-2.5 h-2.5" /> New
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors leading-snug">
-                    {note.title}
-                  </h3>
-                  {note.subtitle && (
-                    <p className="text-xs text-muted-foreground/70 mb-2 italic">{note.subtitle}</p>
                   )}
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                    {note.executive_summary}
-                  </p>
-                  <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
-                  </div>
                 </div>
-              </Link>
+                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors leading-snug">
+                  {note.title}
+                </h3>
+                {note.subtitle && (
+                  <p className="text-xs text-muted-foreground/70 mb-2 italic">{note.subtitle}</p>
+                )}
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                  {note.executive_summary}
+                </p>
+                <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      {selectedNote && (
+        <ResearchNoteModal note={selectedNote} onClose={() => setSelectedNote(null)} />
+      )}
     </section>
   );
 }
