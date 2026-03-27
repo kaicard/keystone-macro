@@ -81,7 +81,7 @@ export default function PerformanceChart() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="font-semibold text-sm">Indexed Performance</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Illustrative — base 100. Educational only.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Indexed performance — base 100.</p>
         </div>
         <div className="flex gap-1">
           {TIMEFRAMES.map(t => (

@@ -60,7 +60,7 @@ export default function PortfolioPerformanceChart({ risk }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <h3 className="font-semibold text-sm">Illustrative Performance</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Base 100 · Educational only</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Base 100 · Illustrative simulation</p>
         </div>
         <div className="flex gap-1 flex-wrap">
           {TIMEFRAMES.map(t => (
@@ -131,9 +131,7 @@ export default function PortfolioPerformanceChart({ risk }) {
         </motion.div>
       </AnimatePresence>
 
-      <p className="text-xs text-muted-foreground/50 mt-3">
-        Simulated illustrative data only. Not indicative of actual returns.
-      </p>
+
     </div>
   );
 }

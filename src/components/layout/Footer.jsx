@@ -131,7 +131,7 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <p className="text-xs text-muted-foreground/40">
-              Live market data. Delayed where applicable. Opinions expressed are not investment recommendations.
+              Live market data. Delayed where applicable.
             </p>
             <Link to="/Terms" className="text-xs text-muted-foreground/30 hover:text-muted-foreground transition-colors whitespace-nowrap">
               Terms &amp; Conditions

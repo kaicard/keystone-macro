@@ -141,7 +141,7 @@ export default function ResearchNoteModal({ note, onClose }) {
 
           {/* Footer */}
           <div className="px-6 sm:px-8 py-4 border-t border-border/40 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground/50 italic">For educational purposes only. Not investment advice.</p>
+
             <button
               onClick={onClose}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted/20"

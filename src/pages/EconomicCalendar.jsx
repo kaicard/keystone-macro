@@ -418,7 +418,7 @@ export default function EconomicCalendar() {
         </motion.div>
 
         <p className="text-xs text-muted-foreground/30 text-center mt-8">
-          Click any row to see the outcome summary. Times shown in local release timezone.
+          Click any row to expand the outcome summary. Times shown in local release timezone.
         </p>
       </div>
     </div>
