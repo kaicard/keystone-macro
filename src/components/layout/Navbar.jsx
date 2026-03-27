@@ -54,7 +54,7 @@ export default function Navbar() {
                   src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e2da08c1e_IMG_3747.jpg"
                   alt="The Macro Sphere"
                   className="w-full h-full"
-                  style={{ transform: 'scale(2.2)', transformOrigin: '50% 33%', imageRendering: 'auto' }}
+                  style={{ transform: 'scale(2.8)', transformOrigin: '50% 33%', imageRendering: 'auto' }}
                 />
               </div>
               <div className="hidden sm:block">
