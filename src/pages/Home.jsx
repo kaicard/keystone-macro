@@ -7,10 +7,12 @@ import PortfolioPreview from '@/components/home/PortfolioPreview';
 import WealthCasesPreview from '@/components/home/WealthCasesPreview';
 import AILabPreview from '@/components/home/AILabPreview';
 import NewsletterSection from '@/components/home/NewsletterSection';
+import ParticleBackground from '@/components/home/ParticleBackground';
 
 export default function Home() {
   return (
-    <div>
+    <div className="relative">
+      <ParticleBackground />
       <HeroSection />
       <CredibilityStrip />
       <FeaturedResearch />

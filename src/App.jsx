@@ -7,7 +7,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 import AppLayout from '@/components/layout/AppLayout';
-import CustomCursor from '@/components/ui/CustomCursor';
 import Home from '@/pages/Home';
 import Research from '@/pages/Research';
 import Portfolios from '@/pages/Portfolios';
@@ -76,8 +75,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <CustomCursor />
-          <AuthenticatedApp />
+<AuthenticatedApp />
         </Router>
         <Toaster />
       </QueryClientProvider>
