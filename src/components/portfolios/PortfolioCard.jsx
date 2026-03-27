@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import PortfolioPerformanceChart from './PortfolioPerformanceChart';
 
 const COLORS = ['hsl(38, 80%, 55%)', 'hsl(210, 60%, 50%)', 'hsl(160, 50%, 45%)', 'hsl(280, 50%, 55%)', 'hsl(340, 60%, 55%)', 'hsl(45, 70%, 50%)'];
 
@@ -128,6 +129,8 @@ export default function PortfolioCard({ portfolio, riskColors, onBack }) {
               ))}
             </div>
           </div>
+
+          <PortfolioPerformanceChart risk={portfolio.risk} />
 
           <div className="glass rounded-xl p-4">
             <p className="text-xs text-muted-foreground/60 leading-relaxed">

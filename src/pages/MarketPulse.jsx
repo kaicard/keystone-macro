@@ -12,6 +12,7 @@ import SectorHeatmap from '@/components/marketpulse/SectorHeatmap';
 import CreditAndCurve from '@/components/marketpulse/CreditAndCurve';
 import LiveTickerBar from '@/components/marketpulse/LiveTickerBar';
 import InstrumentChartModal from '@/components/marketpulse/InstrumentChartModal';
+import PerformanceChart from '@/components/marketpulse/PerformanceChart';
 
 function fmtPrice(price, name) {
   if (price == null) return '—';
@@ -167,6 +168,7 @@ export default function MarketPulse() {
 
               <TabsContent value="overview">
                 <div className="space-y-8">
+                  <PerformanceChart />
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
                     <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} />
