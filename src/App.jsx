@@ -31,7 +31,7 @@ const AuthenticatedApp = () => {
             src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e2da08c1e_IMG_3747.jpg"
             alt="The Macro Sphere"
             className="w-full h-full"
-            style={{ transform: 'scale(3.6)', transformOrigin: '50% 34%', imageRendering: 'auto' }}
+            style={{ transform: 'scale(2.2)', transformOrigin: '50% 33%', imageRendering: 'auto' }}
           />
           </div>
           <div className="w-8 h-8 border-2 border-muted-foreground/20 border-t-primary rounded-full animate-spin" />
