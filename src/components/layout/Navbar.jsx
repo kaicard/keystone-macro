@@ -55,7 +55,7 @@ export default function Navbar() {
               </div>
               <div className="hidden sm:block">
                 <span className="font-display text-lg font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
-                  Macro Memoir
+                  The Macro Sphere
                 </span>
               </div>
             </Link>
