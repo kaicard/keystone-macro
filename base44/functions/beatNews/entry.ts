@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const BEAT_PROMPTS = {
-  markets:      'Global financial markets: equity indices, ETFs, volatility, cross-asset moves, fund flows, options activity.',
+  markets:         'Global financial markets: equity indices, ETFs, volatility, cross-asset moves, fund flows, options activity.',
+  global_equities: 'Global equity markets: stock market moves across US, Europe, Asia, and emerging markets. Individual stock news, earnings, analyst upgrades/downgrades, sector rotation, IPOs, M&A, share buybacks, and equity fund flows across major regions.',
   us_economy:   'United States economy: Fed policy, US CPI, NFP, GDP, retail sales, consumer confidence, fiscal policy, tariffs, White House economic decisions.',
   uk_economy:   'United Kingdom economy: Bank of England, UK CPI, UK GDP, UK labour market, housing market, gilts, budget and fiscal policy, Sterling.',
   eu_economy:   'Eurozone and European economy: ECB decisions, Eurozone CPI, Germany GDP, French politics, EU fiscal rules, Euro currency.',

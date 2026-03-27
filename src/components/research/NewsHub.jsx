@@ -5,14 +5,15 @@ import { RefreshCw, ExternalLink, ChevronDown, ChevronUp, Newspaper } from 'luci
 import { Badge } from '@/components/ui/badge';
 
 const BEATS = [
-  { key: 'markets',      label: 'Markets' },
-  { key: 'us_economy',   label: 'US Economy' },
-  { key: 'uk_economy',   label: 'UK Economy' },
-  { key: 'eu_economy',   label: 'EU Economy' },
-  { key: 'commodities',  label: 'Commodities' },
-  { key: 'tech',         label: 'Technology' },
-  { key: 'geopolitics',  label: 'Geopolitics' },
-  { key: 'rates_credit', label: 'Rates & Credit' },
+  { key: 'markets',         label: 'Markets' },
+  { key: 'global_equities', label: 'Global Equities' },
+  { key: 'us_economy',      label: 'US Economy' },
+  { key: 'uk_economy',      label: 'UK Economy' },
+  { key: 'eu_economy',      label: 'EU Economy' },
+  { key: 'commodities',     label: 'Commodities' },
+  { key: 'tech',            label: 'Technology' },
+  { key: 'geopolitics',     label: 'Geopolitics' },
+  { key: 'rates_credit',    label: 'Rates & Credit' },
 ];
 
 const SENTIMENT_STYLES = {
