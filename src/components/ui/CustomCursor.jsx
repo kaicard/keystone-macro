@@ -68,11 +68,11 @@ export default function CustomCursor() {
         * { cursor: none !important; }
         .cursor-dot {
           position: fixed;
-          top: -4px;
-          left: -4px;
-          width: 8px;
-          height: 8px;
-          background: hsl(38 80% 55%);
+          top: -3px;
+          left: -3px;
+          width: 6px;
+          height: 6px;
+          background: hsl(38 80% 55% / 0.7);
           border-radius: 50%;
           pointer-events: none;
           z-index: 99999;
@@ -80,19 +80,19 @@ export default function CustomCursor() {
           transition: width 0.2s, height 0.2s, background 0.2s, top 0.2s, left 0.2s;
         }
         .cursor-dot.cursor-hover {
-          top: -6px;
-          left: -6px;
-          width: 12px;
-          height: 12px;
-          background: hsl(38 80% 65%);
+          top: -4px;
+          left: -4px;
+          width: 8px;
+          height: 8px;
+          background: hsl(38 80% 60% / 0.8);
         }
         .cursor-ring {
           position: fixed;
-          top: -18px;
-          left: -18px;
-          width: 36px;
-          height: 36px;
-          border: 1.5px solid hsl(38 80% 55% / 0.5);
+          top: -14px;
+          left: -14px;
+          width: 28px;
+          height: 28px;
+          border: 1px solid hsl(38 80% 55% / 0.25);
           border-radius: 50%;
           pointer-events: none;
           z-index: 99998;
@@ -100,11 +100,11 @@ export default function CustomCursor() {
           transition: width 0.25s, height 0.25s, border-color 0.25s, top 0.25s, left 0.25s;
         }
         .cursor-ring.cursor-hover {
-          top: -28px;
-          left: -28px;
-          width: 56px;
-          height: 56px;
-          border-color: hsl(38 80% 55% / 0.35);
+          top: -20px;
+          left: -20px;
+          width: 40px;
+          height: 40px;
+          border-color: hsl(38 80% 55% / 0.2);
         }
       `}</style>
       <div ref={dotRef} className="cursor-dot" />
