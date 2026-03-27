@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 function fmt(price, name) {
@@ -9,17 +9,33 @@ function fmt(price, name) {
   return price.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-const SPEED = 40; // px/s
+function TickerItem({ item }) {
+  const isUp = item.direction === 'up';
+  const isDown = item.direction === 'down';
+  const color = isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-muted-foreground';
+  const changePct = item.change_pct != null
+    ? `${item.change_pct > 0 ? '+' : ''}${item.change_pct.toFixed(2)}%`
+    : '';
+
+  return (
+    <span className="inline-flex items-center gap-2 px-5 whitespace-nowrap select-none">
+      <span className="text-xs font-semibold text-foreground/80">{item.name || item.ticker}</span>
+      <span className="text-xs font-mono font-bold text-foreground">{fmt(item.price, item.name)}</span>
+      <span className={`text-xs font-semibold flex items-center gap-0.5 ${color}`}>
+        {isUp ? <TrendingUp className="w-3 h-3" /> : isDown ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+        {changePct}
+      </span>
+      <span className="text-border/50 text-xs">·</span>
+    </span>
+  );
+}
 
 export default function LiveTickerBar({ data }) {
-  const trackRef = useRef(null);
-  const posRef = useRef(0);
-  const rafRef = useRef(null);
-  const lastTsRef = useRef(null);
-  const halfRef = useRef(0);
+  // Only update items ref without causing animation resets
   const itemsRef = useRef([]);
+  const [, forceRender] = useState(0);
 
-  const buildItems = useCallback((data) => [
+  const newItems = [
     ...(data?.indices || []),
     ...(data?.equities || []),
     ...(data?.fx || []),
@@ -28,77 +44,51 @@ export default function LiveTickerBar({ data }) {
     ...(data?.etfs || []),
     ...(data?.vix ? [data.vix] : []),
     ...(data?.dxy ? [data.dxy] : []),
-  ].filter(i => i?.price != null), []);
+  ].filter(i => i?.price != null);
 
-  // Render items into DOM imperatively so we never remount the track
-  const renderItems = useCallback((items) => {
-    const track = trackRef.current;
-    if (!track) return;
-    const doubled = [...items, ...items];
+  // On first data load, store and render
+  if (newItems.length > 0 && itemsRef.current.length === 0) {
+    itemsRef.current = newItems;
+  }
 
-    // Reuse existing spans or create new ones
-    while (track.children.length > doubled.length) track.removeChild(track.lastChild);
-    doubled.forEach((item, idx) => {
-      let span = track.children[idx];
-      if (!span) {
-        span = document.createElement('span');
-        span.className = 'inline-flex items-center gap-2 px-5 whitespace-nowrap select-none';
-        track.appendChild(span);
-      }
-      const isUp = item.direction === 'up';
-      const isDown = item.direction === 'down';
-      const color = isUp ? '#34d399' : isDown ? '#f87171' : '#6b7280';
-      const arrow = isUp ? '▲' : isDown ? '▼' : '—';
-      const changePct = item.change_pct != null
-        ? `${item.change_pct > 0 ? '+' : ''}${item.change_pct.toFixed(2)}%`
-        : '';
-      span.innerHTML = `
-        <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85)">${item.name || item.ticker}</span>
-        <span style="font-size:11px;font-family:monospace;font-weight:700">${fmt(item.price, item.name)}</span>
-        <span style="font-size:11px;font-weight:600;color:${color}">${arrow} ${changePct}</span>
-        <span style="color:#334155;margin-left:4px">·</span>
-      `;
-    });
-
-    halfRef.current = track.scrollWidth / 2;
-  }, []);
-
-  // RAF loop — mounts once, never resets
+  // When data refreshes, update values in place without resetting animation
   useEffect(() => {
-    const step = (ts) => {
-      if (lastTsRef.current != null) {
-        const dt = (ts - lastTsRef.current) / 1000;
-        posRef.current += SPEED * dt;
-        const half = halfRef.current;
-        if (half > 0 && posRef.current >= half) posRef.current -= half;
-        if (trackRef.current) {
-          trackRef.current.style.transform = `translateX(-${posRef.current}px)`;
-        }
-      }
-      lastTsRef.current = ts;
-      rafRef.current = requestAnimationFrame(step);
-    };
-    rafRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+    if (newItems.length > 0) {
+      itemsRef.current = newItems;
+      forceRender(n => n + 1);
+    }
+  }, [JSON.stringify(newItems.map(i => i.price))]);
 
-  // Update displayed data without touching the animation
-  useEffect(() => {
-    const items = buildItems(data);
-    if (!items.length) return;
-    itemsRef.current = items;
-    renderItems(items);
-  }, [data, buildItems, renderItems]);
+  const items = itemsRef.current;
+  if (!items.length) return null;
+
+  const duration = items.length * 3.5;
 
   return (
     <div className="w-full bg-card/80 border-y border-border/40 overflow-hidden py-2 relative">
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-card/80 to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card/80 to-transparent z-10 pointer-events-none" />
-      <div
-        ref={trackRef}
-        className="flex will-change-transform"
-        style={{ width: 'max-content' }}
-      />
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-card/90 to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card/90 to-transparent z-10 pointer-events-none" />
+
+      {/* Two identical tracks offset by 50% — no key reset, animation runs continuously */}
+      <div className="flex" style={{ width: 'max-content' }}>
+        <div
+          className="flex"
+          style={{
+            animation: `ticker-scroll ${duration}s linear infinite`,
+            willChange: 'transform',
+          }}
+        >
+          {items.map((item, i) => <TickerItem key={item.ticker} item={item} />)}
+          {items.map((item, i) => <TickerItem key={`${item.ticker}-2`} item={item} />)}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes ticker-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
