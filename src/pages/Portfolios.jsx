@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Shield, TrendingUp, Target, Umbrella, GraduationCap, BarChart3, Sliders } from 'lucide-react';
+import { Shield, TrendingUp, Target, Umbrella, GraduationCap, BarChart3, Sliders, Globe, Coins, Leaf, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import PortfolioBuilder from '@/components/portfolios/PortfolioBuilder';
@@ -85,6 +85,72 @@ const modelPortfolios = [
       { asset_class: 'Cash', weight: 10, rationale: 'Emergency buffer and rebalancing' },
     ],
     commentary: 'Simplicity is key for new investors. This portfolio uses just 2-3 low-cost index funds. Time in the market matters more than timing the market.',
+  },
+  {
+    name: 'Aggressive Growth', icon: BarChart3, risk: 'Aggressive', iconColor: 'text-red-400',
+    objective: 'High-conviction growth portfolio for investors seeking maximum long-term capital appreciation and willing to accept significant volatility.',
+    suitable_investor: 'High-risk-tolerance investor with a long horizon, comfortable with drawdowns exceeding 40%.',
+    time_horizon: '10–15 years',
+    volatility_estimate: '18–22% annualised',
+    max_drawdown_estimate: '-40% to -55%',
+    allocation: [
+      { asset_class: 'US Growth Equities', weight: 35, rationale: 'High-beta exposure to tech and innovation' },
+      { asset_class: 'International Equities', weight: 20, rationale: 'Global diversification in growth markets' },
+      { asset_class: 'Emerging Markets', weight: 20, rationale: 'Structural growth and demographic tailwinds' },
+      { asset_class: 'Small & Mid Cap', weight: 15, rationale: 'Higher return potential with increased risk' },
+      { asset_class: 'Alternatives', weight: 10, rationale: 'Venture, private equity, and crypto exposure' },
+    ],
+    commentary: 'Fully invested with no meaningful defensive allocation. Drawdowns are expected and tolerated. Focus is on compounding over a decade-plus horizon.',
+  },
+  {
+    name: 'Global Macro', icon: Globe, risk: 'Moderate', iconColor: 'text-sky-400',
+    objective: 'Dynamic, multi-asset portfolio that actively shifts allocations based on macroeconomic regime changes across geographies.',
+    suitable_investor: 'Sophisticated investor seeking tactical flexibility and macro-driven returns uncorrelated to passive indices.',
+    time_horizon: '5–10 years',
+    volatility_estimate: '10–14% annualised',
+    max_drawdown_estimate: '-22% to -30%',
+    allocation: [
+      { asset_class: 'Global Equities', weight: 30, rationale: 'Core equity exposure, regime-adjusted' },
+      { asset_class: 'Government Bonds', weight: 20, rationale: 'Duration as regime hedge' },
+      { asset_class: 'Commodities', weight: 15, rationale: 'Inflation and geopolitical risk premium' },
+      { asset_class: 'FX & Currency', weight: 10, rationale: 'Active currency positioning as macro signal' },
+      { asset_class: 'Gold', weight: 15, rationale: 'Monetary hedge and safe haven' },
+      { asset_class: 'Cash', weight: 10, rationale: 'Dry powder for tactical deployment' },
+    ],
+    commentary: 'Current positioning: overweight commodities and gold given USD debasement risk, underweight duration pending central bank clarity.',
+  },
+  {
+    name: 'ESG & Sustainable', icon: Leaf, risk: 'Growth', iconColor: 'text-green-400',
+    objective: 'Growth-oriented portfolio integrating environmental, social, and governance criteria without sacrificing long-term returns.',
+    suitable_investor: 'Values-aligned investor seeking competitive returns with a positive real-world impact framework.',
+    time_horizon: '7–10 years',
+    volatility_estimate: '12–15% annualised',
+    max_drawdown_estimate: '-28% to -35%',
+    allocation: [
+      { asset_class: 'ESG Global Equities', weight: 50, rationale: 'Broad ESG-screened equity exposure' },
+      { asset_class: 'Green Bonds', weight: 20, rationale: 'Climate-linked fixed income' },
+      { asset_class: 'Clean Energy', weight: 15, rationale: 'Thematic exposure to energy transition' },
+      { asset_class: 'Social Infrastructure', weight: 10, rationale: 'Impact-driven real assets' },
+      { asset_class: 'Cash', weight: 5, rationale: 'Liquidity reserve' },
+    ],
+    commentary: 'Clean energy transition and ESG regulation tailwinds remain structural. Green bond issuance at record levels provides attractive fixed income alternatives.',
+  },
+  {
+    name: 'UK Wealth', icon: Building2, risk: 'Moderate', iconColor: 'text-rose-400',
+    objective: 'Sterling-denominated portfolio tailored for UK-based investors, incorporating ISA-friendly assets, domestic bias and GBP hedging considerations.',
+    suitable_investor: 'UK resident investor optimising for GBP returns, tax efficiency, and home-country familiarity.',
+    time_horizon: '5–10 years',
+    volatility_estimate: '9–12% annualised',
+    max_drawdown_estimate: '-20% to -28%',
+    allocation: [
+      { asset_class: 'UK Equities (FTSE)', weight: 25, rationale: 'Home bias, dividend yield, and currency alignment' },
+      { asset_class: 'Global Equities (GBP-hedged)', weight: 30, rationale: 'International growth with FX risk removed' },
+      { asset_class: 'UK Gilts', weight: 15, rationale: 'Sterling fixed income and duration' },
+      { asset_class: 'Corporate Bonds', weight: 15, rationale: 'Yield enhancement over gilts' },
+      { asset_class: 'Property / REITs', weight: 10, rationale: 'UK real estate exposure and income' },
+      { asset_class: 'Cash (GBP)', weight: 5, rationale: 'ISA cash sleeve and liquidity' },
+    ],
+    commentary: 'FTSE 100 remains attractively valued on a global basis. Gilt yields provide genuine income for the first time in a decade. GBP hedging reduces unintended FX drift.',
   },
 ];
 
