@@ -85,20 +85,20 @@ export default function HeroSection() {
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1.0 }}
-        onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
-      >
-        <span className="text-xs text-muted-foreground/40 tracking-widest uppercase font-medium">Scroll</span>
-        <motion.div
-          className="w-px h-10 bg-gradient-to-b from-muted-foreground/30 to-transparent"
-          animate={{ scaleY: [0.5, 1, 0.5], opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
+       <motion.div
+         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer"
+         initial={{ opacity: 0, y: 10 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ duration: 0.8, delay: 1.0 }}
+         onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+       >
+         <span className="text-xs text-muted-foreground/40 uppercase font-medium">Scroll</span>
+         <motion.div
+           className="w-px h-10 bg-gradient-to-b from-muted-foreground/30 to-transparent"
+           animate={{ scaleY: [0.5, 1, 0.5], opacity: [0.4, 0.8, 0.4] }}
+           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+         />
+       </motion.div>
 
       {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
