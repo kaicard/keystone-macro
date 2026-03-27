@@ -5,14 +5,14 @@ import { RefreshCw, ExternalLink, ChevronDown, ChevronUp, Newspaper } from 'luci
 import { Badge } from '@/components/ui/badge';
 
 const BEATS = [
-  { key: 'markets',      label: 'Markets',        icon: '📈', color: 'text-emerald-400' },
-  { key: 'us_economy',   label: 'US Economy',     icon: '🇺🇸', color: 'text-blue-400' },
-  { key: 'uk_economy',   label: 'UK Economy',     icon: '🇬🇧', color: 'text-amber-400' },
-  { key: 'eu_economy',   label: 'EU Economy',     icon: '🇪🇺', color: 'text-purple-400' },
-  { key: 'commodities',  label: 'Commodities',    icon: '🛢️', color: 'text-orange-400' },
-  { key: 'tech',         label: 'Technology',     icon: '💡', color: 'text-cyan-400' },
-  { key: 'geopolitics',  label: 'Geopolitics',    icon: '🌍', color: 'text-red-400' },
-  { key: 'rates_credit', label: 'Rates & Credit', icon: '📉', color: 'text-chart-5' },
+  { key: 'markets',      label: 'Markets' },
+  { key: 'us_economy',   label: 'US Economy' },
+  { key: 'uk_economy',   label: 'UK Economy' },
+  { key: 'eu_economy',   label: 'EU Economy' },
+  { key: 'commodities',  label: 'Commodities' },
+  { key: 'tech',         label: 'Technology' },
+  { key: 'geopolitics',  label: 'Geopolitics' },
+  { key: 'rates_credit', label: 'Rates & Credit' },
 ];
 
 const SENTIMENT_STYLES = {
@@ -178,13 +178,12 @@ export default function NewsHub() {
           <button
             key={beat.key}
             onClick={() => setActiveBeat(beat.key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
               activeBeat === beat.key
                 ? 'bg-primary text-primary-foreground shadow'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
             }`}
           >
-            <span>{beat.icon}</span>
             {beat.label}
           </button>
         ))}

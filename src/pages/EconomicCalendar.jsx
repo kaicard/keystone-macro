@@ -3,9 +3,9 @@ import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
-const FLAGS = {
-  US: '🇺🇸', UK: '🇬🇧', EU: '🇪🇺', JP: '🇯🇵', CN: '🇨🇳',
-  CA: '🇨🇦', AU: '🇦🇺', CH: '🇨🇭', DE: '🇩🇪', FR: '🇫🇷',
+const COUNTRY_LABELS = {
+  US: 'US', UK: 'UK', EU: 'EU', JP: 'JP', CN: 'CN',
+  CA: 'CA', AU: 'AU', CH: 'CH', DE: 'DE', FR: 'FR',
 };
 
 const CATEGORY_COLORS = {
@@ -132,8 +132,8 @@ function EventRow({ event }) {
             {event.time}
           </span>
 
-          {/* Flag */}
-          <span className="text-base shrink-0">{FLAGS[event.country] || '🌐'}</span>
+          {/* Country */}
+          <span className="text-[10px] font-bold text-muted-foreground/60 w-6 shrink-0 tracking-wide">{COUNTRY_LABELS[event.country] || event.country}</span>
 
           {/* Impact dot */}
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
@@ -212,7 +212,7 @@ function DateGroup({ dateStr, events }) {
         {/* Column headers */}
         <div className="flex items-center gap-4 px-5 py-2 border-b border-border/30 bg-muted/5">
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-14">Time</span>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-4 shrink-0" />
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-6 shrink-0">Ctry</span>
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-3 shrink-0" />
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 flex-1">Event</span>
           <div className="flex items-center gap-5 shrink-0">
