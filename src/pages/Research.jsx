@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LiveNewsFeed from '@/components/research/LiveNewsFeed';
+import NewsHub from '@/components/research/NewsHub';
 import TrendingThemes from '@/components/research/TrendingThemes';
 import ResearchNoteModal from '@/components/research/ResearchNoteModal';
 import { sampleNotes } from '@/lib/researchNotes';
@@ -108,14 +109,15 @@ export default function Research() {
           </p>
         </motion.div>
 
-        {/* Live News Feed */}
+        {/* Intelligence Feed + News Hub side by side on large screens */}
         <motion.div
-          className="mb-8"
+          className="mb-8 grid grid-cols-1 xl:grid-cols-2 gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <LiveNewsFeed />
+          <NewsHub />
         </motion.div>
 
         {/* Trending Themes */}
