@@ -1,6 +1,156 @@
 // Curated research notes library — institutional-grade content
+// read_time_minutes is calculated at ~200 words per minute
 
 export const sampleNotes = [
+  // ── March 2026 — most recent first ──────────────────────────────────────
+  {
+    id: 20,
+    title: 'Germany\'s Fiscal Pivot: What the €500bn Package Means for Europe',
+    subtitle: 'The biggest shift in German economic policy in a generation — and why it matters for every European asset class',
+    category: 'Macro',
+    tags: ['Germany', 'Fiscal Policy', 'Euro', 'European Equities', 'Bunds'],
+    publish_date: '2026-03-27',
+    read_time_minutes: 7,
+    is_featured: true,
+    executive_summary: 'Germany has passed a historic €500bn infrastructure and defence spending package, suspending its constitutional debt brake. This is the most significant fiscal shift in the eurozone in 20 years — with direct implications for Bund yields, the euro, European equities, and the ECB\'s rate path.',
+    body: `## The Policy Earthquake
+
+Germany's constitutional "debt brake" (Schuldenbremse) has been the defining constraint on European fiscal policy since 2009. Its suspension — for a €500bn infrastructure fund and a commitment to defence spending above 2% of GDP — is not an incremental policy adjustment. It is a structural break.
+
+Markets have begun to react: Bund yields have risen 30-40bps since the announcement, European equities are outperforming US peers on a 1-month basis, and EUR/USD has strengthened. But we believe the market is still in the early stages of pricing the full implication.
+
+## What the Package Contains
+
+- **€400bn Infrastructure Fund:** Roads, rail, energy grid, digital infrastructure. This is genuine demand stimulus with a 10-year deployment horizon.
+- **Defence Spending:** Germany committed to 2%+ of GDP, reversing decades of underinvestment. Rheinmetall, KNDS, and European defence primes are direct beneficiaries.
+- **Climate Investment:** A proportion directed at the Energiewende — accelerating grid decarbonisation.
+
+## Implications by Asset Class
+
+**Bunds:** Yields will structurally reset higher. Germany's debt/GDP ratio will rise from ~63% to an estimated 80-85% over the next decade. The risk-free rate benchmark for Europe is moving. We expect 10Y Bund yields to re-anchor closer to 3.0-3.5% versus the 2.5% of early 2026.
+
+**European Equities:** Domestically-focused German industrials, construction, and infrastructure companies are the primary beneficiaries. DAX has already begun to reflect this, but mid-cap German names are less fully priced.
+
+**Euro:** The fiscal expansion is broadly EUR-positive — it reduces the attractiveness of holding USD as the US runs its own fiscal deficits while Europe finally delivers stimulus. EUR/USD has technical targets at 1.12-1.15 on a 12-month view.
+
+**ECB:** This complicates the ECB's rate path. Fiscal stimulus is inflationary at the margin. A June cut remains the base case, but the package creates an argument for the ECB to move more slowly than currently priced through 2027.
+
+## The Broader Significance
+
+This is not just a German story — it is a European story. Germany's political willingness to break from fiscal orthodoxy signals a broader shift in European economic governance. If France follows with its own fiscal loosening (constrained by its existing deficit), and if the EU Commission accelerates defence spending at the bloc level, the European growth premium versus the US could narrow materially over the next 2-3 years.`,
+    key_risks: 'Implementation delays in infrastructure spending; political reversal in future German governments; ECB resistance to cutting into fiscal stimulus; Bund selloff becoming disorderly if markets question debt sustainability.',
+    takeaway: 'Germany\'s fiscal pivot is the most important macro development in Europe since the ECB\'s "whatever it takes" moment. Increase European equity exposure (especially industrials, defence, infrastructure), reduce long Bund exposure, and consider EUR/USD upside via options.',
+    what_would_change_mind: 'Evidence of implementation failure or coalition collapse in Germany; or a sharp rise in Bund yields toward 4%+ that triggered sovereign stress elsewhere in the eurozone.'
+  },
+  {
+    id: 19,
+    title: 'Tariff Uncertainty and the Portfolio Response',
+    subtitle: 'How to position when US trade policy is the dominant market variable',
+    category: 'Macro',
+    tags: ['Tariffs', 'US Trade', 'Supply Chains', 'Inflation', 'Portfolio'],
+    publish_date: '2026-03-24',
+    read_time_minutes: 6,
+    executive_summary: 'US tariff policy is the dominant source of macro uncertainty in early 2026 — affecting inflation, growth, and corporate earnings simultaneously. We map the transmission channels and the appropriate portfolio response.',
+    body: `## The Transmission Channels
+
+Tariffs are not merely a trade policy tool — they are a simultaneous inflation shock (higher goods prices), a growth shock (reduced trade volumes, lower corporate investment), and a confidence shock (business uncertainty delays hiring and capex). The combination creates a stagflationary impulse that is particularly challenging for central banks and for portfolio construction.
+
+## The Inflation Channel
+
+Import tariffs raise the domestic price of affected goods directly. If 25% tariffs on a broad range of consumer goods are implemented and sustained, the first-order CPI impact is estimated at 0.5-1.0% — but the second-order effects (retaliatory tariffs on US exports, supply chain restructuring, commodity price impacts) are harder to model and could be larger.
+
+The critical point for the Fed: tariff-driven inflation is not the kind that responds to rate hikes. Raising rates to contain tariff-driven goods inflation would add demand destruction without addressing the supply-side shock. This creates a lose-lose for the Fed.
+
+## The Growth Channel
+
+US corporates with significant international supply chains (Consumer Discretionary, Technology hardware, Industrials) face margin compression as input costs rise without the ability to fully pass through costs. The IMP PMI data already shows factory orders decelerating in tariff-exposed sectors.
+
+The broader risk: US trading partners (EU, China, Canada, Mexico) are preparing retaliatory measures. A tit-for-tat escalation would reduce global trade volumes materially — a scenario that has historically preceded growth slowdowns.
+
+## Portfolio Positioning
+
+**Reduce:** International-supply-chain dependent consumer discretionary, US retailers with high import content, leveraged companies with thin margins facing cost pressure.
+
+**Add:** Domestically-oriented US companies (US services, domestic construction/infrastructure), commodities as an inflation hedge, short-dated fixed income (which benefits if the Fed delays cuts without growth dramatically weakening).
+
+**Watch:** Gold — in a stagflationary environment where the Fed is constrained, gold historically outperforms both equities and bonds. Current positioning argues for a 7-10% allocation.`,
+    key_risks: 'Tariff escalation beyond current levels triggering a sharper growth slowdown; retaliatory tariffs disproportionately targeting US services exports (financial services, tech); Fed being forced to choose between inflation and growth.',
+    takeaway: 'Position defensively in equities (domestic orientation, services over goods, quality balance sheets), add real asset and gold exposure, and keep fixed income short-dated while the tariff inflation picture becomes clearer.',
+    what_would_change_mind: 'A sustained reduction in tariff scope or a trade deal that removes the primary uncertainty; or evidence that the US consumer is absorbing tariff cost increases without meaningful demand destruction.'
+  },
+  {
+    id: 18,
+    title: 'UK Budget 2026: Investment Implications',
+    subtitle: 'Assessing the fiscal impact and portfolio consequences of the Spring Statement',
+    category: 'Macro',
+    tags: ['UK', 'Budget', 'Gilts', 'Sterling', 'Fiscal Policy'],
+    publish_date: '2026-03-20',
+    read_time_minutes: 5,
+    executive_summary: 'The UK Spring Statement delivered fiscal tightening through spending cuts rather than tax rises, with OBR growth forecasts revised sharply lower. We assess the implications for Gilts, sterling, and UK equities.',
+    body: `## The Fiscal Context
+
+The Chancellor delivered a Spring Statement under significant fiscal constraint. The OBR revised GDP growth down to 1.0% for 2026 (from 2.0%), and the fiscal headroom — the margin against debt-falling-as-a-share-of-GDP — has been almost entirely consumed.
+
+The response: £14bn of day-to-day spending cuts, concentrated in welfare and public services, with defence spending increased in line with NATO commitments. No new tax rises, but the "stealth" fiscal drag from frozen thresholds continues.
+
+## Gilts: Complex Picture
+
+Short-term, the Statement was marginally Gilt-positive — less borrowing than feared, and markets had priced in worse. UK 10Y Gilts rallied 8bps on the day.
+
+But the structural picture is challenging. The OBR's 1.0% growth forecast, if correct, means revenues will disappoint — requiring either further spending cuts or additional borrowing. We maintain a cautious stance on long Gilts, with a preference for Index-Linked Gilts which provide CPI protection in a still-above-target inflation environment.
+
+## Sterling: Neutral with Upside
+
+GBP has underperformed since early 2025. The combination of sticky inflation (supporting BOE patience on cuts), improving trade balance, and US political uncertainty reducing USD attractiveness creates conditions for GBP/USD upside. Technical resistance at 1.30 — a break would open a path to 1.33-1.35.
+
+## UK Equities: Value but Unloved
+
+FTSE 100 continues to trade at a significant discount to global peers (11x PE vs 21x for S&P 500). The high proportion of international earners in the FTSE 100 means the index benefits from a weaker pound and global commodity demand. Domestically, the FTSE 250 is more exposed to UK growth and remains vulnerable if the growth slowdown proves sharper than forecast.`,
+    key_risks: 'UK growth undershooting 1.0% forcing emergency fiscal action; BOE cutting rates more aggressively than expected in response to growth weakness; Gilt market losing confidence in fiscal sustainability.',
+    takeaway: 'Favour FTSE 100 over FTSE 250 for international earnings diversification; hold Index-Linked Gilts over conventional; watch GBP/USD for a break above 1.30 as a tactical long opportunity.',
+    what_would_change_mind: 'UK growth materially outperforming OBR forecasts (driven by consumption recovery) would improve FTSE 250 prospects; or a sharp BOE rate cut cycle would support domestic UK equities.'
+  },
+  {
+    id: 17,
+    title: 'FOMC March 2026: Dots, Forecasts, and the Path Ahead',
+    subtitle: 'Reading between the lines of the March Fed decision',
+    category: 'Fixed Income',
+    tags: ['Fed', 'FOMC', 'Rates', 'Dot Plot', 'Treasuries'],
+    publish_date: '2026-03-19',
+    read_time_minutes: 5,
+    executive_summary: 'The Fed held rates at 4.25-4.50% in March, but the more important signal was the revised dot plot and growth forecasts. Two cuts remain the 2026 median, but the distribution of views has widened — and the risks are tilted toward fewer cuts, not more.',
+    body: `## What Changed in the March SEP
+
+The Summary of Economic Projections (SEP) told the real story:
+
+- **Growth:** Revised down sharply to 1.7% for 2026 (from 2.1%). This is the Fed acknowledging that tariff uncertainty and softer consumption data are weighing on the outlook.
+- **Inflation:** PCE revised up to 2.7% for 2026. The Fed is explicitly recognising that tariff pass-through will lift near-term inflation — even as it hopes this is "transitory."
+- **Dot Plot:** Median still shows two cuts in 2026, but the distribution widened. Five participants now see zero or one cut — up from two in December. The tail of hawkish views is growing.
+
+## Powell's Message
+
+The press conference struck a deliberately cautious tone. Key quotes:
+
+*"We do not need to be in a hurry to adjust our policy stance."*
+
+*"The tariff situation is genuinely unusual — the inflation implications are uncertain in both direction and magnitude."*
+
+*"We are data-dependent. We are watching for evidence that the labour market is weakening in a way that would warrant accommodation."*
+
+This is a Fed on hold until it sees the tariff picture more clearly. June remains possible for a first cut — but only if inflation data over the next three months is benign.
+
+## Market Implications
+
+**Rates:** Short-end rates are appropriately priced for approximately two cuts. The risk is that tariff inflation delays the first cut to September or later — which would push 2Y yields back toward 4.5%.
+
+**Equities:** The growth downgrade is more concerning than the hold. A 1.7% growth environment with elevated uncertainty is not supportive of 21x P/E multiples. Quality and defensives remain preferred over cyclicals.
+
+**Duration:** We remain underweight long-duration Treasuries. The 10Y Treasury at 4.3% does not adequately compensate for fiscal issuance risk and the possibility of tariff-driven inflation surprise.`,
+    key_risks: 'Inflation re-acceleration forcing the Fed to re-signal hikes; growth falling faster than the 1.7% forecast requiring emergency cuts; financial conditions tightening via equity market correction forcing the Fed\'s hand.',
+    takeaway: 'The Fed is effectively on hold until mid-year clarity on tariffs. Two cuts in 2026 remains base case but tail risk of zero cuts is real. Position for higher-for-longer short rates while acknowledging downside growth risk.',
+    what_would_change_mind: 'Three months of core PCE at or below 2.3% MoM annualised, accompanied by a clear signal that tariff pass-through is modest, would open the door to a June cut as the base case.'
+  },
+  // ── Earlier notes (existing library) ───────────────────────────────────
   {
     id: 1,
     title: 'The Rate Regime Shift: Navigating Higher-for-Longer',

@@ -1,44 +1,15 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Clock, Tag } from 'lucide-react';
+import { ArrowRight, Clock, Tag, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { sampleNotes } from '@/lib/researchNotes';
 
-const sampleResearch = [
-  {
-    id: 1,
-    category: 'Macro',
-    title: 'The Rate Regime Shift: Navigating Higher-for-Longer',
-    summary: 'Central banks signal a prolonged period of elevated rates. We examine the implications for multi-asset allocation and duration positioning.',
-    date: '2026-03-15',
-    readTime: 8,
-  },
-  {
-    id: 2,
-    category: 'Multi-Asset',
-    title: 'Strategic vs Tactical: When to Deviate from SAA',
-    summary: 'A framework for determining when tactical tilts are warranted, including regime signals and risk budget considerations.',
-    date: '2026-03-12',
-    readTime: 12,
-  },
-  {
-    id: 3,
-    category: 'Equities',
-    title: 'Concentration Risk in US Equities: A Portfolio Perspective',
-    summary: 'The S&P 500 top-10 weight exceeds 35%. We assess diversification options and hedging strategies for equity-heavy portfolios.',
-    date: '2026-03-10',
-    readTime: 10,
-  },
-  {
-    id: 4,
-    category: 'Wealth Strategy',
-    title: 'Tax-Efficient Accumulation: ISA, Pension, and Beyond',
-    summary: 'An educational overview of UK tax wrappers and their role in long-term wealth building for mid-career professionals.',
-    date: '2026-03-08',
-    readTime: 7,
-  },
-];
+// Show the 4 most recent notes (sorted by publish_date descending)
+const latestNotes = [...sampleNotes]
+  .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date))
+  .slice(0, 4);
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
@@ -46,10 +17,20 @@ const categoryColors = {
   'Equities': 'bg-chart-3/10 text-chart-3 border-chart-3/20',
   'Wealth Strategy': 'bg-chart-4/10 text-chart-4 border-chart-4/20',
   'Fixed Income': 'bg-chart-5/10 text-chart-5 border-chart-5/20',
+  'Commodities': 'bg-amber-400/10 text-amber-400 border-amber-400/20',
+  'Behavioural Finance': 'bg-purple-400/10 text-purple-400 border-purple-400/20',
+  'Risk Management': 'bg-red-400/10 text-red-400 border-red-400/20',
+  'Trade Reviews': 'bg-cyan-400/10 text-cyan-400 border-cyan-400/20',
 };
 
+function isNew(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return (now - d) / (1000 * 60 * 60 * 24) <= 3;
+}
+
 export default function FeaturedResearch() {
-  const ref = React.useRef(null);
+  const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
@@ -73,7 +54,7 @@ export default function FeaturedResearch() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sampleResearch.map((note, i) => (
+          {latestNotes.map((note, i) => (
             <motion.div
               key={note.id}
               initial={{ opacity: 0, y: 20 }}
@@ -82,24 +63,34 @@ export default function FeaturedResearch() {
             >
               <Link to="/Research" className="block group">
                 <div className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5">
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-3 mb-4 flex-wrap">
                     <Badge variant="outline" className={categoryColors[note.category] || 'bg-muted text-muted-foreground'}>
                       <Tag className="w-3 h-3 mr-1" />
                       {note.category}
                     </Badge>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {note.readTime} min read
+                      {note.read_time_minutes} min read
                     </span>
+                    {isNew(note.publish_date) && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
+                        <TrendingUp className="w-2.5 h-2.5" /> New
+                      </span>
+                    )}
                   </div>
                   <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors leading-snug">
                     {note.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {note.summary}
+                  {note.subtitle && (
+                    <p className="text-xs text-muted-foreground/70 mb-2 italic">{note.subtitle}</p>
+                  )}
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                    {note.executive_summary}
                   </p>
                   <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{new Date(note.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
                     <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
                   </div>
                 </div>
