@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -11,6 +11,7 @@ import TopMovers from '@/components/marketpulse/TopMovers';
 import SectorHeatmap from '@/components/marketpulse/SectorHeatmap';
 import CreditAndCurve from '@/components/marketpulse/CreditAndCurve';
 import LiveTickerBar from '@/components/marketpulse/LiveTickerBar';
+import InstrumentChartModal from '@/components/marketpulse/InstrumentChartModal';
 
 function fmtPrice(price, name) {
   if (price == null) return '—';
@@ -47,20 +48,20 @@ function getYahooUrl(item) {
   return `https://finance.yahoo.com/quote/${sym}`;
 }
 
-function LiveTile({ item }) {
+function LiveTile({ item, onSelect }) {
   return (
-    <a href={getYahooUrl(item)} target="_blank" rel="noopener noreferrer">
+    <div onClick={() => onSelect(item)} className="cursor-pointer">
       <MarketTile
         name={item.name || item.ticker}
         value={fmtPrice(item.price, item.name)}
         change={fmtChange(item.change_pct)}
         direction={item.direction}
       />
-    </a>
+    </div>
   );
 }
 
-function LiveGrid({ items, cols = 4 }) {
+function LiveGrid({ items, cols = 4, onSelect }) {
   const gridClass = {
     2: 'grid-cols-2',
     4: 'grid-cols-2 md:grid-cols-4',
@@ -79,7 +80,7 @@ function LiveGrid({ items, cols = 4 }) {
 
   return (
     <div className={`grid ${gridClass} gap-4`}>
-      {items.map(item => <LiveTile key={item.ticker} item={item} />)}
+      {items.map(item => <LiveTile key={item.ticker} item={item} onSelect={onSelect} />)}
     </div>
   );
 }
@@ -95,6 +96,7 @@ export default function MarketPulse() {
   const { liveQuotes, llmData } = useCombinedData();
   const { data: live, loading: liveLoading, lastFetched, refresh } = liveQuotes;
   const { data: llm, loading: llmLoading } = llmData;
+  const [selectedInstrument, setSelectedInstrument] = React.useState(null);
 
   const loading = liveLoading || llmLoading;
 
@@ -167,7 +169,7 @@ export default function MarketPulse() {
                 <div className="space-y-8">
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
@@ -191,17 +193,17 @@ export default function MarketPulse() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
-                    <LiveGrid items={live?.commodities} cols={4} />
+                    <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
-                    <LiveGrid items={live?.fx} cols={4} />
+                    <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} />
                   </div>
                   {live?.vix && (
                     <div>
                       <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <LiveTile item={live.vix} />
+                        <LiveTile item={live.vix} onSelect={setSelectedInstrument} />
                       </div>
                     </div>
                   )}
@@ -212,17 +214,17 @@ export default function MarketPulse() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Single Names</h3>
-                    <LiveGrid items={live?.equities} cols={4} />
+                    <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} />
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="etfs">
-                <LiveGrid items={live?.etfs} cols={4} />
+                <LiveGrid items={live?.etfs} cols={4} onSelect={setSelectedInstrument} />
               </TabsContent>
 
               <TabsContent value="sectors">
@@ -253,15 +255,15 @@ export default function MarketPulse() {
               </TabsContent>
 
               <TabsContent value="commodities">
-                <LiveGrid items={live?.commodities} cols={4} />
+                <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} />
               </TabsContent>
 
               <TabsContent value="fx">
-                <LiveGrid items={live?.fx} cols={4} />
+                <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} />
               </TabsContent>
 
               <TabsContent value="crypto">
-                <LiveGrid items={live?.crypto} cols={4} />
+                <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} />
               </TabsContent>
             </Tabs>
           </motion.div>
@@ -269,6 +271,12 @@ export default function MarketPulse() {
 
         </div>
       </div>
+      {selectedInstrument && (
+        <InstrumentChartModal
+          item={selectedInstrument}
+          onClose={() => setSelectedInstrument(null)}
+        />
+      )}
     </div>
   );
 }
