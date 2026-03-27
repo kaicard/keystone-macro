@@ -20,6 +20,44 @@ const CATEGORY_COLORS = {
 };
 
 const EVENTS = [
+  // March 17
+  { id: 100, date: '2026-03-17', time: '12:30', country: 'US', event: 'US Retail Sales (MoM) — Feb',    importance: 'high',   previous: '-0.9%', forecast: '0.6%',  actual: '0.2%',  category: 'Consumer',
+    outcome: 'Retail sales recovered but underwhelmed at +0.2% MoM vs +0.6% expected. Control group flat at 0.0%. Consumer spending appears to be losing momentum, reinforcing concerns about Q1 GDP tracking below 1%. Dollar weakened modestly; rates rallied.' },
+  { id: 101, date: '2026-03-17', time: '13:15', country: 'US', event: 'Industrial Production (MoM)',     importance: 'medium', previous: '0.5%',  forecast: '0.2%',  actual: '0.7%',  category: 'GDP',
+    outcome: 'Industrial production surprised to the upside at +0.7%, boosted by utilities output during cold weather. Manufacturing sub-index +0.1%, broadly in line. Partially offsets the weak retail sales print but unlikely to shift Fed thinking.' },
+
+  // March 18
+  { id: 102, date: '2026-03-18', time: '09:00', country: 'DE', event: 'Germany ZEW Economic Sentiment',  importance: 'high',   previous: '26.0',  forecast: '48.0',  actual: '51.6',  category: 'Consumer',
+    outcome: 'ZEW surged to 51.6 from 26.0, smashing expectations. The huge jump reflects optimism around the new German fiscal package and infrastructure investment plans. DAX briefly touched fresh highs; EUR/USD nudged higher.' },
+  { id: 103, date: '2026-03-18', time: '09:00', country: 'EU', event: 'Eurozone ZEW Economic Sentiment', importance: 'medium', previous: '24.2',  forecast: '35.0',  actual: '39.8',  category: 'Consumer',
+    outcome: 'Eurozone ZEW followed the German lead, jumping to 39.8. Improving sentiment across the bloc suggests fiscal stimulus expectations are lifting animal spirits.' },
+
+  // March 19 — FOMC
+  { id: 104, date: '2026-03-19', time: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',     importance: 'high',   previous: '4.25–4.50%', forecast: '4.25–4.50%', actual: '4.25–4.50%', category: 'Central Bank',
+    outcome: 'Fed held rates as expected. Dot plot still shows two cuts for 2026, but the median 2027 dot was revised slightly higher. Growth forecasts trimmed to 1.7% for 2026 (from 2.1%). Tariff uncertainty was flagged repeatedly. Equities rallied on the unchanged median dots.' },
+  { id: 105, date: '2026-03-19', time: '18:30', country: 'US', event: 'FOMC Press Conference — Powell',  importance: 'high',   previous: '—',     forecast: '—',     actual: '✓',     category: 'Central Bank',
+    outcome: 'Powell struck a cautious tone, emphasising "no rush" to adjust rates and noting that tariff impacts on inflation are "unusually uncertain". He pushed back on recession fears but acknowledged softening in consumer spending data. Markets took the presser as dovish.' },
+
+  // March 20
+  { id: 106, date: '2026-03-20', time: '12:00', country: 'UK', event: 'BOE Interest Rate Decision',      importance: 'high',   previous: '4.50%', forecast: '4.50%', actual: '4.50%', category: 'Central Bank',
+    outcome: 'BOE held at 4.50% in an 8-1 vote (Dhingra dissenting for a cut). Statement acknowledged falling CPI but highlighted sticky services inflation. Market pricing for May cut rose to ~55%. GBP was steady.' },
+  { id: 107, date: '2026-03-20', time: '07:45', country: 'CH', event: 'SNB Interest Rate Decision',      importance: 'high',   previous: '0.50%', forecast: '0.25%', actual: '0.25%', category: 'Central Bank',
+    outcome: 'SNB cut by 25bps to 0.25% as expected, citing benign inflation outlook. CHF weakened modestly. Forward guidance suggests further easing is data-dependent, with zero lower bound back in discussion.' },
+
+  // March 24
+  { id: 108, date: '2026-03-24', time: '08:30', country: 'UK', event: 'UK Flash Composite PMI',          importance: 'medium', previous: '50.5',  forecast: '50.3',  actual: '50.0',  category: 'PMI',
+    outcome: 'UK PMI dipped to the expansion-contraction threshold at 50.0. Services held at 50.3 but manufacturing slipped further to 44.6. Employment sub-indices weakened. Sterling fell ~20 pips.' },
+  { id: 109, date: '2026-03-24', time: '09:00', country: 'EU', event: 'Eurozone Flash Composite PMI',    importance: 'high',   previous: '50.2',  forecast: '50.6',  actual: '50.4',  category: 'PMI',
+    outcome: 'Eurozone composite edged up to 50.4, below the 50.6 consensus but still in expansion territory. Manufacturing showed signs of stabilisation while services remained the growth engine.' },
+  { id: 110, date: '2026-03-24', time: '13:45', country: 'US', event: 'S&P Global US Flash Composite PMI', importance: 'medium', previous: '51.6', forecast: '51.5', actual: '53.5', category: 'PMI',
+    outcome: 'US PMI surprised higher at 53.5, with services at 54.3 leading the way. New orders accelerated. This contrasted with softer hard data and suggested underlying momentum in the economy may be better than feared.' },
+
+  // March 25
+  { id: 111, date: '2026-03-25', time: '14:00', country: 'US', event: 'CB Consumer Confidence',          importance: 'high',   previous: '98.3',  forecast: '94.0',  actual: '92.9',  category: 'Consumer',
+    outcome: 'Consumer confidence fell further to 92.9, the lowest since February 2021. Expectations component dropped sharply to 65.2, crossing below the 80 threshold associated with recession risk. Equity futures dipped on the release.' },
+  { id: 112, date: '2026-03-25', time: '09:00', country: 'DE', event: 'Germany Ifo Expectations',        importance: 'medium', previous: '85.4',  forecast: '86.0',  actual: '87.7',  category: 'PMI',
+    outcome: 'Ifo expectations surged to 87.7, the highest in nearly two years. Business expectations are being lifted by the infrastructure spending package. This contrasts sharply with the deteriorating US consumer mood.' },
+
   // March 26 — Yesterday (all released)
   { id: 1,  date: '2026-03-26', time: '07:00', country: 'UK', event: 'UK CPI (YoY)',                   importance: 'high',   previous: '3.0%',  forecast: '2.9%',  actual: '2.8%',  category: 'Inflation',
     outcome: 'Inflation fell to 2.8%, below both consensus and prior, its lowest since mid-2021. Services CPI softened to 4.7%. This materially increased market pricing for a BOE rate cut in May, with GBP/USD dipping ~30 pips on release.' },
@@ -281,9 +319,10 @@ export default function EconomicCalendar() {
   const filtered = useMemo(() => {
     const weekEnd = getWeekEnd();
     return EVENTS.filter(e => {
-      if (tab === 'today') return e.date === TODAY;
-      if (tab === 'week')  return e.date >= TODAY && e.date <= weekEnd;
-      if (tab === 'month') return e.date >= TODAY && e.date <= '2026-04-30';
+      if (tab === 'today')    return e.date === TODAY;
+      if (tab === 'week')     return e.date >= TODAY && e.date <= weekEnd;
+      if (tab === 'month')    return e.date >= TODAY && e.date <= '2026-04-30';
+      if (tab === 'previous') return e.date < TODAY;
       return true;
     });
   }, [tab]);
@@ -294,8 +333,9 @@ export default function EconomicCalendar() {
       if (!map[e.date]) map[e.date] = [];
       map[e.date].push(e);
     });
-    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
-  }, [filtered]);
+    const sorted = Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
+    return tab === 'previous' ? sorted.reverse() : sorted;
+  }, [filtered, tab]);
 
   const todayHighCount = EVENTS.filter(e => e.date === TODAY && e.importance === 'high').length;
   const todayReleasedCount = EVENTS.filter(e => e.date === TODAY && e.actual).length;
@@ -343,11 +383,12 @@ export default function EconomicCalendar() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 p-1 glass rounded-xl w-fit">
+        <div className="flex gap-1 mb-6 p-1 glass rounded-xl w-fit flex-wrap">
           {[
-            { key: 'today', label: 'Today' },
-            { key: 'week',  label: 'This Week' },
-            { key: 'month', label: 'This Month' },
+            { key: 'today',    label: 'Today' },
+            { key: 'week',     label: 'This Week' },
+            { key: 'month',    label: 'This Month' },
+            { key: 'previous', label: 'Previous' },
           ].map(t => (
             <button
               key={t.key}
