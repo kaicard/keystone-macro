@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Radio, RefreshCw, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Radio, RefreshCw, ChevronDown, ChevronUp, ChevronRight, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -136,17 +136,27 @@ export default function LiveNewsFeed() {
                     className="overflow-hidden"
                   >
                     <div className="px-6 pb-4 ml-9 space-y-3 border-l-2 border-primary/20">
-                      <div className="bg-primary/5 rounded-lg p-4">
-                        <p className="text-xs font-semibold text-primary mb-1.5 uppercase tracking-wide">Desk View</p>
-                        <p className="text-sm text-foreground leading-relaxed">{item.desk_view}</p>
-                      </div>
-                      {item.what_to_watch && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-medium text-muted-foreground shrink-0 mt-0.5">Watch:</span>
-                          <p className="text-xs text-muted-foreground">{item.what_to_watch}</p>
-                        </div>
-                      )}
-                    </div>
+                       <div className="bg-primary/5 rounded-lg p-4">
+                         <p className="text-xs font-semibold text-primary mb-1.5 uppercase tracking-wide">Desk View</p>
+                         <p className="text-sm text-foreground leading-relaxed">{item.desk_view}</p>
+                       </div>
+                       {item.what_to_watch && (
+                         <div className="flex items-start gap-2">
+                           <span className="text-xs font-medium text-muted-foreground shrink-0 mt-0.5">Watch:</span>
+                           <p className="text-xs text-muted-foreground">{item.what_to_watch}</p>
+                         </div>
+                       )}
+                       <a
+                         href={`https://www.google.com/search?q=${encodeURIComponent(item.headline)}${item.url_hint ? `+site:${item.url_hint}` : ''}`}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         onClick={e => e.stopPropagation()}
+                         className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors"
+                       >
+                         <ExternalLink className="w-3 h-3" />
+                         Find on {item.url_hint || item.source || 'the web'}
+                       </a>
+                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>

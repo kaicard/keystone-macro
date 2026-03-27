@@ -18,7 +18,8 @@ const HEADLINE_SCHEMA = {
           impact: { type: "string" },
           desk_view: { type: "string" },
           what_to_watch: { type: "string" },
-          published_time: { type: "string" }
+          published_time: { type: "string" },
+          url_hint: { type: "string" }
         }
       }
     }
@@ -55,6 +56,7 @@ For each real story provide:
   - desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
   - what_to_watch: the key follow-on variable or event to monitor
   - published_time: the actual time this story was published or reported today, in HH:MM format (24h, London time). Estimate from context clues in the article if needed.
+  - url_hint: the most likely URL domain where this story would appear (e.g. "bloomberg.com", "ft.com", "reuters.com")
 
 Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data releases. Only use real verified events.`;
 

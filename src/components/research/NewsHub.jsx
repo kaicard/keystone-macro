@@ -24,7 +24,9 @@ const SENTIMENT_STYLES = {
 function ArticleCard({ article, index }) {
   const [expanded, setExpanded] = useState(false);
   const domain = article.url_hint || '';
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(article.headline)}`;
+  const searchUrl = domain
+    ? `https://www.google.com/search?q=${encodeURIComponent(article.headline)}+site:${domain}`
+    : `https://www.google.com/search?q=${encodeURIComponent(article.headline)}`;
 
   return (
     <motion.div
