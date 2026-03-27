@@ -27,12 +27,17 @@ export default function LiveNewsFeed() {
 
   const fetchHeadlines = useCallback(async () => {
     setLoading(true);
-    const res = await base44.functions.invoke('liveNews', {});
-    if (res?.data?.headlines?.length) {
-      setHeadlines(res.data.headlines);
-      setLastUpdated(res.data.fetched_at ? new Date(res.data.fetched_at) : new Date());
+    try {
+      const res = await base44.functions.invoke('liveNews', {});
+      if (res?.data?.headlines?.length) {
+        setHeadlines(res.data.headlines);
+        setLastUpdated(res.data.fetched_at ? new Date(res.data.fetched_at) : new Date());
+      }
+    } catch (e) {
+      // Silently fail — existing headlines remain visible
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {

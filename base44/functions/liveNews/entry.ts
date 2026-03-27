@@ -43,22 +43,22 @@ Deno.serve(async (req) => {
 
     // Cache miss or stale — fetch fresh
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const prompt = `You are a macro market intelligence editor. Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories breaking today (${today}). 
+    const prompt = `You are a macro market intelligence editor. Search the web for the 8 most important real macro, geopolitical, and financial market news stories from today (${today}).
 
 Pull REAL headlines from verified sources: Bloomberg, Reuters, Financial Times, Wall Street Journal, CNBC, BBC News, or similar. Only include stories published today or within the last 24 hours.
 
-For each real story provide:
-- headline: the actual headline or a close paraphrase (max 15 words)
-- source: the publication name (e.g. "Reuters", "Bloomberg", "FT")
-- category: one of [Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit]
-- sentiment: "positive" | "negative" | "neutral"
+For each story provide these fields:
+- headline: the actual headline or close paraphrase (max 15 words)
+- source: publication name (e.g. "Reuters", "Bloomberg", "FT")
+- category: one of: Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit
+- sentiment: one of: positive, negative, neutral
 - impact: 1-sentence market impact summary
-  - desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
-  - what_to_watch: the key follow-on variable or event to monitor
-  - published_time: the actual time this story was published or reported today, in HH:MM format (24h, London time). Estimate from context clues in the article if needed.
-  - url_hint: the most likely URL domain where this story would appear (e.g. "bloomberg.com", "ft.com", "reuters.com")
+- desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
+- what_to_watch: the key follow-on variable or event to monitor
+- published_time: time published today in HH:MM format (24h London time)
+- url_hint: domain where this story appears (e.g. "bloomberg.com", "ft.com")
 
-Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data releases. Only use real verified events.`;
+Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data. Only use real verified events.`;
 
     const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
@@ -80,6 +80,6 @@ Cover a range of: central bank policy, geopolitical developments, major equity m
 
     return Response.json({ ok: true, headlines, cached: false, fetched_at });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message, headlines: [] }, { status: 500 });
+    return Response.json({ ok: false, error: error.message, headlines: [] }, { status: 200 });
   }
 });
