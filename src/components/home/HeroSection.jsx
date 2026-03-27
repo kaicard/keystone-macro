@@ -92,7 +92,7 @@ export default function HeroSection() {
          transition={{ duration: 0.8, delay: 1.0 }}
          onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
        >
-         <span className="text-xs text-muted-foreground/40 uppercase font-medium">Scroll</span>
+         <span className="text-xs text-muted-foreground/40 uppercase font-medium text-center">Scroll</span>
          <motion.div
            className="w-px h-10 bg-gradient-to-b from-muted-foreground/30 to-transparent"
            animate={{ scaleY: [0.5, 1, 0.5], opacity: [0.4, 0.8, 0.4] }}
