@@ -49,11 +49,14 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="flex items-center gap-3 group">
-              <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/c8e73f5af_IMG_3747.jpg"
-                alt="The Macro Sphere"
-                className="w-8 h-8 rounded-full object-cover object-top"
-              />
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
+                <img
+                  src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/1b6645c56_BCD58650-3FC4-4E56-B335-136BA0F7A15D.png"
+                  alt="The Macro Sphere"
+                  className="w-full"
+                  style={{ marginTop: '-2%', transform: 'scale(1.6)', transformOrigin: 'center 40%' }}
+                />
+              </div>
               <div className="hidden sm:block">
                 <span className="font-display text-lg font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                   The Macro Sphere
