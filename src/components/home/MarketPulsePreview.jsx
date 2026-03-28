@@ -98,9 +98,7 @@ export default function MarketPulsePreview() {
           }
         </div>
 
-        <p className="text-xs text-muted-foreground/40 mt-6 text-center">
-          Live market data. Not investment advice.
-        </p>
+
       </div>
     </section>
   );
