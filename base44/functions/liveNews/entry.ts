@@ -70,7 +70,9 @@ For each story provide:
 - url: the exact direct URL to the article from your search results
 - url_hint: domain (e.g. "bloomberg.com", "ft.com")
 
-Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data.`;
+Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data.
+
+IMPORTANT: Return the stories ordered by published_time, newest first (most recently published story at index 0).`;
 
     const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,

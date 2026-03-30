@@ -61,7 +61,9 @@ Each article must have:
 - sentiment: "positive", "negative", or "neutral" (from an investor's perspective)
 - published_time: ACTUAL publication time from article metadata in HH:MM London time; "—" if unknown
 - url: exact direct URL from your search results
-- url_hint: the domain (e.g. "ft.com", "bloomberg.com")`,
+- url_hint: the domain (e.g. "ft.com", "bloomberg.com")
+
+IMPORTANT: Return the articles ordered by published_time, newest first (most recently published article at index 0).`,
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',

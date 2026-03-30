@@ -108,7 +108,12 @@ function BeatFeed({ beat }) {
     setLoading(true);
     const res = await base44.functions.invoke('beatNews', { beat });
     if (res?.data?.articles?.length) {
-      setArticles(res.data.articles);
+      const sorted = [...res.data.articles].sort((a, b) => {
+        if (!a.published_time || a.published_time === '—') return 1;
+        if (!b.published_time || b.published_time === '—') return -1;
+        return b.published_time.localeCompare(a.published_time);
+      });
+      setArticles(sorted);
       setLastUpdated(new Date(res.data.fetched_at));
     }
     setLoading(false);
