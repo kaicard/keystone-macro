@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
-import { Search, Grid3X3, List, Clock, Filter, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Grid3X3, List, Clock, Filter, ArrowRight, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -69,11 +69,14 @@ function NoteCard({ note, viewMode, delay, onClick }) {
   );
 }
 
+const INITIAL_VISIBLE = 6;
+
 export default function Research() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
   const [selectedNote, setSelectedNote] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   const { data: dbNotes } = useQuery({
     queryKey: ['research-notes'],
@@ -85,13 +88,28 @@ export default function Research() {
 
   const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
 
-  const filtered = allNotes.filter(note => {
-    const matchesSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || note.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Always sort most recent first
+  const sorted = useMemo(() =>
+    [...allNotes].sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date)),
+    [allNotes]
+  );
+
+  const filtered = useMemo(() => {
+    setShowAll(false);
+    return sorted.filter(note => {
+      const matchesSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = activeCategory === 'All' || note.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sorted, search, activeCategory]);
 
   const featured = filtered.find(n => n.is_featured) || filtered[0];
+
+  const nonFeatured = filtered.filter(n => n !== featured || search || activeCategory !== 'All');
+  const visibleNotes = showAll ? nonFeatured : nonFeatured.slice(0, INITIAL_VISIBLE);
+  const hasMore = nonFeatured.length > INITIAL_VISIBLE && !showAll;
+  const isFiltering = search || activeCategory !== 'All';
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
@@ -196,16 +214,31 @@ export default function Research() {
 
         {/* Notes Grid */}
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
-          {filtered.filter(n => n !== featured || search || activeCategory !== 'All').map((note, i) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              viewMode={viewMode}
-              delay={i * 0.05}
-              onClick={() => setSelectedNote(note)}
-            />
-          ))}
+          <AnimatePresence>
+            {visibleNotes.map((note, i) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                viewMode={viewMode}
+                delay={i * 0.04}
+                onClick={() => setSelectedNote(note)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
+
+        {/* See More */}
+        {hasMore && !isFiltering && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={() => setShowAll(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl glass border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all duration-200 group"
+            >
+              <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              See {nonFeatured.length - INITIAL_VISIBLE} more note{nonFeatured.length - INITIAL_VISIBLE !== 1 ? 's' : ''}
+            </button>
+          </div>
+        )}
 
         {filtered.length === 0 && (
           <div className="text-center py-20 text-muted-foreground">

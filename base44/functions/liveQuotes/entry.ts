@@ -75,34 +75,45 @@ const TICKERS = [
   { sym: 'DX-Y.NYB', name: 'DXY',           cat: 'dxy' },
 ];
 
-// Fetch using Yahoo Finance chart endpoint — returns regularMarketPrice + regularMarketPreviousClose
+const YF_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Referer': 'https://finance.yahoo.com/',
+  'Origin': 'https://finance.yahoo.com',
+  'Cache-Control': 'no-cache',
+};
+
+// Primary: v6 quote endpoint (lighter, faster). Fallback: v8 chart.
 async function fetchTicker(sym) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d&includePrePost=false`;
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Referer': 'https://finance.yahoo.com/',
-      'Origin': 'https://finance.yahoo.com',
-    }
-  });
-  if (!res.ok) {
-    // Fallback to query2
-    const url2 = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d`;
-    const res2 = await fetch(url2, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Accept': 'application/json',
-        'Referer': 'https://finance.yahoo.com/',
+  // Try v6 quote first
+  try {
+    const url = `https://query1.finance.yahoo.com/v6/finance/quote?symbols=${encodeURIComponent(sym)}&fields=regularMarketPrice,regularMarketPreviousClose`;
+    const res = await fetch(url, { headers: YF_HEADERS });
+    if (res.ok) {
+      const json = await res.json();
+      const q = json?.quoteResponse?.result?.[0];
+      if (q?.regularMarketPrice && q?.regularMarketPreviousClose) {
+        const price = q.regularMarketPrice;
+        const prev = q.regularMarketPreviousClose;
+        return { price, change_pct: ((price - prev) / prev) * 100 };
       }
-    });
-    if (!res2.ok) return null;
-    const json2 = await res2.json();
-    return extractMeta(json2);
+    }
+  } catch (_) { /* fall through */ }
+
+  // Fallback: v8 chart on query1 then query2
+  for (const host of ['query1', 'query2']) {
+    try {
+      const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d&includePrePost=false`;
+      const res = await fetch(url, { headers: YF_HEADERS });
+      if (!res.ok) continue;
+      const json = await res.json();
+      const result = extractMeta(json);
+      if (result) return result;
+    } catch (_) { /* try next */ }
   }
-  const json = await res.json();
-  return extractMeta(json);
+  return null;
 }
 
 function extractMeta(json) {

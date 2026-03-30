@@ -201,7 +201,11 @@ function toLocalTime(dateStr, utcTime) {
 }
 
 function localTzLabel() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ');
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // Get abbreviated offset label (e.g. BST, EST, CET)
+  const parts = Intl.DateTimeFormat('en-GB', { timeZoneName: 'short', timeZone: tz }).formatToParts(new Date());
+  const tzName = parts.find(p => p.type === 'timeZoneName')?.value || tz.split('/').pop().replace(/_/g, ' ');
+  return tzName;
 }
 
 function getTodayStr() {
