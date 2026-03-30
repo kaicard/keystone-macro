@@ -20,7 +20,7 @@ export default function NewsletterSection() {
     await base44.entities.NewsletterSubscriber.create({ email });
     setSubmitted(true);
     setSubmitting(false);
-    toast({ title: 'Welcome aboard', description: 'You\'ll receive our weekly macro digest.' });
+    toast({ title: 'Subscribed', description: 'You will receive our weekly macro digest.' });
   };
 
   return (

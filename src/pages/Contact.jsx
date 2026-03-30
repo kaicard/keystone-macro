@@ -29,7 +29,7 @@ export default function Contact() {
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Get In Touch</h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Whether it's about markets, collaboration, or opportunities — I'd love to hear from you.
+            Open to conversations on markets, collaboration, and professional opportunities.
           </p>
         </motion.div>
 

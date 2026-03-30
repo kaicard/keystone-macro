@@ -51,7 +51,7 @@ function SessionCard({ title, flag, isOpen, instruments, loading, delay, inView 
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{flag}</span>
+          <span className="text-[10px] font-bold text-muted-foreground/60 tracking-widest uppercase">{flag}</span>
           <span className="font-semibold text-sm">{title}</span>
         </div>
         <Badge className={isOpen
@@ -92,8 +92,8 @@ export default function MarketPulsePreview() {
 
   const sessions = [
     {
-      title: 'US Open',
-      flag: '🇺🇸',
+      title: 'US Session',
+      flag: 'US',
       isOpen: usStatus.open,
       instruments: [
         fx.find(f => f.name === 'EUR/USD'),
@@ -104,8 +104,8 @@ export default function MarketPulsePreview() {
       ].filter(Boolean),
     },
     {
-      title: 'UK / EU Open',
-      flag: '🇬🇧',
+      title: 'UK / EU Session',
+      flag: 'EU',
       isOpen: ukStatus.open,
       instruments: [
         fx.find(f => f.name === 'GBP/USD'),
@@ -116,8 +116,8 @@ export default function MarketPulsePreview() {
       ].filter(Boolean),
     },
     {
-      title: 'Asia Open',
-      flag: '🌏',
+      title: 'Asia Session',
+      flag: 'APAC',
       isOpen: jpStatus.open,
       instruments: [
         fx.find(f => f.name === 'USD/JPY'),

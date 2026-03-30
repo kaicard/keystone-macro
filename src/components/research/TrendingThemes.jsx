@@ -83,7 +83,7 @@ export default function TrendingThemes() {
                     <ChevronRight className={`w-3.5 h-3.5 ${theme.color} opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 shrink-0 ml-1`} />
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{theme.description}</p>
-                  <p className={`text-xs font-medium mt-2 ${theme.color}`}>{theme.count} related items →</p>
+                  <p className={`text-xs font-medium mt-2 ${theme.color}`}>{theme.count} related items</p>
                 </div>
               </div>
             </button>
