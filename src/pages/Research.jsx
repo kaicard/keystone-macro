@@ -227,15 +227,15 @@ export default function Research() {
           </AnimatePresence>
         </div>
 
-        {/* See More */}
-        {hasMore && !isFiltering && (
+        {/* See More / See Less */}
+        {nonFeatured.length > INITIAL_VISIBLE && !isFiltering && (
           <div className="flex justify-center mt-10">
             <button
-              onClick={() => setShowAll(true)}
+              onClick={() => setShowAll(v => !v)}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl glass border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all duration-200 group"
             >
-              <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              See {nonFeatured.length - INITIAL_VISIBLE} more note{nonFeatured.length - INITIAL_VISIBLE !== 1 ? 's' : ''}
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAll ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+              {showAll ? 'See less' : `See ${nonFeatured.length - INITIAL_VISIBLE} more note${nonFeatured.length - INITIAL_VISIBLE !== 1 ? 's' : ''}`}
             </button>
           </div>
         )}
