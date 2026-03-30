@@ -87,6 +87,10 @@ const EVENTS = [
   { id: 11, date: '2026-03-28', time: '12:30', country: 'US', event: 'Core PCE Price Index (MoM) — Feb', importance: 'high', previous: '0.3%', forecast: '0.3%', actual: null, category: 'Inflation',
     outcome: 'Note: Released Good Friday. Markets closed; reaction will be Monday. Consensus is 0.3% MoM with the YoY rate holding at 2.8%.' },
 
+  // March 30
+  { id: 39, date: '2026-03-30', time: '16:25', country: 'US', event: 'Fed Chair Powell Speech',  importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank',
+    outcome: null },
+
   // March 31
   { id: 12, date: '2026-03-31', time: '09:00', country: 'EU', event: 'Eurozone CPI Flash (YoY)',        importance: 'high',   previous: '2.3%',  forecast: '2.2%',  actual: null,    category: 'Inflation',
     outcome: null },
