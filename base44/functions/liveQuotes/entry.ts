@@ -1,7 +1,37 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
 const CACHE_KEY = 'liveQuotes';
+
+// During market hours use a short TTL; outside use a longer one
+function getCacheTTL() {
+  const now = new Date();
+  const utcH = now.getUTCHours();
+  const utcDay = now.getUTCDay(); // 0=Sun
+  // US market: 13:30–20:00 UTC; UK: 08:00–16:30 UTC; EU: 08:00–17:30 UTC; JP: 00:00–06:30 UTC
+  const isWeekend = utcDay === 0 || utcDay === 6;
+  if (isWeekend) return 15 * 60 * 1000;
+  // Very rough combined window: 00:00–06:30 (JP), 07:00–17:30 (EU/UK), 13:00–21:00 (US)
+  if (utcH >= 0 && utcH < 7) return 2 * 60 * 1000;   // Asia hours
+  if (utcH >= 7 && utcH < 21) return 90 * 1000;       // EU/UK/US hours — 90s
+  return 10 * 60 * 1000; // overnight
+}
+
+function getMarketStatuses() {
+  const now = new Date();
+  const utcDay = now.getUTCDay();
+  const utcH = now.getUTCHours();
+  const utcM = now.getUTCMinutes();
+  const utcMins = utcH * 60 + utcM;
+  const isWeekend = utcDay === 0 || utcDay === 6;
+
+  const isUSOpen = !isWeekend && utcMins >= 13 * 60 + 30 && utcMins < 20 * 60;
+  const isUKOpen = !isWeekend && utcMins >= 8 * 60 && utcMins < 16 * 60 + 30;
+  const isEUOpen = !isWeekend && utcMins >= 8 * 60 && utcMins < 17 * 60 + 30;
+  const isJPOpen = !isWeekend && (utcMins >= 0 && utcMins < 6 * 60 + 30);
+  const isHKOpen = !isWeekend && utcMins >= 1 * 60 + 30 && utcMins < 8 * 60;
+
+  return { US: isUSOpen, UK: isUKOpen, EU: isEUOpen, JP: isJPOpen, HK: isHKOpen };
+}
 
 const TICKERS = [
   { sym: '^GSPC',    name: 'S&P 500',       cat: 'indices' },
@@ -99,6 +129,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Check cache
+    const CACHE_TTL_MS = getCacheTTL();
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     if (cached?.length > 0) {
       const entry = cached[0];
@@ -138,6 +169,8 @@ Deno.serve(async (req) => {
       else if (cat === 'dxy') organized.dxy = r;
       else organized[cat]?.push(r);
     }
+
+    organized.market_statuses = getMarketStatuses();
 
     const payload = JSON.stringify(organized);
     const fetched_at = new Date().toISOString();

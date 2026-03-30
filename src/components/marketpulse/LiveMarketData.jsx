@@ -29,10 +29,10 @@ export function useMarketData() {
   return { data, loading, lastUpdated, refresh: fetchData };
 }
 
-export function MarketTile({ name, value, change, direction, subtext, sparkData }) {
+export function MarketTile({ name, value, change, direction, subtext, sparkData, closed }) {
   const isUp = direction === 'up';
   const isFlat = direction === 'flat' || !direction;
-  const color = isFlat ? 'text-muted-foreground' : isUp ? 'text-emerald-400' : 'text-red-400';
+  const color = closed ? 'text-muted-foreground/40' : isFlat ? 'text-muted-foreground' : isUp ? 'text-emerald-400' : 'text-red-400';
   const strokeColor = isFlat ? '#888' : isUp ? '#34d399' : '#f87171';
 
   // Flash animation on price change
@@ -51,16 +51,20 @@ export function MarketTile({ name, value, change, direction, subtext, sparkData 
   const flashBg = flash === 'up' ? 'bg-emerald-400/10' : flash === 'down' ? 'bg-red-400/10' : '';
 
   return (
-    <div className={`glass rounded-xl p-4 hover:border-primary/20 transition-all group ${flashBg}`}
+    <div className={`glass rounded-xl p-4 hover:border-primary/20 transition-all group ${flashBg} ${closed ? 'opacity-70' : ''}`}
          style={{ transition: 'background-color 0.3s ease' }}>
       <div className="flex items-start justify-between mb-1">
         <span className="text-xs text-muted-foreground font-medium leading-tight">{name}</span>
-        <span className={`text-xs font-semibold flex items-center gap-0.5 ${color}`}>
-          {isFlat ? <Minus className="w-3 h-3" /> : isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-          {change}
-        </span>
+        {closed ? (
+          <span className="text-[10px] font-medium text-muted-foreground/40 bg-muted/30 px-1.5 py-0.5 rounded">Closed</span>
+        ) : (
+          <span className={`text-xs font-semibold flex items-center gap-0.5 ${color}`}>
+            {isFlat ? <Minus className="w-3 h-3" /> : isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {change}
+          </span>
+        )}
       </div>
-      <p className="text-base font-bold tracking-tight mb-0.5 font-mono">{value}</p>
+      <p className={`text-base font-bold tracking-tight mb-0.5 font-mono ${closed ? 'text-muted-foreground/50' : ''}`}>{value}</p>
       {subtext && <p className="text-xs text-muted-foreground/60">{subtext}</p>}
       {sparkData && (
         <div className="h-8 mt-2">

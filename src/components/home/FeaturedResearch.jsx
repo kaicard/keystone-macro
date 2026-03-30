@@ -1,16 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Clock, Tag, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { sampleNotes } from '@/lib/researchNotes';
 import ResearchNoteModal from '@/components/research/ResearchNoteModal';
-
-// Show the 4 most recent notes (sorted by publish_date descending)
-const latestNotes = [...sampleNotes]
-  .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date))
-  .slice(0, 4);
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
@@ -34,6 +32,22 @@ export default function FeaturedResearch() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
   const [selectedNote, setSelectedNote] = useState(null);
+
+  const { data: dbNotes } = useQuery({
+    queryKey: ['research-notes'],
+    queryFn: () => base44.entities.ResearchNote.list('-created_date', 50),
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
+  });
+
+  const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
+
+  // Show the 4 most recent published notes
+  const latestNotes = [...allNotes]
+    .filter(n => !n.status || n.status === 'published' || n.publish_date)
+    .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date))
+    .slice(0, 4);
 
   return (
     <section ref={ref} className="py-20 sm:py-28">

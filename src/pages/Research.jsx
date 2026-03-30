@@ -79,6 +79,8 @@ export default function Research() {
     queryKey: ['research-notes'],
     queryFn: () => base44.entities.ResearchNote.list('-created_date', 50),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
   });
 
   const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;

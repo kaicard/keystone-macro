@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RefreshCw } from 'lucide-react';
 import { useLiveQuotes } from '@/hooks/useLiveQuotes';
+import { getAllExchangeStatuses, getInstrumentStatus } from '@/lib/marketHours';
 import { useMarketData, MarketTile } from '@/components/marketpulse/LiveMarketData';
 import RegimePanel from '@/components/marketpulse/RegimePanel';
 import MarketSummary from '@/components/marketpulse/MarketSummary';
@@ -50,6 +51,7 @@ function getYahooUrl(item) {
 }
 
 function LiveTile({ item, onSelect }) {
+  const status = getInstrumentStatus(item.name || item.ticker);
   return (
     <div onClick={() => onSelect(item)} className="cursor-pointer">
       <MarketTile
@@ -57,6 +59,7 @@ function LiveTile({ item, onSelect }) {
         value={fmtPrice(item.price, item.name)}
         change={fmtChange(item.change_pct)}
         direction={item.direction}
+        closed={!status.open}
       />
     </div>
   );
@@ -113,16 +116,24 @@ export default function MarketPulse() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
               <h1 className="font-display text-4xl sm:text-5xl font-semibold">Market Pulse</h1>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 ml-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-emerald-400 font-medium">Live</span>
-              </div>
             </div>
-            <p className="text-muted-foreground text-lg">
-              Live prices from global market sources.
-            </p>
+            <div className="flex items-center gap-2 flex-wrap mt-3">
+              {getAllExchangeStatuses().map(s => (
+                <div
+                  key={s.key}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${
+                    s.open
+                      ? 'bg-emerald-400/10 border-emerald-400/20 text-emerald-400'
+                      : 'bg-muted/40 border-border/30 text-muted-foreground/60'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${s.open ? 'bg-emerald-400 animate-pulse' : 'bg-muted-foreground/40'}`} />
+                  {s.key} · {s.open ? 'Open' : s.label === 'Holiday' ? 'Holiday' : 'Closed'}
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           {/* Refresh bar */}

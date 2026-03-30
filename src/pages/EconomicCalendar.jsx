@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
 import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 const COUNTRY_LABELS = {
@@ -167,15 +168,18 @@ const EVENTS = [
     outcome: null },
 ];
 
-const TODAY = '2026-03-27';
+// Dynamic today — always reflects actual current date
+function getTodayStr() {
+  return new Date().toISOString().split('T')[0];
+}
 
 function formatDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
-function getWeekEnd() {
-  const d = new Date(TODAY + 'T00:00:00');
+function getWeekEnd(today) {
+  const d = new Date(today + 'T00:00:00');
   d.setDate(d.getDate() + 6);
   return d.toISOString().split('T')[0];
 }
@@ -198,9 +202,9 @@ function ActualBadge({ actual, forecast }) {
   );
 }
 
-function EventRow({ event }) {
+function EventRow({ event, today }) {
   const [open, setOpen] = useState(false);
-  const isToday = event.date === TODAY;
+  const isToday = event.date === today;
   const isHigh = event.importance === 'high';
   const catColor = CATEGORY_COLORS[event.category] || 'text-muted-foreground';
   const hasPending = event.forecast !== '—' && !event.actual;
@@ -277,8 +281,8 @@ function EventRow({ event }) {
   );
 }
 
-function DateGroup({ dateStr, events }) {
-  const isToday = dateStr === TODAY;
+function DateGroup({ dateStr, events, today }) {
+  const isToday = dateStr === today;
   const highCount = events.filter(e => e.importance === 'high').length;
   return (
     <div className="mb-6">
@@ -307,7 +311,7 @@ function DateGroup({ dateStr, events }) {
             <span className="w-4" />
           </div>
         </div>
-        {events.map(e => <EventRow key={e.id} event={e} />)}
+        {events.map(e => <EventRow key={e.id} event={e} today={today} />)}
       </div>
     </div>
   );
@@ -315,17 +319,39 @@ function DateGroup({ dateStr, events }) {
 
 export default function EconomicCalendar() {
   const [tab, setTab] = useState('today');
+  const [today, setToday] = useState(getTodayStr);
+
+  // Refresh "today" at midnight
+  useEffect(() => {
+    const msUntilMidnight = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      return midnight - now;
+    };
+    const timer = setTimeout(() => {
+      setToday(getTodayStr());
+    }, msUntilMidnight());
+    return () => clearTimeout(timer);
+  }, [today]);
+
+  // Compute last month end dynamically (end of next calendar month from today)
+  const monthEnd = useMemo(() => {
+    const d = new Date(today + 'T00:00:00');
+    d.setMonth(d.getMonth() + 2, 0); // last day of next month
+    return d.toISOString().split('T')[0];
+  }, [today]);
 
   const filtered = useMemo(() => {
-    const weekEnd = getWeekEnd();
+    const weekEnd = getWeekEnd(today);
     return EVENTS.filter(e => {
-      if (tab === 'today')    return e.date === TODAY;
-      if (tab === 'week')     return e.date >= TODAY && e.date <= weekEnd;
-      if (tab === 'month')    return e.date >= TODAY && e.date <= '2026-04-30';
-      if (tab === 'previous') return e.date < TODAY;
+      if (tab === 'today')    return e.date === today;
+      if (tab === 'week')     return e.date >= today && e.date <= weekEnd;
+      if (tab === 'month')    return e.date >= today && e.date <= monthEnd;
+      if (tab === 'previous') return e.date < today;
       return true;
     });
-  }, [tab]);
+  }, [tab, today, monthEnd]);
 
   const grouped = useMemo(() => {
     const map = {};
@@ -337,8 +363,8 @@ export default function EconomicCalendar() {
     return tab === 'previous' ? sorted.reverse() : sorted;
   }, [filtered, tab]);
 
-  const todayHighCount = EVENTS.filter(e => e.date === TODAY && e.importance === 'high').length;
-  const todayReleasedCount = EVENTS.filter(e => e.date === TODAY && e.actual).length;
+  const todayHighCount = EVENTS.filter(e => e.date === today && e.importance === 'high').length;
+  const todayReleasedCount = EVENTS.filter(e => e.date === today && e.actual).length;
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
@@ -376,7 +402,7 @@ export default function EconomicCalendar() {
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               <div>
                 <p className="text-xs text-muted-foreground">Released</p>
-                <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {EVENTS.filter(e => e.date === TODAY).length}</span></p>
+                <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {EVENTS.filter(e => e.date === today).length}</span></p>
               </div>
             </div>
           </motion.div>
@@ -407,7 +433,7 @@ export default function EconomicCalendar() {
         {/* Events */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
           {grouped.map(([dateStr, events]) => (
-            <DateGroup key={dateStr} dateStr={dateStr} events={events} />
+            <DateGroup key={dateStr} dateStr={dateStr} events={events} today={today} />
           ))}
           {grouped.length === 0 && (
             <div className="text-center py-20 text-muted-foreground">
