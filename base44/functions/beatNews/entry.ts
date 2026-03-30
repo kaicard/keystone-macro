@@ -46,7 +46,8 @@ Return ONLY a JSON array of exactly 8 articles. Each article must have:
 - summary: 2-3 sentence summary covering what happened, why it matters, and the market/economic implication
 - sentiment: "positive", "negative", or "neutral" (from an investor's perspective)
 - published_time: approximate time this was published today in HH:MM format (24h London time) — estimate from article context
-- url_hint: the most likely URL domain where this story would appear (e.g. "ft.com", "bloomberg.com")
+- url: the full direct URL to the actual article from your search results (e.g. "https://www.reuters.com/markets/...")
+- url_hint: the domain (e.g. "ft.com", "bloomberg.com")
 
 Focus on stories from the last 24 hours. Be specific — include actual figures, names, and percentages where available. Do not make up stories; only include stories that are actually happening.`,
       add_context_from_internet: true,
@@ -63,6 +64,7 @@ Focus on stories from the last 24 hours. Be specific — include actual figures,
                 summary: { type: 'string' },
                 sentiment: { type: 'string' },
                 published_time: { type: 'string' },
+                url: { type: 'string' },
                 url_hint: { type: 'string' },
               }
             }

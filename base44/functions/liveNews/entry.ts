@@ -19,6 +19,7 @@ const HEADLINE_SCHEMA = {
           desk_view: { type: "string" },
           what_to_watch: { type: "string" },
           published_time: { type: "string" },
+          url: { type: "string" },
           url_hint: { type: "string" }
         }
       }
@@ -56,6 +57,7 @@ For each story provide these fields:
 - desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
 - what_to_watch: the key follow-on variable or event to monitor
 - published_time: time published today in HH:MM format (24h London time)
+- url: the full direct URL to the actual article (e.g. "https://www.ft.com/content/abc123") — use the real URL from your search results
 - url_hint: domain where this story appears (e.g. "bloomberg.com", "ft.com")
 
 Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data. Only use real verified events.`;
