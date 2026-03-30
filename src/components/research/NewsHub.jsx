@@ -26,7 +26,7 @@ function ArticleCard({ article, index }) {
   const [expanded, setExpanded] = useState(false);
   const domain = article.url_hint || '';
   const searchUrl = domain
-    ? `https://www.google.com/search?q=${encodeURIComponent(article.headline)}+site:${domain}`
+    ? `https://${domain}/search?q=${encodeURIComponent(article.headline)}`
     : `https://www.google.com/search?q=${encodeURIComponent(article.headline)}`;
 
   return (
@@ -88,7 +88,7 @@ function ArticleCard({ article, index }) {
                 className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors"
               >
                 <ExternalLink className="w-3 h-3" />
-                Find on {domain || 'the web'}
+                Read on {domain || 'the web'}
               </a>
             </div>
           </motion.div>

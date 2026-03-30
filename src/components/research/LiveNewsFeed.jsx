@@ -152,15 +152,17 @@ export default function LiveNewsFeed() {
                          </div>
                        )}
                        <a
-                         href={`https://www.google.com/search?q=${encodeURIComponent(item.headline)}${item.url_hint ? `+site:${item.url_hint}` : ''}`}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         onClick={e => e.stopPropagation()}
-                         className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors"
-                       >
-                         <ExternalLink className="w-3 h-3" />
-                         Find on {item.url_hint || item.source || 'the web'}
-                       </a>
+                          href={item.url_hint
+                            ? `https://${item.url_hint}/search?q=${encodeURIComponent(item.headline)}`
+                            : `https://www.google.com/search?q=${encodeURIComponent(item.headline)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Read on {item.url_hint || item.source || 'the web'}
+                        </a>
                      </div>
                   </motion.div>
                 )}
