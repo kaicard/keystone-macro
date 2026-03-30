@@ -12,7 +12,7 @@ const BEAT_PROMPTS = {
   rates_credit: 'Fixed income, interest rates and credit markets: government bonds, corporate credit spreads, high yield, IG debt, central bank bond buying.',
 };
 
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 Deno.serve(async (req) => {
   try {
@@ -37,19 +37,31 @@ Deno.serve(async (req) => {
     }
 
     // Fetch fresh
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are a financial news editor. Search the internet RIGHT NOW for the 8 most important and recent news stories in this beat: ${BEAT_PROMPTS[beat]}
+    const fetchNow = new Date();
+    const londonDate = fetchNow.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
+    const londonTime = fetchNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+    const cutoff = new Date(fetchNow - 24*60*60*1000).toISOString();
 
-Return ONLY a JSON array of exactly 8 articles. Each article must have:
-- headline: punchy, specific news headline (not generic)
-- source: publication name (FT, Bloomberg, Reuters, WSJ, Guardian, BBC, etc.)
+    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a financial news editor. Current date/time: ${londonDate}, ${londonTime} London time.
+
+Search the internet RIGHT NOW for the 8 most important recent news stories in this beat: ${BEAT_PROMPTS[beat]}
+
+STRICT RULES:
+- Only include articles you can confirm exist in your search results — do NOT fabricate or hallucinate stories
+- Only include stories published after ${cutoff}
+- published_time must be the ACTUAL timestamp from the article, in HH:MM London time — write "—" if you cannot determine it
+- url must be the EXACT URL from your search results — write "" if you cannot confirm the real URL
+- Be specific — include actual figures, names, and percentages from the real articles
+
+Each article must have:
+- headline: the actual headline verbatim or close paraphrase (not generic)
+- source: publication name (FT, Bloomberg, Reuters, WSJ, Guardian, BBC, CNBC, AP, etc.)
 - summary: 2-3 sentence summary covering what happened, why it matters, and the market/economic implication
 - sentiment: "positive", "negative", or "neutral" (from an investor's perspective)
-- published_time: approximate time this was published today in HH:MM format (24h London time) — estimate from article context
-- url: the full direct URL to the actual article from your search results (e.g. "https://www.reuters.com/markets/...")
-- url_hint: the domain (e.g. "ft.com", "bloomberg.com")
-
-Focus on stories from the last 24 hours. Be specific — include actual figures, names, and percentages where available. Do not make up stories; only include stories that are actually happening.`,
+- published_time: ACTUAL publication time from article metadata in HH:MM London time; "—" if unknown
+- url: exact direct URL from your search results
+- url_hint: the domain (e.g. "ft.com", "bloomberg.com")`,
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',

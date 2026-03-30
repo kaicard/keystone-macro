@@ -114,7 +114,7 @@ export default function LiveNewsFeed() {
                           </span>
                         )}
                         <span className="text-xs text-muted-foreground/50 font-mono">
-                          {item.published_time || lastUpdated?.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) || '—'}
+                          {item.published_time && item.published_time !== '—' ? item.published_time : ''}
                         </span>
                       </div>
                       <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors">

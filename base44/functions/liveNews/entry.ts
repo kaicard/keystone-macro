@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const CACHE_KEY = 'liveNews';
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 const HEADLINE_SCHEMA = {
   type: "object",
@@ -43,24 +43,34 @@ Deno.serve(async (req) => {
     }
 
     // Cache miss or stale — fetch fresh
-    const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const prompt = `You are a macro market intelligence editor. Search the web for the 8 most important real macro, geopolitical, and financial market news stories from today (${today}).
+    const now = new Date();
+    const today = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
+    const currentTimeUTC = now.toISOString();
+    const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+    const prompt = `You are a macro market intelligence editor. The current date and time is ${today}, ${londonTime} London time (${currentTimeUTC} UTC).
 
-Pull REAL headlines from verified sources: Bloomberg, Reuters, Financial Times, Wall Street Journal, CNBC, BBC News, or similar. Only include stories published today or within the last 24 hours.
+Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories published TODAY (${today}).
 
-For each story provide these fields:
-- headline: the actual headline or close paraphrase (max 15 words)
+STRICT RULES:
+- Only include articles confirmed to exist in your search results — do NOT fabricate or hallucinate stories
+- Only include stories published in the last 24 hours (after ${new Date(now - 24*60*60*1000).toISOString()})
+- For published_time: use the ACTUAL publication timestamp from the article metadata — if unknown, write "—"
+- For url: use the EXACT URL from your search results — if you cannot confirm the real URL, omit the field or write ""
+- Sources must be one of: Bloomberg, Reuters, FT, WSJ, CNBC, BBC News, Guardian, Sky News, or AP
+
+For each story provide:
+- headline: the actual headline verbatim or close paraphrase (max 15 words)
 - source: publication name (e.g. "Reuters", "Bloomberg", "FT")
 - category: one of: Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit
 - sentiment: one of: positive, negative, neutral
 - impact: 1-sentence market impact summary
 - desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
 - what_to_watch: the key follow-on variable or event to monitor
-- published_time: time published today in HH:MM format (24h London time)
-- url: the full direct URL to the actual article (e.g. "https://www.ft.com/content/abc123") — use the real URL from your search results
-- url_hint: domain where this story appears (e.g. "bloomberg.com", "ft.com")
+- published_time: ACTUAL article publication time in HH:MM London time — derived from the article timestamp in your search results; write "—" if unknown
+- url: the exact direct URL to the article from your search results
+- url_hint: domain (e.g. "bloomberg.com", "ft.com")
 
-Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data. Only use real verified events.`;
+Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data.`;
 
     const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
