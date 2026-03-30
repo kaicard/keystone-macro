@@ -51,21 +51,21 @@ export function MarketTile({ name, value, change, direction, subtext, sparkData,
   const flashBg = flash === 'up' ? 'bg-emerald-400/10' : flash === 'down' ? 'bg-red-400/10' : '';
 
   return (
-    <div className={`glass rounded-xl p-4 hover:border-primary/20 transition-all group ${flashBg} ${closed ? 'opacity-70' : ''}`}
+    <div className={`glass rounded-xl p-4 hover:border-primary/20 transition-all duration-200 group ${flashBg} ${closed ? 'opacity-60' : ''}`}
          style={{ transition: 'background-color 0.3s ease' }}>
-      <div className="flex items-start justify-between mb-1">
-        <span className="text-xs text-muted-foreground font-medium leading-tight">{name}</span>
+      <div className="flex items-start justify-between mb-2">
+        <span className="text-xs text-muted-foreground font-medium leading-tight tracking-wide">{name}</span>
         {closed ? (
-          <span className="text-[10px] font-medium text-muted-foreground/40 bg-muted/30 px-1.5 py-0.5 rounded">Closed</span>
+          <span className="text-[10px] font-medium text-muted-foreground/40 bg-muted/30 px-1.5 py-0.5 rounded tracking-wide uppercase">Closed</span>
         ) : (
-          <span className={`text-xs font-semibold flex items-center gap-0.5 ${color}`}>
+          <span className={`text-xs font-semibold flex items-center gap-0.5 tabular-nums ${color}`}>
             {isFlat ? <Minus className="w-3 h-3" /> : isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {change}
           </span>
         )}
       </div>
-      <p className={`text-base font-bold tracking-tight mb-0.5 font-mono ${closed ? 'text-muted-foreground/50' : ''}`}>{value}</p>
-      {subtext && <p className="text-xs text-muted-foreground/60">{subtext}</p>}
+      <p className={`text-lg font-bold tracking-tight mb-0.5 font-mono tabular-nums ${closed ? 'text-muted-foreground/50' : ''}`}>{value}</p>
+      {subtext && <p className="text-xs text-muted-foreground/50 tracking-wide">{subtext}</p>}
       {sparkData && (
         <div className="h-8 mt-2">
           <ResponsiveContainer width="100%" height="100%">

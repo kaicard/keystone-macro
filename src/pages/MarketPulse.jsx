@@ -98,7 +98,7 @@ function useCombinedData() {
 
 export default function MarketPulse() {
   const { liveQuotes, llmData } = useCombinedData();
-  const { data: live, loading: liveLoading, lastFetched, refresh } = liveQuotes;
+  const { data: live, loading: liveLoading, lastFetched, secondsUntilRefresh, refresh } = liveQuotes;
   const { data: llm, loading: llmLoading } = llmData;
   const [selectedInstrument, setSelectedInstrument] = React.useState(null);
 
@@ -116,21 +116,22 @@ export default function MarketPulse() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <div className="flex items-end justify-between flex-wrap gap-4 mb-4">
               <h1 className="font-display text-4xl sm:text-5xl font-semibold">Market Pulse</h1>
+              <p className="text-xs text-muted-foreground/50 pb-1">Prices sourced via Yahoo Finance · 15-min delay applies to some instruments outside market hours</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap mt-3">
+            <div className="flex items-center gap-2 flex-wrap">
               {getAllExchangeStatuses().map(s => (
                 <div
                   key={s.key}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium tracking-wide ${
                     s.open
                       ? 'bg-emerald-400/10 border-emerald-400/20 text-emerald-400'
-                      : 'bg-muted/40 border-border/30 text-muted-foreground/60'
+                      : 'bg-muted/30 border-border/20 text-muted-foreground/50'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${s.open ? 'bg-emerald-400 animate-pulse' : 'bg-muted-foreground/40'}`} />
-                  {s.key} · {s.open ? 'Open' : s.label === 'Holiday' ? 'Holiday' : 'Closed'}
+                  <span className={`w-1.5 h-1.5 rounded-full ${s.open ? 'bg-emerald-400 animate-pulse' : 'bg-muted-foreground/30'}`} />
+                  {s.key}&nbsp;&middot;&nbsp;{s.open ? 'Open' : s.label === 'Holiday' ? 'Holiday' : 'Closed'}
                 </div>
               ))}
             </div>
@@ -138,15 +139,27 @@ export default function MarketPulse() {
 
           {/* Refresh bar */}
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
-            <span>
-              {lastFetched
-                ? `Live · Last fetched ${lastFetched.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                : 'Fetching live market data...'}
+            <span className="flex items-center gap-2">
+              {lastFetched ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                  <span>
+                    Updated {lastFetched.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {secondsUntilRefresh != null && (
+                      <span className="text-muted-foreground/50">
+                        &nbsp;&middot;&nbsp;Next refresh in {secondsUntilRefresh}s
+                      </span>
+                    )}
+                  </span>
+                </>
+              ) : (
+                <span className="opacity-60">Fetching market data...</span>
+              )}
             </span>
             <button
               onClick={refresh}
               disabled={liveLoading}
-              className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50 font-medium"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${liveLoading ? 'animate-spin' : ''}`} />
               Refresh
