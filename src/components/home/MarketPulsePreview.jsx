@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowRight, TrendingUp, TrendingDown, Minus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLiveQuotes } from '@/hooks/useLiveQuotes';
+import { getExchangeStatus } from '@/lib/marketHours';
 
 function fmtPrice(price, name) {
   if (price == null) return '—';
@@ -15,35 +16,63 @@ function fmtPrice(price, name) {
   return price.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function MiniTile({ item, delay, inView }) {
+function fmtPct(val) {
+  if (val == null) return '—';
+  return `${val > 0 ? '+' : ''}${val.toFixed(2)}%`;
+}
+
+function InstrumentRow({ item }) {
+  if (!item) return null;
   const isUp = item.direction === 'up';
   const isDown = item.direction === 'down';
   const color = isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-muted-foreground';
-  const changePct = item.change_pct != null
-    ? `${item.change_pct > 0 ? '+' : ''}${item.change_pct.toFixed(2)}%`
-    : '—';
 
   return (
+    <div className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
+      <span className="text-xs text-muted-foreground/80 truncate">{item.name}</span>
+      <div className="flex items-center gap-3 shrink-0">
+        <span className="text-xs font-mono font-semibold">{fmtPrice(item.price, item.name)}</span>
+        <span className={`text-xs font-mono flex items-center gap-0.5 ${color} w-16 justify-end`}>
+          {isUp ? <TrendingUp className="w-2.5 h-2.5" /> : isDown ? <TrendingDown className="w-2.5 h-2.5" /> : <Minus className="w-2.5 h-2.5" />}
+          {fmtPct(item.change_pct)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SessionCard({ title, flag, isOpen, instruments, loading, delay, inView }) {
+  return (
     <motion.div
-      className="glass rounded-xl p-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/8 hover:-translate-y-0.5 group"
+      className="glass rounded-xl p-5 flex flex-col"
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-muted-foreground truncate">{item.name || item.ticker}</span>
-        <div className={`flex items-center gap-1 text-xs font-semibold shrink-0 ${color}`}>
-          {isUp ? <TrendingUp className="w-3 h-3" /> : isDown ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-          {changePct}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{flag}</span>
+          <span className="font-semibold text-sm">{title}</span>
         </div>
+        <Badge className={isOpen
+          ? 'bg-emerald-400/10 text-emerald-400 border-0 text-[10px] px-2 py-0.5'
+          : 'bg-muted/50 text-muted-foreground border-0 text-[10px] px-2 py-0.5'
+        }>
+          {isOpen ? (
+            <><div className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse inline-block" />Open</>
+          ) : (
+            <><Clock className="w-2.5 h-2.5 mr-1 inline-block" />Closed</>
+          )}
+        </Badge>
       </div>
-      <p className="text-lg font-bold font-mono tracking-tight">{fmtPrice(item.price, item.name)}</p>
+      <div className="flex-1">
+        {loading
+          ? [...Array(3)].map((_, i) => <div key={i} className="h-4 bg-muted/40 rounded animate-pulse mb-3" />)
+          : instruments.map(item => <InstrumentRow key={item?.ticker} item={item} />)
+        }
+      </div>
     </motion.div>
   );
-}
-
-function SkeletonTile({ i }) {
-  return <div key={i} className="glass rounded-xl p-4 animate-pulse h-20" />;
 }
 
 export default function MarketPulsePreview() {
@@ -51,16 +80,54 @@ export default function MarketPulsePreview() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
   const { data, loading } = useLiveQuotes();
 
-  // Pick a representative selection: 4 indices + gold + brent + bitcoin + vix
-  const showcase = data
-    ? [
-        ...(data.indices?.slice(0, 4) || []),
-        data.commodities?.find(c => c.name === 'Gold'),
-        data.commodities?.find(c => c.name === 'Brent Crude'),
-        data.crypto?.find(c => c.name === 'Bitcoin'),
-        data.vix,
-      ].filter(Boolean)
-    : [];
+  // FX & commodities are always tradeable — no "closed" issue
+  const fx = data?.fx || [];
+  const commodities = data?.commodities || [];
+  const crypto = data?.crypto || [];
+
+  const usStatus = getExchangeStatus('US');
+  const ukStatus = getExchangeStatus('UK');
+  // Asia: check JP
+  const jpStatus = getExchangeStatus('JP');
+
+  const sessions = [
+    {
+      title: 'US Open',
+      flag: '🇺🇸',
+      isOpen: usStatus.open,
+      instruments: [
+        fx.find(f => f.name === 'EUR/USD'),
+        fx.find(f => f.name === 'GBP/USD'),
+        commodities.find(c => c.name === 'Gold'),
+        commodities.find(c => c.name === 'WTI Crude'),
+        crypto.find(c => c.name === 'Bitcoin'),
+      ].filter(Boolean),
+    },
+    {
+      title: 'UK / EU Open',
+      flag: '🇬🇧',
+      isOpen: ukStatus.open,
+      instruments: [
+        fx.find(f => f.name === 'GBP/USD'),
+        fx.find(f => f.name === 'EUR/USD'),
+        fx.find(f => f.name === 'EUR/GBP'),
+        commodities.find(c => c.name === 'Brent Crude'),
+        commodities.find(c => c.name === 'Gold'),
+      ].filter(Boolean),
+    },
+    {
+      title: 'Asia Open',
+      flag: '🌏',
+      isOpen: jpStatus.open,
+      instruments: [
+        fx.find(f => f.name === 'USD/JPY'),
+        fx.find(f => f.name === 'AUD/USD'),
+        commodities.find(c => c.name === 'Gold'),
+        commodities.find(c => c.name === 'Copper'),
+        crypto.find(c => c.name === 'Bitcoin'),
+      ].filter(Boolean),
+    },
+  ];
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
@@ -74,7 +141,7 @@ export default function MarketPulsePreview() {
         >
           <div>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Market Pulse</h2>
-            <p className="text-muted-foreground">Live prices updating every 2 seconds. Click through for the full dashboard.</p>
+            <p className="text-muted-foreground">Live prices by trading session. Click through for the full dashboard.</p>
           </div>
           <div className="flex items-center gap-3">
             <Badge className="bg-emerald-400/10 text-emerald-400 border-0 px-3 py-1">
@@ -89,16 +156,20 @@ export default function MarketPulsePreview() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {loading && !data
-            ? [...Array(8)].map((_, i) => <SkeletonTile key={i} i={i} />)
-            : showcase.slice(0, 8).map((item, i) => (
-                <MiniTile key={item.ticker} item={item} delay={i * 0.05} inView={inView} />
-              ))
-          }
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {sessions.map((s, i) => (
+            <SessionCard
+              key={s.title}
+              title={s.title}
+              flag={s.flag}
+              isOpen={s.isOpen}
+              instruments={s.instruments}
+              loading={loading && !data}
+              delay={i * 0.1}
+              inView={inView}
+            />
+          ))}
         </div>
-
-
       </div>
     </section>
   );

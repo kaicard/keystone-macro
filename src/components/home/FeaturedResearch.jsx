@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Clock, Tag, TrendingUp } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Clock, Tag, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
@@ -21,6 +20,52 @@ const categoryColors = {
   'Risk Management': 'bg-red-400/10 text-red-400 border-red-400/20',
   'Trade Reviews': 'bg-cyan-400/10 text-cyan-400 border-cyan-400/20',
 };
+
+function NoteCard({ note, delay, inView, onClick }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay }}
+    >
+      <div
+        className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5 cursor-pointer group"
+        onClick={onClick}
+      >
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <Badge variant="outline" className={categoryColors[note.category] || 'bg-muted text-muted-foreground'}>
+            <Tag className="w-3 h-3 mr-1" />
+            {note.category}
+          </Badge>
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {note.read_time_minutes} min read
+          </span>
+          {isNew(note.publish_date) && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
+              <TrendingUp className="w-2.5 h-2.5" /> New
+            </span>
+          )}
+        </div>
+        <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors leading-snug">
+          {note.title}
+        </h3>
+        {note.subtitle && (
+          <p className="text-xs text-muted-foreground/70 mb-2 italic">{note.subtitle}</p>
+        )}
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+          {note.executive_summary}
+        </p>
+        <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
+          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function isNew(dateStr) {
   const d = new Date(dateStr);
@@ -41,13 +86,28 @@ export default function FeaturedResearch() {
     refetchInterval: 10 * 60 * 1000,
   });
 
+  const [showOlder, setShowOlder] = useState(false);
+
   const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
 
-  // Show the 4 most recent published notes
-  const latestNotes = [...allNotes]
+  const sorted = [...allNotes]
     .filter(n => !n.status || n.status === 'published' || n.publish_date)
-    .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date))
-    .slice(0, 4);
+    .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
+
+  // Split into current/prev week vs older
+  const now = new Date();
+  const startOfThisWeek = new Date(now);
+  startOfThisWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfThisWeek.setHours(0, 0, 0, 0);
+  const startOfPrevWeek = new Date(startOfThisWeek);
+  startOfPrevWeek.setDate(startOfThisWeek.getDate() - 7);
+
+  const recentNotes = sorted.filter(n => new Date(n.publish_date) >= startOfPrevWeek);
+  const olderNotes = sorted.filter(n => new Date(n.publish_date) < startOfPrevWeek);
+
+  // Fallback: if recentNotes empty, just show top 4 from all
+  const displayRecent = recentNotes.length > 0 ? recentNotes : sorted.slice(0, 4);
+  const displayOlder = recentNotes.length > 0 ? olderNotes : [];
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -70,51 +130,40 @@ export default function FeaturedResearch() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {latestNotes.map((note, i) => (
-            <motion.div
-              key={note.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div
-                className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5 cursor-pointer group"
-                onClick={() => setSelectedNote(note)}
-              >
-                <div className="flex items-center gap-3 mb-4 flex-wrap">
-                  <Badge variant="outline" className={categoryColors[note.category] || 'bg-muted text-muted-foreground'}>
-                    <Tag className="w-3 h-3 mr-1" />
-                    {note.category}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {note.read_time_minutes} min read
-                  </span>
-                  {isNew(note.publish_date) && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
-                      <TrendingUp className="w-2.5 h-2.5" /> New
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors leading-snug">
-                  {note.title}
-                </h3>
-                {note.subtitle && (
-                  <p className="text-xs text-muted-foreground/70 mb-2 italic">{note.subtitle}</p>
-                )}
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                  {note.executive_summary}
-                </p>
-                <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(note.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
-                </div>
-              </div>
-            </motion.div>
+          {displayRecent.map((note, i) => (
+            <NoteCard key={note.id} note={note} delay={i * 0.1} inView={inView} onClick={() => setSelectedNote(note)} />
           ))}
         </div>
+
+        {/* Older notes */}
+        {displayOlder.length > 0 && (
+          <div className="mt-6">
+            <button
+              onClick={() => setShowOlder(o => !o)}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
+            >
+              {showOlder ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {showOlder ? 'Hide older notes' : `Show ${displayOlder.length} older note${displayOlder.length !== 1 ? 's' : ''}`}
+            </button>
+            <AnimatePresence>
+              {showOlder && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    {displayOlder.map((note, i) => (
+                      <NoteCard key={note.id} note={note} delay={i * 0.05} inView={true} onClick={() => setSelectedNote(note)} />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {selectedNote && (
