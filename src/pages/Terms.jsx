@@ -29,14 +29,14 @@ export default function Terms() {
         >
           <Section title="1. Acceptance of Terms">
             <p>
-              By accessing or using The Macro Sphere (the "Platform"), you agree to be bound by these Terms and
+              By accessing or using Keystone Macro (the "Platform"), you agree to be bound by these Terms and
               Conditions. If you do not agree with any part of these terms, you must not use the Platform.
             </p>
           </Section>
 
           <Section title="2. Educational Purpose Only">
             <p>
-              The Macro Sphere is an educational and informational platform only. All content published on this
+              Keystone Macro is an educational and informational platform only. All content published on this
               Platform — including but not limited to research notes, market commentary, portfolio analysis,
               economic calendar data, and AI-generated outputs — is provided solely for educational and
               informational purposes.
@@ -50,20 +50,20 @@ export default function Terms() {
 
           <Section title="3. Not a Financial Services Provider">
             <p>
-              The Macro Sphere is not a regulated financial services firm, investment adviser, broker-dealer,
+              Keystone Macro is not a regulated financial services firm, investment adviser, broker-dealer,
               or fund manager. We are not authorised or regulated by the Financial Conduct Authority (FCA),
               the Securities and Exchange Commission (SEC), or any other financial regulatory body.
             </p>
             <p>
               We do not manage, invest, or handle any individual's capital, funds, or assets under any
-              circumstances. No content or communication from The Macro Sphere should be interpreted as an
+              circumstances. No content or communication from Keystone Macro should be interpreted as an
               offer, solicitation, or recommendation to buy, sell, or hold any financial instrument or asset.
             </p>
           </Section>
 
           <Section title="4. No Investment in Client Capital">
             <p>
-              The Macro Sphere does not accept, manage, or invest client funds. Model portfolios and
+              Keystone Macro does not accept, manage, or invest client funds. Model portfolios and
               illustrative allocations presented on this Platform are hypothetical, for educational
               demonstration purposes only, and do not represent actual investment vehicles or managed accounts.
               Past performance of any illustrative strategy is not indicative of future results.
@@ -75,7 +75,7 @@ export default function Terms() {
               The Platform makes use of artificial intelligence tools to generate certain content, including
               portfolio scenarios, market commentary, and analytical summaries. AI-generated content is
               inherently subject to errors, omissions, and inaccuracies. It should not be treated as
-              authoritative or relied upon for any decision-making. The Macro Sphere makes no representations
+              authoritative or relied upon for any decision-making. Keystone Macro makes no representations
               or warranties as to the accuracy, completeness, or fitness for purpose of any AI-generated
               content.
             </p>
@@ -85,7 +85,7 @@ export default function Terms() {
             <p>
               Market data, economic indicators, news summaries, and other third-party information displayed
               on the Platform are sourced from publicly available data and third-party providers. This data
-              may be delayed, incomplete, or inaccurate. The Macro Sphere accepts no liability for errors
+              may be delayed, incomplete, or inaccurate. Keystone Macro accepts no liability for errors
               in third-party data or for any decisions made in reliance upon it.
             </p>
           </Section>
@@ -106,7 +106,7 @@ export default function Terms() {
           <Section title="8. Intellectual Property">
             <p>
               All content on this Platform, including research notes, written analysis, visual assets,
-              branding, and design, is the intellectual property of The Macro Sphere unless otherwise stated.
+              branding, and design, is the intellectual property of Keystone Macro unless otherwise stated.
               You may not reproduce, distribute, modify, or create derivative works from any content without
               prior written permission.
             </p>
@@ -114,7 +114,7 @@ export default function Terms() {
 
           <Section title="9. Limitation of Liability">
             <p>
-              To the fullest extent permitted by applicable law, The Macro Sphere and its operators shall
+              To the fullest extent permitted by applicable law, Keystone Macro and its operators shall
               not be liable for any direct, indirect, incidental, consequential, or punitive damages arising
               from your use of the Platform, reliance on any content, or inability to access the Platform.
               This includes, without limitation, any loss of profits, loss of data, or financial losses.
