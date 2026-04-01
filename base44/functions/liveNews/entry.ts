@@ -28,6 +28,24 @@ const HEADLINE_SCHEMA = {
   }
 };
 
+async function invokeLLMWithRetry(base44, prompt, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt,
+        add_context_from_internet: true,
+        model: 'gemini_3_flash',
+        response_json_schema: HEADLINE_SCHEMA,
+      });
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      // Short backoff before retry
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+}
+
 async function refreshInBackground(base44, existingId) {
   const now = new Date();
   const today = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
@@ -60,12 +78,7 @@ Cover a range of: central bank policy, geopolitical developments, major equity m
 
 IMPORTANT: Return the stories ordered by published_time, newest first (most recently published story at index 0).`;
 
-  const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt,
-    add_context_from_internet: true,
-    model: 'gemini_3_flash',
-    response_json_schema: HEADLINE_SCHEMA,
-  });
+  const res = await invokeLLMWithRetry(base44, prompt);
 
   const headlines = res?.headlines || [];
   if (!headlines.length) return;
