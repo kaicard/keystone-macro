@@ -420,14 +420,14 @@ function ExpandedPanel({ event }) {
                 <div className="space-y-1.5 w-full">
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Market Implications</p>
                   {implications.bullish && (
-                    <div className="flex gap-2 items-start">
-                      <span className="text-[9px] font-bold text-emerald-400 mt-0.5 shrink-0 uppercase tracking-wide">Beat</span>
+                    <div className="flex gap-2 items-baseline">
+                      <span className="text-[9px] font-bold text-emerald-400 shrink-0 uppercase tracking-wide w-7">Beat</span>
                       <p className="text-xs text-muted-foreground/80 leading-relaxed">{implications.bullish}</p>
                     </div>
                   )}
                   {implications.bearish && (
-                    <div className="flex gap-2 items-start">
-                      <span className="text-[9px] font-bold text-red-400 mt-0.5 shrink-0 uppercase tracking-wide">{event.category === 'Holiday' ? 'Note' : 'Miss'}</span>
+                    <div className="flex gap-2 items-baseline">
+                      <span className="text-[9px] font-bold text-red-400 shrink-0 uppercase tracking-wide w-7">{event.category === 'Holiday' ? 'Note' : 'Miss'}</span>
                       <p className="text-xs text-muted-foreground/80 leading-relaxed">{implications.bearish}</p>
                     </div>
                   )}
