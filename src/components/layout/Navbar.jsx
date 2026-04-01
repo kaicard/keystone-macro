@@ -49,11 +49,9 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="group">
-              <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/706571ce0_KM2.png"
-                alt="Keystone Macro"
-                className="h-10 w-auto dark:invert"
-              />
+              <span className="font-display text-base font-semibold tracking-tight text-foreground/90 group-hover:text-primary transition-colors duration-300 letter-spacing-tight">
+                Keystone Macro
+              </span>
             </Link>
 
             {/* Desktop nav */}

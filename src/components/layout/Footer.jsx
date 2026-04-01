@@ -55,11 +55,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/706571ce0_KM2.png"
-                alt="Keystone Macro"
-                className="h-12 w-auto dark:invert"
-              />
+              <span className="font-display text-base font-semibold tracking-tight text-foreground/90">Keystone Macro</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
               Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.
