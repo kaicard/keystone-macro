@@ -149,8 +149,8 @@ export default function Terms() {
           <Section title="13. Contact">
             <p>
               If you have any questions regarding these Terms and Conditions, please contact us at{' '}
-              <a href="mailto:hello@themacrosphere.com" className="text-primary hover:underline">
-                hello@themacrosphere.com
+              <a href="mailto:hello@keystonemacro.com" className="text-primary hover:underline">
+                hello@keystonemacro.com
               </a>.
             </p>
           </Section>
