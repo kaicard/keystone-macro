@@ -3,72 +3,151 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 const CACHE_KEY = 'forexCalendar';
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-const EVENT_SCHEMA = {
-  type: "object",
-  properties: {
-    events: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          id: { type: "string" },
-          date: { type: "string", description: "YYYY-MM-DD" },
-          utcTime: { type: "string", description: "HH:MM in UTC, or 'All Day'" },
-          country: { type: "string", description: "2-letter country code e.g. US, UK, EU, JP, CN, CA, AU, CH, DE, FR" },
-          event: { type: "string" },
-          importance: { type: "string", description: "high, medium, or low" },
-          previous: { type: "string" },
-          forecast: { type: "string" },
-          actual: { type: "string", description: "null if not yet released" },
-          category: { type: "string", description: "One of: Central Bank, Inflation, Labour, GDP, PMI, Consumer, Housing, Holiday" },
-          outcome: { type: "string", description: "Brief market outcome/analysis, null if not yet released" }
-        }
-      }
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const weekStart = new Date(d.setDate(diff));
+  return weekStart.toISOString().split('T')[0];
+}
+
+function parseXMLResponse(xmlString) {
+  const events = [];
+  const eventRegex = /<event>([\s\S]*?)<\/event>/g;
+  const titleRegex = /<title>([\s\S]*?)<\/title>/;
+  const dateRegex = /<date>([\s\S]*?)<\/date>/;
+  const timeRegex = /<time>([\s\S]*?)<\/time>/;
+  const countryRegex = /<country>([\s\S]*?)<\/country>/;
+  const impactRegex = /<impact>([\s\S]*?)<\/impact>/;
+  const forecastRegex = /<forecast>([\s\S]*?)<\/forecast>/;
+  const previousRegex = /<previous>([\s\S]*?)<\/previous>/;
+  const actualRegex = /<actual>([\s\S]*?)<\/actual>/;
+
+  let match;
+  let id = 1;
+  while ((match = eventRegex.exec(xmlString)) !== null) {
+    const eventXml = match[1];
+
+    const titleMatch = titleRegex.exec(eventXml);
+    const dateMatch = dateRegex.exec(eventXml);
+    const timeMatch = timeRegex.exec(eventXml);
+    const countryMatch = countryRegex.exec(eventXml);
+    const impactMatch = impactRegex.exec(eventXml);
+    const forecastMatch = forecastRegex.exec(eventXml);
+    const previousMatch = previousRegex.exec(eventXml);
+    const actualMatch = actualRegex.exec(eventXml);
+
+    if (!titleMatch || !dateMatch) continue;
+
+    const title = titleMatch[1].trim();
+    const dateStr = dateMatch[1].trim(); // e.g., "Apr 01"
+    const timeStr = timeMatch ? timeMatch[1].trim() : '';
+    const country = countryMatch ? countryMatch[1].trim() : '';
+    const impact = impactMatch ? impactMatch[1].trim() : 'Low';
+    const forecast = forecastMatch ? forecastMatch[1].trim() : '—';
+    const previous = previousMatch ? previousMatch[1].trim() : '';
+    const actual = actualMatch ? actualMatch[1].trim() : null;
+
+    // Parse date: "Apr 01" → "2026-04-01" (assume current year)
+    const today = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const parts = dateStr.split(' ');
+    const monthIdx = months.indexOf(parts[0]);
+    const day = parseInt(parts[1], 10);
+    let year = today.getFullYear();
+    const month = monthIdx + 1;
+
+    // If parsed month is before current month, assume next year
+    if (month < today.getMonth() + 1) {
+      year += 1;
+    }
+
+    const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    // Parse time: "14:30" or empty; assume UTC
+    const utcTime = timeStr || 'All Day';
+
+    // Map importance: "High", "Medium", "Low" → "high", "medium", "low"
+    const importance = impact.toLowerCase();
+
+    // Guess category from title
+    let category = 'Other';
+    if (title.includes('CPI') || title.includes('PPI') || title.includes('PCE') || title.includes('Inflation')) {
+      category = 'Inflation';
+    } else if (title.includes('PMI') || title.includes('Manufacturing') || title.includes('Services')) {
+      category = 'PMI';
+    } else if (title.includes('Jobs') || title.includes('Employment') || title.includes('Unemployment') || title.includes('Payroll') || title.includes('Claims')) {
+      category = 'Labour';
+    } else if (title.includes('GDP') || title.includes('Growth')) {
+      category = 'GDP';
+    } else if (title.includes('Retail Sales') || title.includes('Consumer Confidence') || title.includes('Sentiment')) {
+      category = 'Consumer';
+    } else if (title.includes('Homes') || title.includes('Housing') || title.includes('Permits') || title.includes('Starts')) {
+      category = 'Housing';
+    } else if (title.includes('Rate') || title.includes('FOMC') || title.includes('BOE') || title.includes('ECB') || title.includes('BOJ') || title.includes('RBA') || title.includes('SNB') || title.includes('Bank')) {
+      category = 'Central Bank';
+    } else if (title.includes('Holiday') || title.includes('Closed')) {
+      category = 'Holiday';
+    }
+
+    events.push({
+      id: String(id++),
+      date,
+      utcTime,
+      country,
+      event: title,
+      importance,
+      previous,
+      forecast,
+      actual: actual || null,
+      category,
+      outcome: null,
+    });
+  }
+
+  return events;
+}
+
+async function fetchCalendarFromForexFactory() {
+  const today = new Date();
+
+  // Get this week and next week
+  const thisWeekStart = getWeekStart(today);
+  const nextWeekStart = new Date(today);
+  nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+  const nextWeekStartStr = getWeekStart(nextWeekStart);
+
+  const weeks = [thisWeekStart, nextWeekStartStr];
+  const allEvents = [];
+
+  for (const week of weeks) {
+    const url = `https://www.forexfactory.com/calendar.php?week=${week}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const xml = await res.text();
+      const events = parseXMLResponse(xml);
+      allEvents.push(...events);
+    } catch (e) {
+      // Skip this week if fetch fails
     }
   }
-};
 
-async function fetchCalendarFromForexFactory(base44) {
-  const now = new Date();
-  const fromDate = new Date(now);
-  fromDate.setDate(fromDate.getDate() - 7); // last 7 days
-  const toDate = new Date(now);
-  toDate.setDate(toDate.getDate() + 60); // next 60 days
-
-  const fromStr = fromDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const toStr = toDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const nowStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const nowUTC = now.toISOString();
-
-  const prompt = `You are a macro economic calendar data extractor. Today is ${nowStr} (${nowUTC} UTC).
-
-Go to https://www.forexfactory.com/calendar and extract ALL economic events from ${fromStr} to ${toStr}.
-
-For each event extract:
-- id: a unique string (use country+date+short event name, e.g. "US-2026-04-10-CPI")
-- date: in YYYY-MM-DD format
-- utcTime: event time in UTC as HH:MM (convert from Eastern Time shown on ForexFactory — ET is UTC-4 in summer/EDT, UTC-5 in winter/EST). If "All Day" or "Tentative", write "All Day".
-- country: 2-letter code (US, UK, EU, JP, CN, CA, AU, CH, DE, FR, NZ)
-- event: full event name as shown on ForexFactory
-- importance: map ForexFactory's color to: red=high, orange=medium, yellow=low, grey=low
-- previous: previous reading as shown (include % or units)
-- forecast: forecast/consensus as shown (include % or units, "—" if blank)
-- actual: actual result if already released, null if not yet released
-- category: classify as one of: Central Bank, Inflation, Labour, GDP, PMI, Consumer, Housing, Holiday
-- outcome: if actual is released, write a 1-2 sentence market impact summary; otherwise null
-
-Focus on HIGH and MEDIUM importance events. Include ALL central bank decisions, CPI/PPI/PCE releases, NFP/employment data, GDP releases, and major PMI prints.
-
-Return events sorted by date ascending, then time ascending within each day.`;
-
-  const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt,
-    add_context_from_internet: true,
-    model: 'gemini_3_flash',
-    response_json_schema: EVENT_SCHEMA,
+  // Deduplicate and sort by date/time
+  const seen = new Set();
+  const unique = allEvents.filter(e => {
+    const key = `${e.date}-${e.utcTime}-${e.event}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 
-  return res?.events || [];
+  unique.sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.utcTime || '').localeCompare(b.utcTime || '');
+  });
+
+  return unique;
 }
 
 Deno.serve(async (req) => {
@@ -86,8 +165,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch fresh from ForexFactory via LLM web search
-    const events = await fetchCalendarFromForexFactory(base44);
+    // Fetch fresh from ForexFactory XML
+    const events = await fetchCalendarFromForexFactory();
 
     const payload = JSON.stringify(events);
     const fetched_at = new Date().toISOString();
