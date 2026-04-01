@@ -20,8 +20,8 @@ const footerLinks = [
     title: 'Insights',
     links: [
       { label: 'Wealth Cases', path: '/WealthCases' },
-      { label: 'Monthly Letter', path: '/Research' },
-      { label: 'Trade Reviews', path: '/Research' },
+      { label: 'Newsletter', path: '/Research' },
+      { label: 'Trade Ideas', path: '/Research' },
     ]
   },
   {
