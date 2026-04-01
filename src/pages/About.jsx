@@ -19,7 +19,7 @@ const timeline = [
   { year: '2023', title: 'Macro Research Focus', description: 'Deep dive into macro regime analysis — studying central bank policy, yield curve dynamics, cross-asset correlations, and cycle identification frameworks.' },
   { year: '2024', title: 'Institutional Portfolio Construction', description: 'Applied SAA/TAA methodologies, factor analysis, and client suitability frameworks aligned with institutional wealth management standards.' },
   { year: '2025', title: 'Multi-Asset Research & Wealth Strategy', description: 'Developed comprehensive wealth case studies covering high-net-worth clients, family office structures, and complex cross-border mandates.' },
-  { year: '2026', title: 'The Macro Sphere Platform', description: 'Launched a professional-grade macro and portfolio intelligence platform integrating live market data, AI-assisted portfolio construction, and institutional research.' },
+  { year: '2026', title: 'Keystone Macro Platform', description: 'Launched a professional-grade macro and portfolio intelligence platform integrating live market data, AI-assisted portfolio construction, and institutional research.' },
 ];
 
 export default function About() {
@@ -38,7 +38,7 @@ export default function About() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6">
-            About The Macro Sphere
+            About Keystone Macro
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             A professional macro and multi-asset intelligence platform, built through hands-on market experience and independent investment research.
@@ -55,7 +55,7 @@ export default function About() {
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">The Platform</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              The Macro Sphere is a professional-grade macro and multi-asset research platform, built from 
+              Keystone Macro is a professional-grade macro and multi-asset research platform, built from 
               the ground up through active market participation, independent research, and rigorous study 
               of institutional investment frameworks.
             </p>
