@@ -144,10 +144,6 @@ export function getExchangeStatus(exchangeKey) {
   if (nowMins >= openMins && nowMins < closeMins) {
     return { open: true, label: 'Open' };
   }
-  // Check if market is pre/post-open (within 2 hours of opening)
-  if (nowMins < openMins && nowMins >= (openMins - 120)) {
-    return { open: false, label: 'Opening Soon' };
-  }
   return { open: false, label: 'Closed' };
 }
 
