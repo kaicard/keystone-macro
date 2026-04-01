@@ -237,8 +237,16 @@ function getWeekEnd(today) {
   return d.toISOString().split('T')[0];
 }
 
-function ActualBadge({ actual, forecast }) {
-  if (!actual) return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">—</span>;
+function isReleased(dateStr, utcTime) {
+  if (!utcTime || utcTime === 'All Day' || utcTime === '—') return true;
+  const releaseUTC = new Date(`${dateStr}T${utcTime}:00Z`);
+  return Date.now() >= releaseUTC.getTime();
+}
+
+function ActualBadge({ actual, forecast, dateStr, utcTime }) {
+  if (!actual || !isReleased(dateStr, utcTime)) {
+    return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">—</span>;
+  }
   const aNum = parseFloat(actual);
   const fNum = parseFloat(forecast);
   const beat = !isNaN(aNum) && !isNaN(fNum) && aNum > fNum;
@@ -295,7 +303,7 @@ function EventRow({ event, today }) {
             </div>
             <div className="flex flex-col items-end w-20">
               <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wide">Actual</span>
-              <ActualBadge actual={event.actual} forecast={event.forecast} />
+              <ActualBadge actual={event.actual} forecast={event.forecast} dateStr={event.date} utcTime={event.utcTime} />
             </div>
             <span className="text-muted-foreground/30 w-4">
               {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -403,7 +411,7 @@ export default function EconomicCalendar() {
   }, [filtered, tab]);
 
   const todayHighCount = EVENTS.filter(e => e.date === today && e.importance === 'high').length;
-  const todayReleasedCount = EVENTS.filter(e => e.date === today && e.actual).length;
+  const todayReleasedCount = EVENTS.filter(e => e.date === today && e.actual && isReleased(e.date, e.utcTime)).length;
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
