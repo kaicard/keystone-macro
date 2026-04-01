@@ -58,7 +58,7 @@ export default function Footer() {
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
                 alt="Keystone Macro"
-                className="h-12 w-auto dark:invert"
+                className="h-16 w-auto dark:invert"
               />
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
