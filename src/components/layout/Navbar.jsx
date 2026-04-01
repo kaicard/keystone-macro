@@ -49,7 +49,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="group">
-              <span className="text-foreground/90 text-base font-semibold tracking-tight group-hover:text-primary transition-colors duration-300 letter-spacing-tight">Keystone Macro
+              <span className="text-foreground/90 mr-1 text-base font-semibold tracking-tight group-hover:text-primary transition-colors duration-300 letter-spacing-tight">Keystone Macro
 
               </span>
             </Link>
