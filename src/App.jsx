@@ -18,6 +18,7 @@ import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';
 import EconomicCalendar from '@/pages/EconomicCalendar';
 import Terms from '@/pages/Terms';
+import Newsletter from '@/pages/Newsletter';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
         <Route path="/Admin" element={<Admin />} />
         <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
         <Route path="/Terms" element={<Terms />} />
+        <Route path="/Newsletter" element={<Newsletter />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
