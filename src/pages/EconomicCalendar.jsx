@@ -25,15 +25,15 @@ export default function EconomicCalendar() {
     }
   }, []);
 
-  // Fetch events with 5-minute cache
+  // Fetch events with 60-second cache
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['economic-events'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('economicEvents', {});
+      const response = await base44.functions.invoke('liveEconomicCalendar', {});
       setLastUpdated(new Date());
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 60 seconds
     refetchInterval: 60 * 1000, // 60 seconds
   });
 
@@ -61,7 +61,7 @@ export default function EconomicCalendar() {
           <div className="flex items-end justify-between gap-4 mb-4 flex-wrap">
             <div>
               <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-2">Economic Calendar</h1>
-              <p className="text-muted-foreground text-lg">Major macro events • Accurate release times • Live updates</p>
+              <p className="text-muted-foreground text-lg">High-impact economic events and releases</p>
             </div>
             <div className="flex items-center gap-3">
               <Button

@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/button';
 const navLinks = [
   { label: 'Home', path: '/Home' },
   { label: 'Research', path: '/Research' },
-  { label: 'Portfolios', path: '/Portfolios' },
-  { label: 'Wealth Cases', path: '/WealthCases' },
-  { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
   { label: 'Market Pulse', path: '/MarketPulse' },
-  { label: 'Calendar', path: '/EconomicCalendar' },
+  { label: 'Calendar', path: '/Calendar' },
+  { label: 'Portfolios', path: '/Portfolios' },
+  { label: 'AI Lab', path: '/AILab' },
   { label: 'About', path: '/About' },
   { label: 'Contact', path: '/Contact' },
 ];

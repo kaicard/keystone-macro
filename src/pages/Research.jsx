@@ -123,10 +123,10 @@ export default function Research() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Research & Intelligence</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl">
-            Live market intelligence, macro themes, and original research notes.
-          </p>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Research</h1>
+           <p className="text-muted-foreground text-lg max-w-2xl">
+             Macro themes, signals, and market-moving insight.
+           </p>
         </motion.div>
 
         {/* Intelligence Feed stacked above News by Beat */}
