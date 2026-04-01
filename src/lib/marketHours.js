@@ -84,7 +84,7 @@ function getLocalTimeInZone(tz) {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    hour: '2-digit', minute: '2-digit', hour12: false,
     year: 'numeric', month: '2-digit', day: '2-digit',
     weekday: 'short',
   });
@@ -92,13 +92,17 @@ function getLocalTimeInZone(tz) {
   const parts = formatter.formatToParts(now);
   const get = (type) => parts.find(p => p.type === type)?.value;
   
-  const h = parseInt(get('hour'), 10);
-  const m = parseInt(get('minute'), 10);
+  const hour = get('hour');
+  const minute = get('minute');
+  const h = parseInt(hour, 10);
+  const m = parseInt(minute, 10);
   const weekday = get('weekday');
   const year = get('year');
   const month = get('month');
   const day = get('day');
   const dateStr = `${year}-${month}-${day}`;
+
+  console.log(`[${tz}] Time: ${h}:${String(m).padStart(2, '0')}, Weekday: ${weekday}, Date: ${dateStr}`);
 
   return { h, m, weekday, dateStr };
 }
