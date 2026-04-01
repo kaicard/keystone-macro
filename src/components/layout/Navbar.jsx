@@ -6,16 +6,16 @@ import { useTheme } from '@/lib/ThemeContext';
 import { Button } from '@/components/ui/button';
 
 const navLinks = [
-{ label: 'Home', path: '/Home' },
-{ label: 'Research', path: '/Research' },
-{ label: 'Portfolios', path: '/Portfolios' },
-{ label: 'Wealth Cases', path: '/WealthCases' },
-{ label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
-{ label: 'Market Pulse', path: '/MarketPulse' },
-{ label: 'Calendar', path: '/EconomicCalendar' },
-{ label: 'About', path: '/About' },
-{ label: 'Contact', path: '/Contact' }];
-
+  { label: 'Home', path: '/Home' },
+  { label: 'Research', path: '/Research' },
+  { label: 'Portfolios', path: '/Portfolios' },
+  { label: 'Wealth Cases', path: '/WealthCases' },
+  { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
+  { label: 'Market Pulse', path: '/MarketPulse' },
+  { label: 'Calendar', path: '/EconomicCalendar' },
+  { label: 'About', path: '/About' },
+  { label: 'Contact', path: '/Contact' },
+];
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -37,48 +37,48 @@ export default function Navbar() {
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ?
-        'glass-strong shadow-lg shadow-black/5 dark:shadow-black/20' :
-        'bg-transparent'}`
-        }
+          scrolled 
+            ? 'glass-strong shadow-lg shadow-black/5 dark:shadow-black/20' 
+            : 'bg-transparent'
+        }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-        
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="group">
-              <span className="text-foreground/90 text-base font-semibold tracking-tight group-hover:text-primary transition-colors duration-300 letter-spacing-tight">Keystone Macro
-
+              <span className="font-display text-base font-semibold tracking-tight text-foreground/90 group-hover:text-primary transition-colors duration-300 letter-spacing-tight">
+                Keystone Macro
               </span>
             </Link>
 
             {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => {
+              {navLinks.map(link => {
                 const isActive = location.pathname === link.path;
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200 group/link">
-                    
+                    className="relative px-3 py-2 text-sm font-medium transition-colors duration-200 group/link"
+                  >
                     <span className={isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}>
                       {link.label}
                     </span>
-                    {isActive &&
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full shadow-sm shadow-primary/50"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
-
-                    }
-                    {!isActive &&
-                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-foreground/20 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-transform duration-200 origin-left" />
-                    }
-                  </Link>);
-
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full shadow-sm shadow-primary/50"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    {!isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-foreground/20 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-transform duration-200 origin-left" />
+                    )}
+                  </Link>
+                );
               })}
             </div>
 
@@ -88,8 +88,8 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleTheme}
-                className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground">
-                
+                className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+              >
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
               
@@ -97,8 +97,8 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden rounded-full w-9 h-9 text-muted-foreground">
-                
+                className="lg:hidden rounded-full w-9 h-9 text-muted-foreground"
+              >
                 <Menu className="w-5 h-5" />
               </Button>
             </div>
@@ -108,22 +108,22 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <AnimatePresence>
-        {mobileOpen &&
-        <>
+        {mobileOpen && (
+          <>
             <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMobileOpen(false)} />
-          
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
             <motion.div
-            className="fixed right-0 top-0 bottom-0 w-80 bg-card z-50 p-6 overflow-y-auto border-l border-border"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}>
-            
+              className="fixed right-0 top-0 bottom-0 w-80 bg-card z-50 p-6 overflow-y-auto border-l border-border"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            >
               <div className="flex justify-between items-center mb-8">
                 <span className="font-display text-lg font-semibold">Menu</span>
                 <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="rounded-full">
@@ -131,28 +131,28 @@ export default function Navbar() {
                 </Button>
               </div>
               <div className="space-y-1">
-                {navLinks.map((link) => {
-                const isActive = location.pathname === link.path;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    isActive ?
-                    'bg-primary/10 text-primary' :
-                    'text-muted-foreground hover:text-foreground hover:bg-muted'}`
-                    }>
-                    
+                {navLinks.map(link => {
+                  const isActive = location.pathname === link.path;
+                  return (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
                       {link.label}
                       <ChevronRight className="w-4 h-4 opacity-40" />
-                    </Link>);
-
-              })}
+                    </Link>
+                  );
+                })}
               </div>
             </motion.div>
           </>
-        }
+        )}
       </AnimatePresence>
-    </>);
-
+    </>
+  );
 }

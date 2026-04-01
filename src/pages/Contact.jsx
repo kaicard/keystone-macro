@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
@@ -47,12 +46,11 @@ export default function Contact() {
             <p className="font-medium text-sm group-hover:text-primary transition-colors">LinkedIn</p>
             <p className="text-xs text-muted-foreground mt-1">Connect professionally</p>
           </a>
-          <Link to="/Newsletter"
-            className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
+          <div className="glass rounded-xl p-6 text-center">
             <Send className="w-6 h-6 text-primary mx-auto mb-3" />
-            <p className="font-medium text-sm group-hover:text-primary transition-colors">Newsletter</p>
+            <p className="font-medium text-sm">Newsletter</p>
             <p className="text-xs text-muted-foreground mt-1">Weekly macro digest</p>
-          </Link>
+          </div>
         </div>
 
         {submitted ? (
