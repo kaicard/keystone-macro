@@ -108,17 +108,40 @@ export default function InstrumentChartModal({ item, onClose }) {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={color} stopOpacity={0.2} />
+                      <stop offset="5%" stopColor={color} stopOpacity={0.18} />
                       <stop offset="95%" stopColor={color} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="t" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} tickFormatter={v => v.toLocaleString('en-US', { maximumFractionDigits: 2, notation: 'compact' })} width={55} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="v" stroke={color} strokeWidth={2} fill={`url(#${gradientId})`} dot={false} />
+                  <XAxis
+                    dataKey="t"
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    tickCount={4}
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground) / 0.5)', fontFamily: 'var(--font-inter)' }}
+                    dy={6}
+                    minTickGap={40}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickLine={false}
+                    axisLine={false}
+                    tickCount={4}
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground) / 0.5)', fontFamily: 'var(--font-inter)' }}
+                    tickFormatter={v => {
+                      if (v >= 10000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+                      if (v >= 100) return v.toLocaleString('en-US', { maximumFractionDigits: 1 });
+                      if (v >= 1) return v.toFixed(2);
+                      return v.toFixed(4);
+                    }}
+                    width={52}
+                    orientation="right"
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.4 }} />
+                  <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill={`url(#${gradientId})`} dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
