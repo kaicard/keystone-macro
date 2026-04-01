@@ -57,7 +57,7 @@ export default function Footer() {
             <div className="mb-4 flex items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
-                alt="Keystone Macro" className="mt-5 h-20 w-auto dark:invert" />
+                alt="Keystone Macro" className="mt-6 h-20 w-auto dark:invert" />
 
               
               <div className="flex flex-col leading-tight">
