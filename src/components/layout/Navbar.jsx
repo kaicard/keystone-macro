@@ -52,7 +52,7 @@ export default function Navbar() {
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
                 alt="Keystone Macro"
-                className="h-14 w-auto dark:invert"
+                className="h-20 w-auto dark:invert"
               />
             </Link>
 

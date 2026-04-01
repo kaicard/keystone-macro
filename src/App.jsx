@@ -26,7 +26,7 @@ const AuthenticatedApp = () => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <img src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png" alt="Keystone Macro" className="h-16 w-auto dark:invert" />
+          <img src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png" alt="Keystone Macro" className="h-20 w-auto dark:invert" />
           <div className="w-8 h-8 border-2 border-muted-foreground/20 border-t-primary rounded-full animate-spin" />
         </div>
       </div>
