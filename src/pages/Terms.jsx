@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const Section = ({ title, children }) => (
-  <div className="mb-10">
-    <h2 className="font-display text-xl font-semibold mb-3 text-foreground">{title}</h2>
+const Section = ({ title, children }) =>
+<div className="mb-10">
+    <h2 className="text-foreground mx-auto text-xl font-semibold">{title}</h2>
     <div className="text-sm text-muted-foreground leading-relaxed space-y-3">{children}</div>
-  </div>
-);
+  </div>;
+
 
 export default function Terms() {
   return (
@@ -15,8 +15,8 @@ export default function Terms() {
         <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+          animate={{ opacity: 1, y: 0 }}>
+          
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Terms &amp; Conditions</h1>
           <p className="text-muted-foreground">Last updated: March 2026</p>
         </motion.div>
@@ -25,8 +25,8 @@ export default function Terms() {
           className="glass rounded-2xl p-8 sm:p-12 space-y-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+          transition={{ delay: 0.1 }}>
+          
           <Section title="1. Acceptance of Terms">
             <p>
               By accessing or using The Macro Sphere (the "Platform"), you agree to be bound by these Terms and
@@ -156,6 +156,6 @@ export default function Terms() {
           </Section>
         </motion.div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
