@@ -33,16 +33,20 @@ function fmtChange(changePct) {
 const YAHOO_SYMBOL_MAP = {
   'S&P 500': '%5EGSPC', 'NASDAQ 100': '%5ENDX', 'Dow Jones': '%5EDJI',
   'FTSE 100': '%5EFTSE', 'DAX': '%5EGDAXI', 'CAC 40': '%5EFCHI',
-  'Nikkei 225': '%5EN225', 'Hang Seng': '%5EHSI',
-  'Bitcoin': 'BTC-USD', 'Ethereum': 'ETH-USD', 'Solana': 'SOL-USD',
+  'Euro Stoxx 50': '%5ESTOXX50E', 'Nikkei 225': '%5EN225', 'Hang Seng': '%5EHSI', 'ASX 200': '%5EAXJO',
+  'Bitcoin': 'BTC-USD', 'Ethereum': 'ETH-USD', 'Solana': 'SOL-USD', 'XRP': 'XRP-USD',
   'VIX': '%5EVIX', 'DXY': 'DX-Y.NYB',
   'Apple': 'AAPL', 'Microsoft': 'MSFT', 'NVIDIA': 'NVDA', 'Amazon': 'AMZN',
   'Alphabet': 'GOOGL', 'Tesla': 'TSLA', 'Meta': 'META', 'JPMorgan': 'JPM', 'Goldman Sachs': 'GS',
-  'SPY': 'SPY', 'QQQ': 'QQQ', 'GLD': 'GLD', 'TLT': 'TLT', 'HYG': 'HYG',
+  'Berkshire B': 'BRK-B', 'UnitedHealth': 'UNH', 'ExxonMobil': 'XOM',
+  'SPY': 'SPY', 'QQQ': 'QQQ', 'IWM': 'IWM', 'GLD': 'GLD', 'TLT': 'TLT',
+  'HYG': 'HYG', 'EEM': 'EEM', 'XLF': 'XLF', 'XLE': 'XLE',
   'GBP/USD': 'GBPUSD%3DX', 'EUR/USD': 'EURUSD%3DX', 'USD/JPY': 'USDJPY%3DX',
   'USD/CHF': 'USDCHF%3DX', 'AUD/USD': 'AUDUSD%3DX', 'EUR/GBP': 'EURGBP%3DX',
-  'Gold': 'GC%3DF', 'Silver': 'SI%3DF', 'WTI Crude': 'CL%3DF', 'Brent Crude': 'BZ%3DF',
-  'Natural Gas': 'NG%3DF', 'Copper': 'HG%3DF',
+  'USD/CAD': 'USDCAD%3DX', 'USD/CNH': 'USDCNH%3DX',
+  'Gold': 'GC%3DF', 'Silver': 'SI%3DF', 'Platinum': 'PL%3DF',
+  'WTI Crude': 'CL%3DF', 'Brent Crude': 'BZ%3DF',
+  'Natural Gas': 'NG%3DF', 'Copper': 'HG%3DF', 'Wheat': 'ZW%3DF', 'Corn': 'ZC%3DF',
 };
 
 function getYahooUrl(item) {
