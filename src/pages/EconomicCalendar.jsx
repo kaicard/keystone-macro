@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity } from 'lucide-react';
 
 const COUNTRY_LABELS = {
   US: 'US', UK: 'UK', EU: 'EU', JP: 'JP', CN: 'CN',
@@ -273,6 +273,54 @@ const EVENTS = [
   { id: 214, date: '2026-04-30', utcTime: '12:30', country: 'CA', event: 'Canada GDP (MoM)', importance: 'medium', previous: '0.4%', forecast: '0.2%', actual: null, category: 'GDP', outcome: null },
 ];
 
+// Per-category market implications: instruments affected and directional logic
+const CATEGORY_IMPLICATIONS = {
+  'Central Bank': {
+    instruments: ['Currency pairs (domestic)', 'Government bonds (2y, 10y)', 'Equity indices', 'Gold'],
+    bullish: 'Hawkish surprise (rate hike or fewer cuts) → currency strengthens, yields rise, equities sell off.',
+    bearish: 'Dovish surprise (cut or soft guidance) → currency weakens, yields fall, equities and gold rally.',
+  },
+  'Inflation': {
+    instruments: ['Government bonds', 'Currency', 'Gold', 'Rate-sensitive equities (REITs, utilities)'],
+    bullish: 'Hot print → central bank stays hawkish; yields and currency rise, bond prices and growth stocks fall.',
+    bearish: 'Cool print → rate cut expectations firm; bonds rally, currency softens, gold benefits.',
+  },
+  'Labour': {
+    instruments: ['Currency', 'Equities', 'Government bonds', 'Consumer discretionary stocks'],
+    bullish: 'Strong jobs/low claims → growth optimism; currency and equities gain, bonds soften.',
+    bearish: 'Weak jobs/high claims → growth fears; risk-off, bonds rally, currency weakens.',
+  },
+  'GDP': {
+    instruments: ['Currency', 'Equity indices', 'Cyclical sectors (industrials, materials)', 'Government bonds'],
+    bullish: 'Beat → growth confidence; currency and equities rally, bonds sell off.',
+    bearish: 'Miss → recession fears; risk-off rotation into bonds and defensive equities.',
+  },
+  'PMI': {
+    instruments: ['Currency', 'Equity indices', 'Commodity-linked currencies (AUD, CAD)', 'Industrial metals'],
+    bullish: 'Above 50 beat → expansion signal; currency and risk assets gain.',
+    bearish: 'Below 50 miss → contraction; risk-off, defensive assets outperform.',
+  },
+  'Consumer': {
+    instruments: ['Currency', 'Consumer discretionary stocks', 'Retail sector ETFs', 'Equity indices'],
+    bullish: 'Strong confidence/spending → domestic growth story; equities and currency firm.',
+    bearish: 'Weak sentiment → spending pullback feared; defensives outperform, growth stocks fall.',
+  },
+  'Housing': {
+    instruments: ['Homebuilder stocks', 'Mortgage REITs', 'Lumber futures', 'Rate-sensitive bonds'],
+    bullish: 'Strong starts/permits → construction and materials rally; signals domestic economic health.',
+    bearish: 'Weak data → housing slowdown; homebuilder stocks and mortgage REITs sell off.',
+  },
+  'Holiday': {
+    instruments: ['All markets'],
+    bullish: '',
+    bearish: 'Liquidity is thin. Gaps on open are more likely. Reduce position sizing around the holiday.',
+  },
+};
+
+function getImplications(event) {
+  return CATEGORY_IMPLICATIONS[event.category] || null;
+}
+
 function toLocalTime(dateStr, utcTime) {
   if (!utcTime || utcTime === 'All Day' || utcTime === '—') return utcTime;
   const dt = new Date(`${dateStr}T${utcTime}:00Z`);
@@ -325,6 +373,71 @@ function ActualBadge({ actual, forecast, dateStr, utcTime }) {
       {beat ? <TrendingUp className="w-3 h-3" /> : miss ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
       {actual}
     </span>
+  );
+}
+
+function ExpandedPanel({ event }) {
+  const implications = getImplications(event);
+  const released = isReleased(event.date, event.utcTime);
+  const defaultOutcome = `${event.event} is scheduled at ${toLocalTime(event.date, event.utcTime)} (local). ${event.forecast !== '—' ? `Market consensus is ${event.forecast} versus the prior reading of ${event.previous}.` : 'No specific consensus forecast.'} ${event.category === 'Central Bank' ? 'Any forward guidance on rates or policy will be the primary market driver.' : ''}`;
+
+  return (
+    <div className="border-t border-border/15 bg-muted/5">
+      <div className="px-5 py-4 pl-[4.5rem] space-y-4">
+
+        {/* Outcome / Preview */}
+        <div className="flex gap-2.5">
+          <Activity className="w-3.5 h-3.5 text-primary/70 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1">{released && event.actual ? 'Outcome' : 'Preview'}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {event.outcome || defaultOutcome}
+            </p>
+          </div>
+        </div>
+
+        {implications && (
+          <>
+            {/* Affected Instruments */}
+            <div className="flex gap-2.5">
+              <BarChart2 className="w-3.5 h-3.5 text-accent/80 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1.5">Instruments to Watch</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {implications.instruments.map(inst => (
+                    <span key={inst} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent/90 border border-accent/20 font-medium">
+                      {inst}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Market Implications */}
+            {(implications.bullish || implications.bearish) && (
+              <div className="flex gap-2.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80 shrink-0 mt-0.5" />
+                <div className="space-y-1.5 w-full">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Market Implications</p>
+                  {implications.bullish && (
+                    <div className="flex gap-2 items-start">
+                      <span className="text-[9px] font-bold text-emerald-400 mt-0.5 shrink-0 uppercase tracking-wide">Beat</span>
+                      <p className="text-xs text-muted-foreground/80 leading-relaxed">{implications.bullish}</p>
+                    </div>
+                  )}
+                  {implications.bearish && (
+                    <div className="flex gap-2 items-start">
+                      <span className="text-[9px] font-bold text-red-400 mt-0.5 shrink-0 uppercase tracking-wide">{event.category === 'Holiday' ? 'Note' : 'Miss'}</span>
+                      <p className="text-xs text-muted-foreground/80 leading-relaxed">{implications.bearish}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -386,11 +499,7 @@ function EventRow({ event, today }) {
             transition={{ duration: 0.18 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-4 pl-[4.5rem] border-t border-border/15">
-              <p className="text-xs text-muted-foreground leading-relaxed pt-3">
-                {event.outcome || `${event.event} is scheduled at ${toLocalTime(event.date, event.utcTime)} (local). ${event.forecast !== '—' ? `Market consensus is ${event.forecast} versus the prior reading of ${event.previous}.` : 'No specific consensus forecast.'} ${event.category === 'Central Bank' ? 'Any forward guidance on rates or policy will be the primary market driver.' : ''}`}
-              </p>
-            </div>
+            <ExpandedPanel event={event} />
           </motion.div>
         )}
       </AnimatePresence>
