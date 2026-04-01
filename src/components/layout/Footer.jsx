@@ -54,12 +54,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-3">
               <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
+                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
                 alt="Keystone Macro"
-                className="h-14 w-auto dark:invert"
+                className="h-10 w-auto dark:invert"
               />
+              <div className="flex flex-col leading-tight">
+                <span className="font-display text-lg font-semibold tracking-wide">Keystone</span>
+                <span className="text-xs font-medium tracking-[0.2em] text-primary uppercase">Macro</span>
+              </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
               Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.

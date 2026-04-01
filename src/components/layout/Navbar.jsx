@@ -48,12 +48,16 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <Link to="/Home" className="group">
+            <Link to="/Home" className="group flex items-center gap-3">
               <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
+                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
                 alt="Keystone Macro"
-                className="h-14 w-auto dark:invert"
+                className="h-10 w-auto dark:invert"
               />
+              <div className="flex flex-col leading-tight">
+                <span className="font-display text-lg font-semibold tracking-wide">Keystone</span>
+                <span className="text-xs font-medium tracking-[0.2em] text-primary uppercase">Macro</span>
+              </div>
             </Link>
 
             {/* Desktop nav */}
