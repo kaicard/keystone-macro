@@ -151,9 +151,9 @@ export default function LiveNewsFeed() {
                          <p className="text-sm text-foreground leading-relaxed">{item.desk_view}</p>
                        </div>
                        {item.what_to_watch && (
-                         <div className="flex items-start gap-2">
-                           <span className="text-xs font-medium text-muted-foreground shrink-0 mt-0.5">Watch:</span>
-                           <p className="text-xs text-muted-foreground">{item.what_to_watch}</p>
+                         <div className="flex gap-2">
+                           <span className="text-xs font-medium text-muted-foreground shrink-0 leading-5">Watch:</span>
+                           <p className="text-xs text-muted-foreground leading-5">{item.what_to_watch}</p>
                          </div>
                        )}
                        <a
