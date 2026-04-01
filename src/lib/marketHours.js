@@ -82,17 +82,19 @@ export const INSTRUMENT_EXCHANGE = {
 
 function getLocalTimeInZone(tz) {
   const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
-    hour: 'numeric', minute: 'numeric', hour12: false,
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
     year: 'numeric', month: '2-digit', day: '2-digit',
     weekday: 'short',
-  }).formatToParts(now);
-
+  });
+  
+  const parts = formatter.formatToParts(now);
   const get = (type) => parts.find(p => p.type === type)?.value;
-  const h = parseInt(get('hour'));
-  const m = parseInt(get('minute'));
-  const weekday = get('weekday'); // Mon, Tue... Sun
+  
+  const h = parseInt(get('hour'), 10);
+  const m = parseInt(get('minute'), 10);
+  const weekday = get('weekday');
   const year = get('year');
   const month = get('month');
   const day = get('day');
