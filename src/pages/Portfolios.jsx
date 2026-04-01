@@ -176,17 +176,17 @@ export default function Portfolios() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolios</h1>
-           <p className="text-muted-foreground text-lg max-w-2xl">
-             Model allocations and investor scenarios.
-           </p>
+          <p className="text-muted-foreground text-lg max-w-2xl">
+            Illustrative model portfolios, an interactive builder, and scenario analysis. For educational purposes only.
+          </p>
         </motion.div>
 
         <Tabs defaultValue="models" className="space-y-8">
-           <TabsList className="glass border-border/30">
-             <TabsTrigger value="models">Model Portfolios</TabsTrigger>
-             <TabsTrigger value="scenarios">Client Scenarios</TabsTrigger>
-             <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
-           </TabsList>
+          <TabsList className="glass border-border/30">
+            <TabsTrigger value="models">Model Portfolios</TabsTrigger>
+            <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
+            <TabsTrigger value="simulator">Scenario Simulator</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="models">
             {selectedPortfolio ? (
@@ -235,13 +235,13 @@ export default function Portfolios() {
             </p>
           </TabsContent>
 
-          <TabsContent value="scenarios">
-             <ScenarioSimulator />
-           </TabsContent>
+          <TabsContent value="builder">
+            <PortfolioBuilder />
+          </TabsContent>
 
-           <TabsContent value="builder">
-             <PortfolioBuilder />
-           </TabsContent>
+          <TabsContent value="simulator">
+            <ScenarioSimulator />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

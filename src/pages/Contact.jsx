@@ -34,11 +34,11 @@ export default function Contact() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <a href="mailto:hello@keystonemacro.com"
+          <a href="mailto:hello@themacrosphere.com"
             className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
             <Mail className="w-6 h-6 text-primary mx-auto mb-3" />
             <p className="font-medium text-sm group-hover:text-primary transition-colors">Email</p>
-            <p className="text-xs text-muted-foreground mt-1">hello@keystonemacro.com</p>
+            <p className="text-xs text-muted-foreground mt-1">hello@themacrosphere.com</p>
           </a>
           <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
             className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">

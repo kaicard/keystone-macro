@@ -18,7 +18,6 @@ import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';
 import EconomicCalendar from '@/pages/EconomicCalendar';
 import Terms from '@/pages/Terms';
-import AILab from '@/pages/AILab';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,10 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/Contact" element={<Contact />} />
         <Route path="/Admin" element={<Admin />} />
         <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
-        <Route path="/AILab" element={<AILab />} />
         <Route path="/Terms" element={<Terms />} />
-        <Route path="/Calendar" element={<EconomicCalendar />} />
-        <Route path="/MarketPulse" element={<MarketPulse />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
