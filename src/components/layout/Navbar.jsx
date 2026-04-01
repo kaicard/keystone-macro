@@ -46,12 +46,12 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative flex items-center justify-between h-16 lg:h-24">
+          <div className="relative flex items-center justify-between h-16 lg:h-16">
             {/* Logo - left */}
             <Link to="/Home" className="group flex items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
-                alt="Keystone Macro" className="mt-8 h-40 w-auto dark:invert" />
+                alt="Keystone Macro" className="h-10 w-auto dark:invert" />
 
               
               <div className="flex flex-col leading-tight">
