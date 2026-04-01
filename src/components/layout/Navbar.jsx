@@ -51,7 +51,7 @@ export default function Navbar() {
             <Link to="/Home" className="group">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/25c3d8df6_Justthebackground.png"
-                alt="Keystone Macro" className="mt-64 h-10 w-auto dark:invert" />
+                alt="Keystone Macro" className="mt-3 px-4 h-10 w-auto dark:invert" />
 
               
             </Link>
