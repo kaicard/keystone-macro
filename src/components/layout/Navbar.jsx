@@ -46,15 +46,15 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+          <div className="flex items-center justify-between h-20 lg:h-24">
             {/* Logo */}
-            <Link to="/Home" className="group">
-              <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/25c3d8df6_Justthebackground.png"
-                alt="Keystone Macro" className="mt-3 px-4 h-10 w-auto dark:invert" />
-
-              
-            </Link>
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <Link to="/Home" className="group">
+                <img
+                  src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/25c3d8df6_Justthebackground.png"
+                  alt="Keystone Macro" className="h-16 w-auto dark:invert" />
+              </Link>
+            </div>
 
             {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-1">
@@ -85,7 +85,7 @@ export default function Navbar() {
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <Button
                 variant="ghost"
                 size="icon"

@@ -53,18 +53,18 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
-          <div className="lg:col-span-2">
-            <div className="mb-4">
+          <div className="lg:col-span-2 flex flex-col items-center lg:items-start">
+            <div className="mb-6">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/25c3d8df6_Justthebackground.png"
                 alt="Keystone Macro"
-                className="h-12 w-auto dark:invert"
+                className="h-20 w-auto dark:invert"
               />
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6 lg:text-left text-center">
               Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 lg:justify-start justify-center">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Linkedin className="w-4 h-4" />
