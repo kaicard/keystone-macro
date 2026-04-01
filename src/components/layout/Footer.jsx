@@ -55,12 +55,12 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="mb-4 flex items-center gap-2">
-              <div className="overflow-hidden shrink-0" style={{ height: '56px', width: '56px' }}>
+              <div className="overflow-hidden shrink-0" style={{ height: '48px', width: '72px' }}>
                 <img
                   src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
                   alt="Keystone Macro"
                   className="dark:invert"
-                  style={{ height: '100px', width: '100px', objectFit: 'cover', objectPosition: 'top center', marginTop: '-4px' }}
+                  style={{ height: '130px', width: 'auto', objectFit: 'cover', objectPosition: 'top center', marginTop: '0px' }}
                 />
               </div>
               <div className="flex flex-col leading-tight">

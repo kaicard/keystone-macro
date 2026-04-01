@@ -49,12 +49,12 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/Home" className="group flex items-center gap-2">
-              <div className="overflow-hidden" style={{ height: '56px', width: '56px' }}>
+              <div className="overflow-hidden" style={{ height: '48px', width: '72px' }}>
                 <img
                   src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
                   alt="Keystone Macro"
                   className="dark:invert"
-                  style={{ height: '100px', width: '100px', objectFit: 'cover', objectPosition: 'top center', marginTop: '-4px' }}
+                  style={{ height: '130px', width: 'auto', objectFit: 'cover', objectPosition: 'top center', marginTop: '0px' }}
                 />
               </div>
               <div className="flex flex-col leading-tight">
