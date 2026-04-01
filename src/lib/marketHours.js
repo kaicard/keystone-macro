@@ -143,6 +143,12 @@ export function getExchangeStatus(exchangeKey) {
   const openMins = exch.open.h * 60 + exch.open.m;
   const closeMins = exch.close.h * 60 + exch.close.m;
 
+  // Debug for JP
+  if (exchangeKey === 'JP') {
+    console.log(`JP: ${h}:${String(m).padStart(2, '0')}, open: ${exch.open.h}:${String(exch.open.m).padStart(2, '0')}, close: ${exch.close.h}:${String(exch.close.m).padStart(2, '0')}`);
+    console.log(`nowMins: ${nowMins}, openMins: ${openMins}, closeMins: ${closeMins}`);
+  }
+
   if (nowMins >= openMins && nowMins < closeMins) {
     return { open: true, label: 'Open' };
   }
