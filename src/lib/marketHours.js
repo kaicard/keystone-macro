@@ -94,15 +94,11 @@ function getLocalTimeInZone(tz) {
   
   const h = parseInt(get('hour'), 10);
   const m = parseInt(get('minute'), 10);
-  const s = parseInt(get('second'), 10);
   const weekday = get('weekday');
   const year = get('year');
   const month = get('month');
   const day = get('day');
   const dateStr = `${year}-${month}-${day}`;
-
-  // Debug output
-  console.log(`TZ: ${tz} | Time: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} | Date: ${dateStr} (${weekday})`);
 
   return { h, m, weekday, dateStr };
 }
