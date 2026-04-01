@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity, RefreshCw } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity } from 'lucide-react';
 
 const COUNTRY_LABELS = {
   US: 'US', UK: 'UK', EU: 'EU', JP: 'JP', CN: 'CN',
@@ -546,32 +545,6 @@ function DateGroup({ dateStr, events, today }) {
 export default function EconomicCalendar() {
   const [tab, setTab] = useState('today');
   const [today, setToday] = useState(getTodayStr);
-  const [liveEvents, setLiveEvents] = useState(null); // null = not yet loaded
-  const [loadingLive, setLoadingLive] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState(null);
-
-  // Fetch live calendar from backend (ForexFactory via LLM)
-  const fetchLiveCalendar = useCallback(async () => {
-    setLoadingLive(true);
-    try {
-      const res = await base44.functions.invoke('forexCalendar', {});
-      if (res?.data?.events?.length) {
-        setLiveEvents(res.data.events);
-        setLastUpdated(res.data.fetched_at ? new Date(res.data.fetched_at) : new Date());
-      }
-    } catch (e) {
-      // Fall back to static data silently
-    } finally {
-      setLoadingLive(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchLiveCalendar();
-  }, []);
-
-  // Use live data if available, otherwise fall back to static
-  const ALL_EVENTS = liveEvents || EVENTS;
 
   useEffect(() => {
     const msUntilMidnight = () => {
@@ -592,14 +565,14 @@ export default function EconomicCalendar() {
 
   const filtered = useMemo(() => {
     const weekEnd = getWeekEnd(today);
-    return ALL_EVENTS.filter(e => {
+    return EVENTS.filter(e => {
       if (tab === 'today')    return e.date === today;
       if (tab === 'week')     return e.date >= today && e.date <= weekEnd;
       if (tab === 'month')    return e.date >= today && e.date <= monthEnd;
       if (tab === 'previous') return e.date < today;
       return true;
     });
-  }, [tab, today, monthEnd, ALL_EVENTS]);
+  }, [tab, today, monthEnd]);
 
   const grouped = useMemo(() => {
     const map = {};
@@ -611,8 +584,8 @@ export default function EconomicCalendar() {
     return tab === 'previous' ? sorted.reverse() : sorted;
   }, [filtered, tab]);
 
-  const todayHighCount = ALL_EVENTS.filter(e => e.date === today && e.importance === 'high').length;
-  const todayReleasedCount = ALL_EVENTS.filter(e => e.date === today && e.actual && isReleased(e.date, e.utcTime)).length;
+  const todayHighCount = EVENTS.filter(e => e.date === today && e.importance === 'high').length;
+  const todayReleasedCount = EVENTS.filter(e => e.date === today && e.actual && isReleased(e.date, e.utcTime)).length;
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
@@ -625,22 +598,7 @@ export default function EconomicCalendar() {
             <span className="text-xs font-medium text-primary">Macro Events</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Economic Calendar</h1>
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data.</p>
-            {lastUpdated && (
-              <span className="text-xs text-muted-foreground/50 font-mono">
-                Live · Updated {lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-            <button
-              onClick={fetchLiveCalendar}
-              disabled={loadingLive}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 hover:text-primary transition-colors"
-            >
-              <RefreshCw className={`w-3 h-3 ${loadingLive ? 'animate-spin' : ''}`} />
-              {loadingLive ? 'Syncing...' : 'Sync'}
-            </button>
-          </div>
+          <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data.</p>
         </motion.div>
 
         {tab === 'today' && (
