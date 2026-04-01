@@ -5,12 +5,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Invalidate liveQuotes cache to force refresh on next user visit
-    // (or call the functions directly to warm them)
-    const [quotesRes, contextRes, newsRes] = await Promise.all([
+    // Warm all caches in parallel so users always get instant loads
+    const BEATS = ['markets', 'global_equities', 'us_economy', 'uk_economy', 'eu_economy', 'commodities', 'tech', 'geopolitics', 'rates_credit'];
+
+    const [quotesRes, contextRes, newsRes, ...beatResults] = await Promise.all([
       base44.asServiceRole.functions.invoke('liveQuotes', {}),
       base44.asServiceRole.functions.invoke('liveMarketContext', {}),
       base44.asServiceRole.functions.invoke('liveNews', {}),
+      ...BEATS.map(beat => base44.asServiceRole.functions.invoke('beatNews', { beat })),
     ]);
 
     return Response.json({
@@ -18,6 +20,7 @@ Deno.serve(async (req) => {
       quotes: quotesRes?.ok,
       context: contextRes?.ok,
       news: newsRes?.ok,
+      beats_warmed: beatResults.length,
       ts: new Date().toISOString()
     });
   } catch (error) {

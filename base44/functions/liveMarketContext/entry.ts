@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const CACHE_KEY = 'liveMarketContext';
-const CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes — contextual data changes slower
+const CACHE_TTL_MS = 35 * 60 * 1000; // 35 minutes — stale-while-revalidate handles freshness
+const STALE_THRESHOLD_MS = 18 * 60 * 1000; // start background refresh after 18 min
 
 // Bond yield tickers on Yahoo Finance
 const BOND_TICKERS = [
@@ -50,6 +51,49 @@ const CONTEXT_SCHEMA = {
   }
 };
 
+async function refreshInBackground(base44, existingId) {
+  const bondSyms = BOND_TICKERS.map(t => t.sym);
+  let bonds = [];
+  try {
+    const bondRaw = await fetchYahooQuotes(bondSyms);
+    const bondMap = {};
+    for (const q of bondRaw) bondMap[q.symbol] = q;
+    bonds = BOND_TICKERS.map(t => {
+      const q = bondMap[t.sym];
+      if (!q || q.regularMarketPrice == null) return null;
+      const chg = q.regularMarketChange ?? 0;
+      const chg_bps = (chg * 100).toFixed(1);
+      return { name: t.name, yield: `${q.regularMarketPrice.toFixed(2)}%`, change_bps: `${chg >= 0 ? '+' : ''}${chg_bps}bps`, direction: direction(chg) };
+    }).filter(Boolean);
+  } catch (e) {}
+
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const prompt = `Today is ${today}. Using live web data, fetch REAL current values for:
+- sectors: today's % change for all 11 GICS sectors (Technology, Financials, Healthcare, Energy, Consumer Discretionary, Consumer Staples, Industrials, Materials, Utilities, Real Estate, Communication Services). Use real numbers from Yahoo Finance sector screener or equivalent.
+- credit_spreads: US IG OAS (bps), US HY OAS (bps), EUR IG spread (bps), EUR HY spread (bps). Use ICE BofA indices or similar. Include direction (tightening/widening).
+- yield_curve: US 2Y10Y spread (bps), UK 2Y10Y (bps). Calculate from real live yields.
+- top_movers: top 3 gainers and top 3 losers in the S&P 500 today with actual % changes.
+- regime: based on today's actual market conditions, describe the macro regime.
+- market_summary: 3-4 sentence professional summary of today's actual market action with real numbers.
+Only return real data. Do not fabricate. If you cannot find a real value, omit it.`;
+
+  const contextData = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt,
+    add_context_from_internet: true,
+    model: 'gemini_3_flash',
+    response_json_schema: CONTEXT_SCHEMA,
+  });
+
+  const data = { ...contextData, bonds };
+  const fetched_at = new Date().toISOString();
+  const payload = JSON.stringify(data);
+  if (existingId) {
+    await base44.asServiceRole.entities.MarketCache.update(existingId, { payload, fetched_at });
+  } else {
+    await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -59,66 +103,24 @@ Deno.serve(async (req) => {
     if (cached?.length > 0) {
       const entry = cached[0];
       const age = Date.now() - new Date(entry.fetched_at).getTime();
-      if (age < CACHE_TTL_MS && entry.payload) {
+      if (entry.payload) {
         const data = JSON.parse(entry.payload);
-        return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
+        // Return stale data immediately — refresh in background if past threshold
+        if (age >= STALE_THRESHOLD_MS && age < CACHE_TTL_MS) {
+          refreshInBackground(base44, entry.id).catch(() => {});
+        }
+        if (age < CACHE_TTL_MS) {
+          return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
+        }
       }
     }
 
-    // Fetch bond yields directly from Yahoo Finance
-    const bondSyms = BOND_TICKERS.map(t => t.sym);
-    let bonds = [];
-    try {
-      const bondRaw = await fetchYahooQuotes(bondSyms);
-      const bondMap = {};
-      for (const q of bondRaw) bondMap[q.symbol] = q;
-
-      bonds = BOND_TICKERS.map(t => {
-        const q = bondMap[t.sym];
-        if (!q || q.regularMarketPrice == null) return null;
-        const chg = q.regularMarketChange ?? 0;
-        const chg_bps = (chg * 100).toFixed(1);
-        return {
-          name: t.name,
-          yield: `${q.regularMarketPrice.toFixed(2)}%`,
-          change_bps: `${chg >= 0 ? '+' : ''}${chg_bps}bps`,
-          direction: direction(chg),
-        };
-      }).filter(Boolean);
-    } catch (e) {
-      // bonds fetch failed, continue without them
-    }
-
-    // Use LLM for contextual data that can't be easily scraped (sectors, credit spreads, regime)
-    const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const prompt = `Today is ${today}. Using live web data, fetch REAL current values for:
-- sectors: today's % change for all 11 GICS sectors (Technology, Financials, Healthcare, Energy, Consumer Discretionary, Consumer Staples, Industrials, Materials, Utilities, Real Estate, Communication Services). Use real numbers from Yahoo Finance sector screener or equivalent.
-- credit_spreads: US IG OAS (bps), US HY OAS (bps), EUR IG spread (bps), EUR HY spread (bps). Use ICE BofA indices or similar. Include direction (tightening/widening).
-- yield_curve: US 2Y10Y spread (bps), UK 2Y10Y (bps). Calculate from real live yields.
-- top_movers: top 3 gainers and top 3 losers in the S&P 500 today with actual % changes.
-- regime: based on today's actual market conditions, describe the macro regime.
-- market_summary: 3-4 sentence professional summary of today's actual market action with real numbers.
-Only return real data. Do not fabricate. If you cannot find a real value, omit it.`;
-
-    const contextData = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
-      response_json_schema: CONTEXT_SCHEMA,
-    });
-
-    const data = { ...contextData, bonds };
-
-    const fetched_at = new Date().toISOString();
-    const payload = JSON.stringify(data);
-
-    if (cached?.length > 0) {
-      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
-    } else {
-      await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
-    }
-
-    return Response.json({ ok: true, data, cached: false, fetched_at });
+    // Cache miss or fully expired — fetch fresh (blocking)
+    await refreshInBackground(base44, cached?.[0]?.id || null);
+    const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
+    const freshEntry = fresh?.[0];
+    const data = freshEntry?.payload ? JSON.parse(freshEntry.payload) : {};
+    return Response.json({ ok: true, data, cached: false, fetched_at: freshEntry?.fetched_at || new Date().toISOString() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }

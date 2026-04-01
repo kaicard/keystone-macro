@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const CACHE_KEY = 'liveNews';
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const CACHE_TTL_MS = 45 * 60 * 1000; // 45 minutes — stale-while-revalidate handles freshness
+const STALE_THRESHOLD_MS = 25 * 60 * 1000; // start background refresh after 25 min
 
 const HEADLINE_SCHEMA = {
   type: "object",
@@ -27,27 +28,12 @@ const HEADLINE_SCHEMA = {
   }
 };
 
-Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-
-    // Check cache first
-    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
-    if (cached?.length > 0) {
-      const entry = cached[0];
-      const age = Date.now() - new Date(entry.fetched_at).getTime();
-      if (age < CACHE_TTL_MS && entry.payload) {
-        const headlines = JSON.parse(entry.payload);
-        return Response.json({ ok: true, headlines, cached: true, fetched_at: entry.fetched_at });
-      }
-    }
-
-    // Cache miss or stale — fetch fresh
-    const now = new Date();
-    const today = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
-    const currentTimeUTC = now.toISOString();
-    const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
-    const prompt = `You are a macro market intelligence editor. The current date and time is ${today}, ${londonTime} London time (${currentTimeUTC} UTC).
+async function refreshInBackground(base44, existingId) {
+  const now = new Date();
+  const today = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
+  const currentTimeUTC = now.toISOString();
+  const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+  const prompt = `You are a macro market intelligence editor. The current date and time is ${today}, ${londonTime} London time (${currentTimeUTC} UTC).
 
 Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories published TODAY (${today}).
 
@@ -74,25 +60,53 @@ Cover a range of: central bank policy, geopolitical developments, major equity m
 
 IMPORTANT: Return the stories ordered by published_time, newest first (most recently published story at index 0).`;
 
-    const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
-      response_json_schema: HEADLINE_SCHEMA,
-    });
+  const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt,
+    add_context_from_internet: true,
+    model: 'gemini_3_flash',
+    response_json_schema: HEADLINE_SCHEMA,
+  });
 
-    const headlines = res?.headlines || [];
-    const fetched_at = new Date().toISOString();
+  const headlines = res?.headlines || [];
+  if (!headlines.length) return;
 
-    // Save to cache
-    const payload = JSON.stringify(headlines);
+  const payload = JSON.stringify(headlines);
+  const fetched_at = new Date().toISOString();
+  if (existingId) {
+    await base44.asServiceRole.entities.MarketCache.update(existingId, { payload, fetched_at });
+  } else {
+    await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
+  }
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+
+    // Check cache first
+    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     if (cached?.length > 0) {
-      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
-    } else {
-      await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
+      const entry = cached[0];
+      const age = Date.now() - new Date(entry.fetched_at).getTime();
+      if (entry.payload) {
+        const headlines = JSON.parse(entry.payload);
+        // Return stale data immediately — refresh in background if past threshold
+        if (age >= STALE_THRESHOLD_MS && age < CACHE_TTL_MS) {
+          // Background refresh (don't await)
+          refreshInBackground(base44, entry.id).catch(() => {});
+        }
+        if (age < CACHE_TTL_MS) {
+          return Response.json({ ok: true, headlines, cached: true, fetched_at: entry.fetched_at });
+        }
+      }
     }
 
-    return Response.json({ ok: true, headlines, cached: false, fetched_at });
+    // Cache miss or fully expired — fetch fresh (blocking)
+    await refreshInBackground(base44, cached?.[0]?.id || null);
+    const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
+    const freshEntry = fresh?.[0];
+    const headlines = freshEntry?.payload ? JSON.parse(freshEntry.payload) : [];
+    return Response.json({ ok: true, headlines, cached: false, fetched_at: freshEntry?.fetched_at || new Date().toISOString() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message, headlines: [] }, { status: 200 });
   }
