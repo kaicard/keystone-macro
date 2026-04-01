@@ -122,7 +122,7 @@ export default function MarketPulse() {
           <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-end justify-between flex-wrap gap-4 mb-4">
               <h1 className="font-display text-4xl sm:text-5xl font-semibold">Market Pulse</h1>
-              <p className="text-xs text-muted-foreground/50 pb-1">Prices sourced via Yahoo Finance · 15-min delay applies to some instruments outside market hours</p>
+              <p className="text-xs text-muted-foreground/50 pb-1">15-min delay applies to some instruments outside market hours</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               {getAllExchangeStatuses().map(s => (
