@@ -22,69 +22,67 @@ const CATEGORY_COLORS = {
 // All times stored as UTC (HH:MM). "All Day" passed through as-is.
 const EVENTS = [
   // ── March 17 ──────────────────────────────────────────────────────────────
-  { id: 100, date: '2026-03-17', utcTime: '17:30', country: 'US', event: 'US Retail Sales (MoM) — Feb', importance: 'high', previous: '-0.9%', forecast: '0.6%', actual: '0.2%', category: 'Consumer',
-    outcome: 'Retail sales recovered but underwhelmed at +0.2% MoM vs +0.6% expected. Control group flat. Consumer spending losing momentum, reinforcing Q1 GDP concerns. Dollar weakened modestly; rates rallied.' },
-  { id: 101, date: '2026-03-17', utcTime: '18:15', country: 'US', event: 'Industrial Production (MoM)', importance: 'medium', previous: '0.5%', forecast: '0.2%', actual: '0.7%', category: 'GDP',
-    outcome: 'Surprised to the upside at +0.7%, boosted by utilities output during cold weather. Manufacturing sub-index +0.1%, broadly in line.' },
+  { id: 100, date: '2026-03-17', utcTime: '12:30', country: 'US', event: 'US Retail Sales (MoM) — Feb', importance: 'high', previous: '-0.2%', forecast: '0.6%', actual: '0.3%', category: 'Consumer',
+    outcome: 'Retail sales grew 0.3% MoM in February, below the 0.6% consensus. Modest improvement after January\'s 0.2% decline. Underlying consumer spending remains subdued. Dollar weakened marginally; rates little changed.' },
+  { id: 101, date: '2026-03-17', utcTime: '13:15', country: 'US', event: 'Industrial Production (MoM)', importance: 'medium', previous: '0.5%', forecast: '0.2%', actual: '0.7%', category: 'GDP',
+    outcome: 'Industrial production surprised to the upside at +0.7%, boosted by utilities output. Manufacturing sub-index +0.1%, broadly in line.' },
 
   // ── March 18 ──────────────────────────────────────────────────────────────
-  { id: 102, date: '2026-03-18', utcTime: '08:00', country: 'DE', event: 'Germany ZEW Economic Sentiment', importance: 'high', previous: '26.0', forecast: '48.0', actual: '51.6', category: 'Consumer',
-    outcome: 'ZEW surged to 51.6, smashing expectations. Reflects optimism around the new German fiscal package. DAX hit fresh highs; EUR/USD nudged higher.' },
-  { id: 103, date: '2026-03-18', utcTime: '08:00', country: 'EU', event: 'Eurozone ZEW Economic Sentiment', importance: 'medium', previous: '24.2', forecast: '35.0', actual: '39.8', category: 'Consumer',
-    outcome: 'Eurozone ZEW followed the German lead, jumping to 39.8. Fiscal stimulus expectations lifting animal spirits.' },
+  { id: 102, date: '2026-03-18', utcTime: '09:00', country: 'DE', event: 'Germany ZEW Economic Sentiment', importance: 'high', previous: '58.3', forecast: '38.7', actual: '-0.5', category: 'Consumer',
+    outcome: 'ZEW collapsed from 58.3 to -0.5, the lowest since April 2025 and far below any forecast. The Middle East conflict and oil price spike crushed investor optimism. DAX sold off sharply; EUR/USD fell.' },
+  { id: 103, date: '2026-03-18', utcTime: '09:00', country: 'EU', event: 'Eurozone ZEW Economic Sentiment', importance: 'medium', previous: '58.3', forecast: '36.0', actual: '39.8', category: 'Consumer',
+    outcome: 'Eurozone ZEW held somewhat better than the German reading, coming in at 39.8. Still a sharp drop from the prior month\'s elevated level, reflecting war-related uncertainty.' },
 
   // ── March 19 — FOMC ───────────────────────────────────────────────────────
-  { id: 104, date: '2026-03-19', utcTime: '23:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '4.25–4.50%', forecast: '4.25–4.50%', actual: '4.25–4.50%', category: 'Central Bank',
-    outcome: 'Fed held rates as expected. Dot plot still shows two cuts for 2026. Growth forecasts trimmed to 1.7%. Tariff uncertainty flagged repeatedly. Equities rallied on unchanged median dots.' },
-  { id: 105, date: '2026-03-19', utcTime: '23:30', country: 'US', event: 'FOMC Press Conference — Powell', importance: 'high', previous: '—', forecast: '—', actual: '✓', category: 'Central Bank',
-    outcome: 'Powell struck a cautious tone, emphasising "no rush" on rates. Tariff impacts called "unusually uncertain". Markets took the presser as dovish.' },
+  { id: 104, date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '3.50–3.75%', forecast: '3.50–3.75%', actual: '3.50–3.75%', category: 'Central Bank',
+    outcome: 'Fed held rates at 3.50–3.75% as expected. Dot plot showed median of one cut in 2026, down from two. Growth forecasts trimmed. War uncertainty and oil price spike flagged as upside inflation risks. Equities dipped; bond yields rose slightly.' },
+  { id: 105, date: '2026-03-19', utcTime: '18:30', country: 'US', event: 'FOMC Press Conference — Powell', importance: 'high', previous: '—', forecast: '—', actual: '✓', category: 'Central Bank',
+    outcome: 'Powell struck a cautious tone, noting the Iran war added "unusually high" uncertainty. Emphasised "no rush" on rate cuts. Markets interpreted the presser as modestly hawkish given the reduced dot-plot cut signals.' },
 
   // ── March 20 ──────────────────────────────────────────────────────────────
-  { id: 106, date: '2026-03-20', utcTime: '06:45', country: 'CH', event: 'SNB Interest Rate Decision', importance: 'high', previous: '0.50%', forecast: '0.25%', actual: '0.25%', category: 'Central Bank',
-    outcome: 'SNB cut by 25bps to 0.25% as expected, citing benign inflation. Zero lower bound back in discussion.' },
-  { id: 107, date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '4.50%', forecast: '4.50%', actual: '4.50%', category: 'Central Bank',
-    outcome: 'BOE held at 4.50% in an 8-1 vote. Market pricing for May cut rose to ~55%.' },
+  { id: 106, date: '2026-03-20', utcTime: '08:30', country: 'CH', event: 'SNB Interest Rate Decision', importance: 'high', previous: '0.00%', forecast: '0.00%', actual: '0.00%', category: 'Central Bank',
+    outcome: 'SNB held the policy rate at 0.00% as widely expected, signalling readiness to intervene in FX markets to curb CHF strength following the Iran war safe-haven bid. Inflation forecast revised up to 0.5% for 2026.' },
+  { id: 107, date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '3.75%', forecast: '3.75%', actual: '3.75%', category: 'Central Bank',
+    outcome: 'BOE held at 3.75% in a unanimous 9-0 vote — the first decision without any dissent in months. MPC cited the Iran war and energy price spike as upside inflation risks, overriding the case for a near-term cut.' },
 
   // ── March 24 ──────────────────────────────────────────────────────────────
-  { id: 108, date: '2026-03-24', utcTime: '08:30', country: 'UK', event: 'UK Flash Composite PMI', importance: 'medium', previous: '50.5', forecast: '50.3', actual: '50.0', category: 'PMI',
-    outcome: 'UK PMI dipped to 50.0. Manufacturing slipped further to 44.6. Sterling fell ~20 pips.' },
-  { id: 109, date: '2026-03-24', utcTime: '08:00', country: 'EU', event: 'Eurozone Flash Composite PMI', importance: 'high', previous: '50.2', forecast: '50.6', actual: '50.4', category: 'PMI',
-    outcome: 'Eurozone composite edged up to 50.4, below consensus but still in expansion.' },
-  { id: 110, date: '2026-03-24', utcTime: '18:45', country: 'US', event: 'S&P Global US Flash Composite PMI', importance: 'medium', previous: '51.6', forecast: '51.5', actual: '53.5', category: 'PMI',
-    outcome: 'US PMI surprised higher at 53.5, services at 54.3. Underlying momentum better than feared.' },
+  { id: 108, date: '2026-03-24', utcTime: '09:30', country: 'UK', event: 'UK Flash Composite PMI', importance: 'medium', previous: '53.7', forecast: '52.9', actual: '51.0', category: 'PMI',
+    outcome: 'UK Flash Composite PMI fell sharply to 51.0, a six-month low, down from 53.7 in February. War-related uncertainty weighed on services. Manufacturing PMI rose to 52.4. Sterling dipped on the weaker-than-expected reading.' },
+  { id: 109, date: '2026-03-24', utcTime: '09:00', country: 'EU', event: 'Eurozone Flash Composite PMI', importance: 'high', previous: '51.9', forecast: '51.0', actual: '50.5', category: 'PMI',
+    outcome: 'Eurozone flash composite fell to a 10-month low of 50.5, down from 51.9 in February, missing the 51.0 forecast. Stagflation risk signals intensified as input costs surged. EUR/USD fell modestly.' },
+  { id: 110, date: '2026-03-24', utcTime: '13:45', country: 'US', event: 'S&P Global US Flash Composite PMI', importance: 'medium', previous: '51.9', forecast: '51.5', actual: '51.4', category: 'PMI',
+    outcome: 'US Flash Composite PMI slipped to 51.4, an 11-month low, as services fell to 51.1. Manufacturing rose to 52.4. Activity still expanding but momentum fading.' },
 
   // ── March 25 ──────────────────────────────────────────────────────────────
-  { id: 112, date: '2026-03-25', utcTime: '08:00', country: 'DE', event: 'Germany Ifo Expectations', importance: 'medium', previous: '85.4', forecast: '86.0', actual: '87.7', category: 'PMI',
-    outcome: 'Ifo expectations surged to 87.7, highest in nearly two years. Infrastructure spending optimism.' },
-  { id: 111, date: '2026-03-25', utcTime: '19:00', country: 'US', event: 'CB Consumer Confidence', importance: 'high', previous: '98.3', forecast: '94.0', actual: '92.9', category: 'Consumer',
-    outcome: 'Confidence fell to 92.9, lowest since Feb 2021. Expectations component dropped to 65.2, below the 80 recession-risk threshold.' },
+  { id: 112, date: '2026-03-25', utcTime: '09:00', country: 'DE', event: 'Germany Ifo Expectations', importance: 'medium', previous: '85.4', forecast: '86.0', actual: '87.7', category: 'PMI',
+    outcome: 'Ifo expectations surged to 87.7, highest in nearly two years, reflecting optimism around the German fiscal infrastructure package. EUR/USD firmed on the release.' },
+  { id: 111, date: '2026-03-25', utcTime: '14:00', country: 'US', event: 'CB Consumer Confidence', importance: 'high', previous: '91.0', forecast: '88.0', actual: '91.8', category: 'Consumer',
+    outcome: 'CB Consumer Confidence edged up to 91.8 in March, slightly above the 91.0 prior and beating the 88.0 consensus. Present situation improved modestly; expectations sub-index remained subdued at 65.2, below the 80 recession-risk threshold.' },
 
   // ── March 26 ──────────────────────────────────────────────────────────────
-  { id: 1, date: '2026-03-26', utcTime: '07:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '3.0%', forecast: '2.9%', actual: '2.8%', category: 'Inflation',
-    outcome: 'Inflation fell to 2.8%, lowest since mid-2021. Services CPI softened to 4.7%. Market pricing for May BOE cut rose sharply.' },
+  { id: 1, date: '2026-03-26', utcTime: '07:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '3.0%', forecast: '3.0%', actual: '3.0%', category: 'Inflation',
+    outcome: 'UK CPI held steady at 3.0% YoY in February, in line with expectations and unchanged from January. Core CPI ticked up to 3.2%. Services inflation at 4.3%. War-related energy price spike not yet captured in this release; BOE remains cautious.' },
   { id: 2, date: '2026-03-26', utcTime: '08:00', country: 'EU', event: 'ECB President Lagarde Speech', importance: 'high', previous: '—', forecast: '—', actual: '✓', category: 'Central Bank',
-    outcome: 'Lagarde reiterated data-dependency, declined to commit to a June cut. EUR/USD edged lower.' },
-  { id: 3, date: '2026-03-26', utcTime: '17:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '223K', forecast: '225K', actual: '224K', category: 'Labour',
-    outcome: 'Claims in-line at 224K. Continuing claims ticked up slightly to 1.87M. Stable, if softening, labour market.' },
-  { id: 4, date: '2026-03-26', utcTime: '17:30', country: 'US', event: 'Durable Goods Orders (MoM)', importance: 'high', previous: '3.2%', forecast: '-1.0%', actual: '0.9%', category: 'Consumer',
-    outcome: 'Durable goods surprised strongly at +0.9% vs -1.0% forecast. Core capex orders +0.7%, positive for business investment.' },
+    outcome: 'Lagarde reiterated data-dependency and flagged the Iran war energy price surge as an upside inflation risk. Declined to commit to an April cut. EUR/USD edged lower.' },
+  { id: 3, date: '2026-03-26', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '205K', forecast: '210K', actual: '210K', category: 'Labour',
+    outcome: 'Claims rose to 210K for the week ending March 21, in line with the 210K consensus and up 5K from the prior week. Continuing claims fell to a near two-year low of 1.819M — a resilient labour market signal.' },
+  { id: 4, date: '2026-03-26', utcTime: '12:30', country: 'US', event: 'Durable Goods Orders (MoM) — Jan Advance', importance: 'medium', previous: '-1.4%', forecast: '1.1%', actual: '0.0%', category: 'Consumer',
+    outcome: 'January durable goods orders came in flat at 0.0%, missing the 1.1% consensus. Core capex orders (ex-defense, ex-aircraft) unchanged. Business investment stalling at the start of Q1.' },
 
   // ── March 27 ──────────────────────────────────────────────────────────────
-  { id: 5, date: '2026-03-27', utcTime: '06:00', country: 'DE', event: 'Germany Ifo Business Climate', importance: 'high', previous: '85.2', forecast: '85.8', actual: '86.7', category: 'PMI',
-    outcome: 'Ifo beat at 86.7, highest since June 2024. Both current conditions and expectations improved.' },
-  { id: 6, date: '2026-03-27', utcTime: '07:00', country: 'UK', event: 'UK Retail Sales (MoM)', importance: 'high', previous: '-0.6%', forecast: '0.4%', actual: '1.0%', category: 'Consumer',
-    outcome: 'UK Retail Sales strongly beat at +1.0% MoM. Food and clothing drove the gain.' },
-  { id: 7, date: '2026-03-27', utcTime: '17:30', country: 'US', event: 'US GDP Q4 Final (QoQ Ann.)', importance: 'high', previous: '2.3%', forecast: '2.3%', actual: '2.4%', category: 'GDP',
-    outcome: 'GDP revised marginally higher to 2.4%. Consumer spending revised up to 4.2%.' },
-  { id: 8, date: '2026-03-27', utcTime: '17:30', country: 'US', event: 'Core PCE Price Index (QoQ)', importance: 'high', previous: '2.5%', forecast: '2.5%', actual: '2.6%', category: 'Inflation',
-    outcome: 'Core PCE for Q4 revised slightly higher to 2.6%. Modest hawkish surprise.' },
-  { id: 9, date: '2026-03-27', utcTime: '20:00', country: 'US', event: 'University of Michigan Sentiment (Final)', importance: 'medium', previous: '57.9', forecast: '57.9', actual: '57.0', category: 'Consumer',
-    outcome: 'UoM sentiment confirmed at 57.0, slightly below the preliminary 57.9. 1-year inflation expectations held at 4.9%, highest since 1981. Long-run inflation expectations at 3.9%. Stagflationary undertones; rates edged lower on the weak confidence print.' },
+  { id: 5, date: '2026-03-27', utcTime: '09:00', country: 'DE', event: 'Germany Ifo Business Climate', importance: 'high', previous: '85.2', forecast: '85.8', actual: '86.7', category: 'PMI',
+    outcome: 'Ifo business climate beat at 86.7, highest since June 2024. Both current conditions and expectations improved, reflecting fiscal stimulus optimism.' },
+  { id: 6, date: '2026-03-27', utcTime: '07:00', country: 'UK', event: 'UK Retail Sales (MoM)', importance: 'high', previous: '2.0%', forecast: '-0.7%', actual: '-0.4%', category: 'Consumer',
+    outcome: 'UK retail sales fell 0.4% MoM in February, a smaller decline than the -0.7% forecast but still a pullback from January\'s strong +2.0%. Wet weather kept shoppers at home. Annual growth slowed to 2.5%.' },
+  { id: 7, date: '2026-03-27', utcTime: '12:30', country: 'US', event: 'US GDP Q4 Third Estimate (QoQ Ann.)', importance: 'high', previous: '0.7%', forecast: '0.8%', actual: '0.7%', category: 'GDP',
+    outcome: 'Q4 GDP confirmed at 0.7% annualised, unchanged from the second estimate and in line with consensus. Full year 2025 GDP came in at 2.1–2.2%. A sluggish end to 2025 reinforces concerns about Q1 2026 momentum.' },
+  { id: 8, date: '2026-03-27', utcTime: '12:30', country: 'US', event: 'Core PCE Price Index Q4 (QoQ)', importance: 'medium', previous: '2.5%', forecast: '2.5%', actual: '2.5%', category: 'Inflation',
+    outcome: 'Q4 core PCE confirmed at 2.5% annualised, unrevised. No fresh inflation surprise embedded in the GDP report.' },
+  { id: 9, date: '2026-03-27', utcTime: '14:00', country: 'US', event: 'University of Michigan Sentiment (Final)', importance: 'medium', previous: '56.6', forecast: '54.0', actual: '53.3', category: 'Consumer',
+    outcome: 'UoM sentiment revised further lower to 53.3, well below the 55.5 preliminary and the lowest reading since late 2025. 1-year inflation expectations jumped to 5.0%, highest since 1981. Long-run expectations at 4.1%. A stagflationary signal; equities fell on the release.' },
 
   // ── March 28 — Good Friday ────────────────────────────────────────────────
   { id: 10, date: '2026-03-28', utcTime: 'All Day', country: 'US', event: 'Good Friday — US & UK Markets Closed', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Holiday', outcome: null },
-  { id: 11, date: '2026-03-28', utcTime: '17:30', country: 'US', event: 'Core PCE Price Index (MoM) — Feb', importance: 'high', previous: '0.3%', forecast: '0.3%', actual: '0.4%', category: 'Inflation',
-    outcome: 'Core PCE came in hotter than expected at +0.4% MoM (YoY 2.8%). Released on Good Friday with markets closed; the hawkish surprise was absorbed on Monday open with USD firming and rates rising. Further complicates the Fed\'s easing path.' },
 
   // ── March 30 ──────────────────────────────────────────────────────────────
   { id: 39, date: '2026-03-30', utcTime: '11:00', country: 'DE', event: 'Germany CPI Preliminary (YoY)', importance: 'high', previous: '1.9%', forecast: '2.7%', actual: '2.7%', category: 'Inflation',
@@ -144,23 +142,23 @@ const EVENTS = [
   // ── April 8 ───────────────────────────────────────────────────────────────
   { id: 56, date: '2026-04-08', utcTime: '06:00', country: 'DE', event: 'Germany Industrial Production (MoM)', importance: 'medium', previous: '-1.6%', forecast: '0.8%', actual: null, category: 'GDP', outcome: null },
   { id: 57, date: '2026-04-08', utcTime: '09:00', country: 'EU', event: 'Eurozone Retail Sales (MoM)', importance: 'medium', previous: '0.3%', forecast: '0.4%', actual: null, category: 'Consumer', outcome: null },
-  { id: 58, date: '2026-04-08', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '224K', forecast: '226K', actual: null, category: 'Labour', outcome: null },
+  { id: 58, date: '2026-04-08', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '210K', forecast: '212K', actual: null, category: 'Labour', outcome: null },
 
   // ── April 9 ───────────────────────────────────────────────────────────────
-  { id: 24, date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '4.50%', forecast: '4.25%', actual: null, category: 'Central Bank', outcome: null },
+  { id: 24, date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '3.75%', forecast: '3.50%', actual: null, category: 'Central Bank', outcome: null },
   { id: 25, date: '2026-04-09', utcTime: '11:30', country: 'UK', event: 'BOE MPC Minutes & Press Conference', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
 
   // ── April 10 ──────────────────────────────────────────────────────────────
   { id: 59, date: '2026-04-10', utcTime: '06:00', country: 'UK', event: 'UK GDP (MoM) — Feb', importance: 'high', previous: '0.4%', forecast: '0.1%', actual: null, category: 'GDP', outcome: null },
-  { id: 26, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)', importance: 'high', previous: '2.8%', forecast: '2.6%', actual: null, category: 'Inflation', outcome: null },
-  { id: 27, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US Core CPI (MoM)', importance: 'high', previous: '0.4%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
-  { id: 60, date: '2026-04-10', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Prelim', importance: 'medium', previous: '57.0', forecast: '55.0', actual: null, category: 'Consumer', outcome: null },
+  { id: 26, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)', importance: 'high', previous: '2.4%', forecast: '2.6%', actual: null, category: 'Inflation', outcome: null },
+  { id: 27, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US Core CPI (MoM)', importance: 'high', previous: '0.2%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
+  { id: 60, date: '2026-04-10', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Prelim', importance: 'medium', previous: '53.3', forecast: '51.0', actual: null, category: 'Consumer', outcome: null },
 
   // ── April 11 ──────────────────────────────────────────────────────────────
   { id: 61, date: '2026-04-11', utcTime: '12:30', country: 'US', event: 'US PPI (MoM)', importance: 'medium', previous: '0.0%', forecast: '0.2%', actual: null, category: 'Inflation', outcome: null },
 
   // ── April 14 ──────────────────────────────────────────────────────────────
-  { id: 28, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'US Retail Sales (MoM)', importance: 'high', previous: '0.2%', forecast: '0.5%', actual: null, category: 'Consumer', outcome: null },
+  { id: 28, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'US Retail Sales (MoM)', importance: 'high', previous: '0.3%', forecast: '0.5%', actual: null, category: 'Consumer', outcome: null },
   { id: 62, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'Empire State Manufacturing Index', importance: 'medium', previous: '-20.0', forecast: '-14.0', actual: null, category: 'PMI', outcome: null },
 
   // ── April 15 ──────────────────────────────────────────────────────────────
@@ -175,17 +173,17 @@ const EVENTS = [
   // ── April 17 ──────────────────────────────────────────────────────────────
   { id: 30, date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision', importance: 'high', previous: '2.65%', forecast: '2.40%', actual: null, category: 'Central Bank', outcome: null },
   { id: 31, date: '2026-04-17', utcTime: '12:45', country: 'EU', event: 'ECB Press Conference — Lagarde', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
-  { id: 67, date: '2026-04-17', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Final', importance: 'medium', previous: '57.0', forecast: '55.0', actual: null, category: 'Consumer', outcome: null },
+  { id: 67, date: '2026-04-17', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Final', importance: 'medium', previous: '53.3', forecast: '51.0', actual: null, category: 'Consumer', outcome: null },
 
   // ── April 22 ──────────────────────────────────────────────────────────────
-  { id: 68, date: '2026-04-22', utcTime: '06:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '2.8%', forecast: '2.6%', actual: null, category: 'Inflation', outcome: null },
-  { id: 69, date: '2026-04-22', utcTime: '06:00', country: 'UK', event: 'UK Core CPI (YoY)', importance: 'high', previous: '3.5%', forecast: '3.3%', actual: null, category: 'Inflation', outcome: null },
+  { id: 68, date: '2026-04-22', utcTime: '06:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '3.0%', forecast: '3.2%', actual: null, category: 'Inflation', outcome: null },
+  { id: 69, date: '2026-04-22', utcTime: '06:00', country: 'UK', event: 'UK Core CPI (YoY)', importance: 'high', previous: '3.2%', forecast: '3.4%', actual: null, category: 'Inflation', outcome: null },
 
   // ── April 23 ──────────────────────────────────────────────────────────────
-  { id: 32, date: '2026-04-23', utcTime: '07:30', country: 'UK', event: 'UK PMI Composite Flash', importance: 'medium', previous: '50.5', forecast: '50.3', actual: null, category: 'PMI', outcome: null },
-  { id: 33, date: '2026-04-23', utcTime: '08:00', country: 'EU', event: 'Eurozone PMI Composite Flash', importance: 'high', previous: '50.2', forecast: '50.5', actual: null, category: 'PMI', outcome: null },
+  { id: 32, date: '2026-04-23', utcTime: '08:30', country: 'UK', event: 'UK PMI Composite Flash', importance: 'medium', previous: '51.0', forecast: '51.0', actual: null, category: 'PMI', outcome: null },
+  { id: 33, date: '2026-04-23', utcTime: '09:00', country: 'EU', event: 'Eurozone PMI Composite Flash', importance: 'high', previous: '50.5', forecast: '50.5', actual: null, category: 'PMI', outcome: null },
   { id: 70, date: '2026-04-23', utcTime: '12:30', country: 'CA', event: 'Canada CPI (YoY)', importance: 'high', previous: '2.6%', forecast: '2.4%', actual: null, category: 'Inflation', outcome: null },
-  { id: 34, date: '2026-04-23', utcTime: '13:45', country: 'US', event: 'S&P Global US PMI Composite Flash', importance: 'medium', previous: '53.5', forecast: '52.8', actual: null, category: 'PMI', outcome: null },
+  { id: 34, date: '2026-04-23', utcTime: '13:45', country: 'US', event: 'S&P Global US PMI Composite Flash', importance: 'medium', previous: '51.4', forecast: '51.5', actual: null, category: 'PMI', outcome: null },
   { id: 71, date: '2026-04-23', utcTime: '14:00', country: 'US', event: 'New Home Sales', importance: 'medium', previous: '676K', forecast: '660K', actual: null, category: 'Housing', outcome: null },
 
   // ── April 24 ──────────────────────────────────────────────────────────────
@@ -193,7 +191,7 @@ const EVENTS = [
   { id: 73, date: '2026-04-24', utcTime: '14:00', country: 'US', event: 'Existing Home Sales', importance: 'medium', previous: '4.26M', forecast: '4.15M', actual: null, category: 'Housing', outcome: null },
 
   // ── April 25 ──────────────────────────────────────────────────────────────
-  { id: 35, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'US GDP Q1 Advance (QoQ Ann.)', importance: 'high', previous: '2.4%', forecast: '1.5%', actual: null, category: 'GDP', outcome: null },
+  { id: 35, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'US GDP Q1 Advance (QoQ Ann.)', importance: 'high', previous: '0.7%', forecast: '1.0%', actual: null, category: 'GDP', outcome: null },
   { id: 36, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'Core PCE Price Index (MoM) — Mar', importance: 'high', previous: '0.4%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
   { id: 74, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'Employment Cost Index Q1', importance: 'medium', previous: '0.9%', forecast: '0.9%', actual: null, category: 'Labour', outcome: null },
 
@@ -202,11 +200,11 @@ const EVENTS = [
   { id: 76, date: '2026-04-28', utcTime: '09:00', country: 'EU', event: 'Eurozone GDP Flash Q1 (QoQ)', importance: 'high', previous: '0.2%', forecast: '0.3%', actual: null, category: 'GDP', outcome: null },
 
   // ── April 29 ──────────────────────────────────────────────────────────────
-  { id: 37, date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '4.25–4.50%', forecast: '4.25–4.50%', actual: null, category: 'Central Bank', outcome: null },
+  { id: 37, date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '3.50–3.75%', forecast: '3.50–3.75%', actual: null, category: 'Central Bank', outcome: null },
 
   // ── April 30 ──────────────────────────────────────────────────────────────
-  { id: 78, date: '2026-04-30', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '224K', forecast: '223K', actual: null, category: 'Labour', outcome: null },
-  { id: 79, date: '2026-04-30', utcTime: '14:00', country: 'US', event: 'CB Consumer Confidence — Apr', importance: 'high', previous: '92.9', forecast: '90.0', actual: null, category: 'Consumer', outcome: null },
+  { id: 78, date: '2026-04-30', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '215K', forecast: '218K', actual: null, category: 'Labour', outcome: null },
+  { id: 79, date: '2026-04-30', utcTime: '14:00', country: 'US', event: 'CB Consumer Confidence — Apr', importance: 'high', previous: '91.8', forecast: '89.0', actual: null, category: 'Consumer', outcome: null },
   { id: 38, date: '2026-04-30', utcTime: '18:30', country: 'US', event: 'FOMC Press Conference — Powell', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
 ];
 
