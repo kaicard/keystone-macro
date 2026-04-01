@@ -50,7 +50,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link to="/Home" className="group">
               <img
-                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/706571ce0_KM2.png"
+                src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/e6091d1a5_KeystoneMacrotransparent.png"
                 alt="Keystone Macro"
                 className="h-10 w-auto dark:invert"
               />
