@@ -46,13 +46,13 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
+          <div className="relative flex items-center justify-between h-16 lg:h-24">
+            {/* Logo - left */}
             <Link to="/Home" className="group flex items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
                 alt="Keystone Macro"
-                className="h-20 w-auto dark:invert"
+                className="h-28 w-auto dark:invert"
               />
               <div className="flex flex-col leading-tight">
                 <span className="font-display text-lg font-semibold tracking-wide">Keystone</span>
@@ -60,8 +60,8 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-1">
+            {/* Desktop nav - centred absolutely */}
+            <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
               {navLinks.map(link => {
                 const isActive = location.pathname === link.path;
                 return (
