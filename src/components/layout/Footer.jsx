@@ -7,31 +7,31 @@ import { ArrowRight, Linkedin, Mail } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const footerLinks = [
-  {
-    title: 'Platform',
-    links: [
-      { label: 'Research', path: '/Research' },
-      { label: 'Portfolios', path: '/Portfolios' },
-      { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
-      { label: 'Market Pulse', path: '/MarketPulse' },
-    ]
-  },
-  {
-    title: 'Insights',
-    links: [
-      { label: 'Wealth Cases', path: '/WealthCases' },
-      { label: 'Monthly Letter', path: '/Research' },
-      { label: 'Trade Reviews', path: '/Research' },
-    ]
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About', path: '/About' },
-      { label: 'Contact', path: '/Contact' },
-    ]
-  }
-];
+{
+  title: 'Platform',
+  links: [
+  { label: 'Research', path: '/Research' },
+  { label: 'Portfolios', path: '/Portfolios' },
+  { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
+  { label: 'Market Pulse', path: '/MarketPulse' }]
+
+},
+{
+  title: 'Insights',
+  links: [
+  { label: 'Wealth Cases', path: '/WealthCases' },
+  { label: 'Monthly Letter', path: '/Research' },
+  { label: 'Trade Reviews', path: '/Research' }]
+
+},
+{
+  title: 'Company',
+  links: [
+  { label: 'About', path: '/About' },
+  { label: 'Contact', path: '/Contact' }]
+
+}];
+
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -57,9 +57,9 @@ export default function Footer() {
             <div className="mb-4 flex items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69b9efd1e34861737a4d8957/11a966beb_Justthebackground.png"
-                alt="Keystone Macro"
-                className="h-20 w-auto dark:invert"
-              />
+                alt="Keystone Macro" className="h-20 w-auto dark:invert" />
+
+              
               <div className="flex flex-col leading-tight">
                 <span className="font-display text-lg font-semibold tracking-wide">Keystone</span>
                 <span className="text-xs font-medium tracking-[0.2em] text-primary uppercase">Macro</span>
@@ -70,34 +70,34 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Linkedin className="w-4 h-4" />
               </a>
               <a href="mailto:hello@keystonemacro.com"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Mail className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Links */}
-          {footerLinks.map(section => (
-            <div key={section.title}>
+          {footerLinks.map((section) =>
+          <div key={section.title}>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                 {section.title}
               </h4>
               <ul className="space-y-3">
-                {section.links.map(link => (
-                  <li key={link.label}>
+                {section.links.map((link) =>
+              <li key={link.label}>
                     <Link to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group/fl">
                       <span>{link.label}</span>
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/fl:opacity-100 group-hover/fl:translate-x-0 transition-all duration-200" />
                     </Link>
                   </li>
-                ))}
+              )}
               </ul>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Newsletter */}
@@ -112,9 +112,9 @@ export default function Footer() {
                 type="email"
                 placeholder="Your email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="bg-muted/50 border-border/50 text-sm"
-              />
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-muted/50 border-border/50 text-sm" />
+              
               <Button type="submit" size="sm" disabled={submitting} className="shrink-0">
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -135,6 +135,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
+
 }
