@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const COUNTRY_LABELS = {
   US: 'US', UK: 'UK', EU: 'EU', JP: 'JP', CN: 'CN',
@@ -545,6 +546,9 @@ function DateGroup({ dateStr, events, today }) {
 export default function EconomicCalendar() {
   const [tab, setTab] = useState('today');
   const [today, setToday] = useState(getTodayStr);
+  const [liveEvents, setLiveEvents] = useState(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState(null);
 
   useEffect(() => {
     const msUntilMidnight = () => {
@@ -557,22 +561,43 @@ export default function EconomicCalendar() {
     return () => clearTimeout(timer);
   }, [today]);
 
+  const fetchLive = useCallback(async () => {
+    setLiveLoading(true);
+    setLiveError(null);
+    const res = await base44.functions.invoke('calendarToday', {});
+    if (res?.data?.events) {
+      setLiveEvents(res.data.events);
+    } else {
+      setLiveError('Could not load live data');
+    }
+    setLiveLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchLive();
+  }, [fetchLive]);
+
   const monthEnd = useMemo(() => {
     const d = new Date(today + 'T00:00:00');
     d.setMonth(d.getMonth() + 2, 0);
     return d.toISOString().split('T')[0];
   }, [today]);
 
+  // For today tab: use live data (if loaded), else static fallback
+  // For all other tabs: use static EVENTS
   const filtered = useMemo(() => {
     const weekEnd = getWeekEnd(today);
+    if (tab === 'today') {
+      const source = liveEvents ?? EVENTS.filter(e => e.date === today);
+      return Array.isArray(source) ? source : [];
+    }
     return EVENTS.filter(e => {
-      if (tab === 'today')    return e.date === today;
       if (tab === 'week')     return e.date >= today && e.date <= weekEnd;
       if (tab === 'month')    return e.date >= today && e.date <= monthEnd;
       if (tab === 'previous') return e.date < today;
       return true;
     });
-  }, [tab, today, monthEnd]);
+  }, [tab, today, monthEnd, liveEvents]);
 
   const grouped = useMemo(() => {
     const map = {};
@@ -584,8 +609,9 @@ export default function EconomicCalendar() {
     return tab === 'previous' ? sorted.reverse() : sorted;
   }, [filtered, tab]);
 
-  const todayHighCount = EVENTS.filter(e => e.date === today && e.importance === 'high').length;
-  const todayReleasedCount = EVENTS.filter(e => e.date === today && e.actual && isReleased(e.date, e.utcTime)).length;
+  const todaySource = liveEvents ?? EVENTS.filter(e => e.date === today);
+  const todayHighCount = todaySource.filter(e => e.importance === 'high').length;
+  const todayReleasedCount = todaySource.filter(e => e.actual && isReleased(e.date ?? today, e.utcTime)).length;
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
@@ -602,20 +628,36 @@ export default function EconomicCalendar() {
         </motion.div>
 
         {tab === 'today' && (
-          <motion.div className="flex gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-              <Zap className="w-4 h-4 text-amber-400" />
-              <div>
-                <p className="text-xs text-muted-foreground">High Impact Today</p>
-                <p className="text-lg font-semibold">{todayHighCount}</p>
+          <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <div className="flex gap-4 mb-3">
+              <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <div>
+                  <p className="text-xs text-muted-foreground">High Impact Today</p>
+                  <p className="text-lg font-semibold">{todayHighCount}</p>
+                </div>
+              </div>
+              <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Released</p>
+                  <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {(liveEvents ?? EVENTS.filter(e => e.date === today)).length}</span></p>
+                </div>
               </div>
             </div>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
-              <div>
-                <p className="text-xs text-muted-foreground">Released</p>
-                <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {EVENTS.filter(e => e.date === today).length}</span></p>
-              </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                {liveLoading ? (
+                  <><RefreshCw className="w-3 h-3 animate-spin" /> Fetching live calendar...</>
+                ) : liveError ? (
+                  <span className="text-red-400/70">{liveError} — showing cached data</span>
+                ) : liveEvents ? (
+                  <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live data from jblanked.com</>
+                ) : null}
+              </span>
+              <button onClick={fetchLive} disabled={liveLoading} className="flex items-center gap-1 hover:text-foreground transition-colors disabled:opacity-40">
+                <RefreshCw className={`w-3 h-3 ${liveLoading ? 'animate-spin' : ''}`} /> Refresh
+              </button>
             </div>
           </motion.div>
         )}
