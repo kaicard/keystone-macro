@@ -611,6 +611,14 @@ export default function EconomicCalendar() {
       if (!map[e.date]) map[e.date] = [];
       map[e.date].push(e);
     });
+    // Sort events within each day by time ascending
+    Object.values(map).forEach(events => {
+      events.sort((a, b) => {
+        const ta = a.utcTime === 'All Day' ? '00:00' : (a.utcTime || '00:00');
+        const tb = b.utcTime === 'All Day' ? '00:00' : (b.utcTime || '00:00');
+        return ta.localeCompare(tb);
+      });
+    });
     const sorted = Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
     return tab === 'previous' ? sorted.reverse() : sorted;
   }, [filtered, tab]);
