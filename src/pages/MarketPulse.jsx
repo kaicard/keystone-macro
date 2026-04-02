@@ -74,14 +74,14 @@ function LiveTile({ item, onSelect, watchlist }) {
       </div>
       <button
         onClick={(e) => { e.stopPropagation(); toggleWatchlist(item); }}
-        className={`absolute top-2 right-2 transition-all rounded-full p-0.5 ${
+        className={`absolute bottom-2.5 right-3 transition-all duration-150 ${
           watched
             ? 'opacity-100 text-primary'
-            : 'opacity-0 group-hover/tile:opacity-100 text-muted-foreground hover:text-primary'
+            : 'opacity-0 group-hover/tile:opacity-60 text-muted-foreground hover:!opacity-100 hover:text-primary'
         }`}
         title={watched ? 'Remove from watchlist' : 'Add to watchlist'}
       >
-        <Star className={`w-3.5 h-3.5 ${watched ? 'fill-primary' : ''}`} />
+        <Star className={`w-3 h-3 ${watched ? 'fill-primary' : ''}`} />
       </button>
     </div>
   );
