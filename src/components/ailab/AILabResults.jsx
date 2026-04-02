@@ -126,7 +126,15 @@ export default function AILabResults({ result }) {
                 <Pie data={chartData} cx="50%" cy="50%" innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value">
                   {chartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={{ background: 'hsl(222 25% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '8px', fontSize: '12px' }} />
+                <Tooltip content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl text-xs pointer-events-none">
+                      <p className="font-semibold text-foreground mb-0.5">{payload[0].name}</p>
+                      <p className="font-bold text-sm text-primary">{payload[0].value}%</p>
+                    </div>
+                  );
+                }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

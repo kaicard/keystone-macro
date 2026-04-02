@@ -51,32 +51,33 @@ async function refreshInBackground(base44, existingId) {
   const today = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
   const currentTimeUTC = now.toISOString();
   const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
-  const prompt = `You are a macro market intelligence editor. The current date and time is ${today}, ${londonTime} London time (${currentTimeUTC} UTC).
+  const prompt = `You are the editor of Keystone Macro, an independent macro intelligence platform. The current date and time is ${today}, ${londonTime} London time (${currentTimeUTC} UTC).
 
-Search the web RIGHT NOW for the 8 most important real macro, geopolitical, and financial market news stories published TODAY (${today}).
+Search the web RIGHT NOW for the 8 most important macro, geopolitical, and financial market developments published TODAY (${today}).
+
+Your job is to rewrite each story in Keystone Macro's own editorial voice — clear, direct, and analytical. Do NOT reproduce verbatim headlines from any publication. Write original headlines and analysis that Keystone Macro owns editorially, inspired by the facts in the news but written fresh. This is critical.
 
 STRICT RULES:
-- Only include articles confirmed to exist in your search results — do NOT fabricate or hallucinate stories
-- Only include stories published in the last 24 hours (after ${new Date(now - 24*60*60*1000).toISOString()})
-- For published_time: use the ACTUAL publication timestamp from the article metadata — if unknown, write "—"
-- For url: use the EXACT URL from your search results — if you cannot confirm the real URL, omit the field or write ""
-- Sources must be one of: Bloomberg, Reuters, FT, WSJ, CNBC, BBC News, Guardian, Sky News, or AP
+- Only include stories confirmed to exist in your search results — do NOT fabricate or hallucinate
+- Only include stories from the last 24 hours (after ${new Date(now - 24*60*60*1000).toISOString()})
+- Write ALL fields in Keystone Macro's voice — do not copy-paste from source material
+- Do NOT include any URLs, links, or source domains
+- For published_time: use the approximate time of the development in HH:MM London time — write "—" if unknown
+- Source field: write the general type, e.g. "Central Banks", "Labour Data", "Geopolitics", "Corporate" — NOT publication names
 
 For each story provide:
-- headline: the actual headline verbatim or close paraphrase (max 15 words)
-- source: publication name (e.g. "Reuters", "Bloomberg", "FT")
+- headline: original Keystone Macro headline (max 15 words) — must be written fresh, not copied from any publication
+- source: topic area (e.g. "Central Banks", "Geopolitics", "Labour Data", "Commodities", "Corporate")
 - category: one of: Macro, Equities, Rates, Commodities, Geopolitics, FX, Credit
 - sentiment: one of: positive, negative, neutral
-- impact: 1-sentence market impact summary
-- desk_view: 2-3 sentence analysis of what happened, why it matters, and market implications
+- impact: 1-sentence market impact written in Keystone Macro's analytical voice
+- desk_view: 2-3 sentences of original analysis — what happened, why it matters, what it means for markets
 - what_to_watch: the key follow-on variable or event to monitor
-- published_time: ACTUAL article publication time in HH:MM London time — derived from the article timestamp in your search results; write "—" if unknown
-- url: the exact direct URL to the article from your search results
-- url_hint: domain (e.g. "bloomberg.com", "ft.com")
+- published_time: approximate time of the development in HH:MM London time, or "—"
 
 Cover a range of: central bank policy, geopolitical developments, major equity movers, commodity moves, FX, and global macro data.
 
-IMPORTANT: Return the stories ordered by published_time, newest first (most recently published story at index 0).`;
+IMPORTANT: Return the stories ordered by published_time, newest first.`;
 
   const res = await invokeLLMWithRetry(base44, prompt);
 

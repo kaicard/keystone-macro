@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity, RefreshCw, Filter } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity, RefreshCw, Filter, CheckCircle2, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const COUNTRY_LABELS = {
@@ -10,14 +10,14 @@ const COUNTRY_LABELS = {
 };
 
 const CATEGORY_COLORS = {
-  'Central Bank': 'text-amber-400',
-  'Inflation':    'text-red-400',
-  'Labour':       'text-blue-400',
-  'GDP':          'text-emerald-400',
-  'PMI':          'text-purple-400',
-  'Consumer':     'text-cyan-400',
-  'Housing':      'text-orange-400',
-  'Holiday':      'text-muted-foreground',
+  'Central Bank': 'text-amber-400 bg-amber-400/10',
+  'Inflation':    'text-red-400 bg-red-400/10',
+  'Labour':       'text-blue-400 bg-blue-400/10',
+  'GDP':          'text-emerald-400 bg-emerald-400/10',
+  'PMI':          'text-purple-400 bg-purple-400/10',
+  'Consumer':     'text-cyan-400 bg-cyan-400/10',
+  'Housing':      'text-orange-400 bg-orange-400/10',
+  'Holiday':      'text-muted-foreground bg-muted/30',
 };
 
 const EVENTS = [
@@ -77,89 +77,38 @@ const EVENTS = [
   { id: 53, date: '2026-04-01', utcTime: '13:45', country: 'US', event: 'S&P Global US Manufacturing PMI Final', importance: 'medium', previous: '52.7', forecast: '49.8', actual: '50.2', category: 'PMI', outcome: 'S&P Global manufacturing PMI revised up to 50.2, back into expansion territory from the 49.8 flash estimate. Output and employment improved. Dollar strengthened marginally.' },
   { id: 15, date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing PMI', importance: 'high', previous: '50.3', forecast: '49.5', actual: '49.0', category: 'PMI', outcome: 'ISM Manufacturing came in at 49.0 for March, below the 49.5 consensus and prior 50.3, falling back into contraction. Prices paid surged to 69.4 on tariff pass-through, confirming stagflationary pressures. New orders fell sharply.' },
   { id: 83, date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing Prices Paid', importance: 'medium', previous: '62.4', forecast: '69.0', actual: '69.4', category: 'PMI', outcome: "ISM Prices Paid jumped to 69.4, above the 69.0 forecast, the highest since 2022. Tariff-driven input cost inflation is accelerating. A clear stagflationary signal reinforcing the Fed's on-hold stance." },
-  { id: 300, date: '2026-04-02', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '224K', forecast: '225K', actual: null, category: 'Labour', outcome: "Weekly jobless claims for the week ending 28 March. Consensus 225K. Continuing claims will also be watched — a further rise above 1.9M would signal more persistent labour market softening ahead of tomorrow's NFP." },
+  { id: 300, date: '2026-04-02', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '224K', forecast: '225K', actual: null, category: 'Labour', outcome: null },
   { id: 54, date: '2026-04-02', utcTime: '01:30', country: 'AU', event: 'Australia Trade Balance', importance: 'medium', previous: '5.62B', forecast: '5.50B', actual: null, category: 'GDP', outcome: null },
   { id: 55, date: '2026-04-02', utcTime: '06:30', country: 'CH', event: 'Switzerland CPI (YoY)', importance: 'high', previous: '0.3%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
   { id: 16, date: '2026-04-02', utcTime: '08:00', country: 'EU', event: 'Eurozone Services PMI Final', importance: 'medium', previous: '50.6', forecast: '51.0', actual: null, category: 'PMI', outcome: null },
   { id: 56, date: '2026-04-02', utcTime: '08:30', country: 'UK', event: 'UK Services PMI Final', importance: 'medium', previous: '53.2', forecast: '53.2', actual: null, category: 'PMI', outcome: null },
-  { id: 17, date: '2026-04-02', utcTime: '14:00', country: 'US', event: 'ISM Services PMI', importance: 'high', previous: '53.5', forecast: '53.0', actual: null, category: 'PMI', outcome: 'ISM Services for March due at 10am ET. Consensus 53.0. Watch the employment and prices paid sub-indices closely — services inflation and any cooling in hiring will be key signals for the Fed.' },
-  { id: 18, date: '2026-04-02', utcTime: '14:00', country: 'US', event: 'JOLTS Job Openings', importance: 'medium', previous: '7.74M', forecast: '7.60M', actual: null, category: 'Labour', outcome: "JOLTS job openings for February due. Consensus 7.60M vs prior 7.74M. A further decline would suggest labour demand softening ahead of Friday's NFP. The quits rate will also be watched for wage pressure signals." },
-  { id: 57, date: '2026-04-03', utcTime: '01:45', country: 'CN', event: 'China Caixin Services PMI', importance: 'medium', previous: '51.4', forecast: '51.5', actual: null, category: 'PMI', outcome: 'China Caixin Services PMI for March due. Consensus 51.5. Watch for any slowdown in new business or employment sub-indices as a signal of domestic demand softening under trade war pressure.' },
-  { id: 19, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Non-Farm Payrolls (NFP)', importance: 'high', previous: '151K', forecast: '138K', actual: null, category: 'Labour', outcome: "The marquee release of the week. Consensus 138K, below February's 151K. A sub-100K print would intensify recession fears; a beat above 180K would push rate cut expectations further out. Dollar and equity reaction will hinge on both the headline and any prior revisions." },
-  { id: 20, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Unemployment Rate', importance: 'high', previous: '4.1%', forecast: '4.1%', actual: null, category: 'Labour', outcome: 'Unemployment rate expected to hold at 4.1%. Any tick above 4.2% would trigger Sahm Rule concerns. Together with NFP, this is the most watched release of the week for Fed policy path.' },
-  { id: 21, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Average Hourly Earnings (MoM)', importance: 'medium', previous: '0.3%', forecast: '0.3%', actual: null, category: 'Labour', outcome: "Earnings consensus 0.3% MoM. A hot print (+0.4% or above) would complicate the Fed's calculus by suggesting wage-driven inflation persists even as growth slows — a stagflationary signal." },
-  { id: 22, date: '2026-04-03', utcTime: '12:30', country: 'CA', event: 'Canada Employment Change', importance: 'medium', previous: '1.1K', forecast: '10.0K', actual: null, category: 'Labour', outcome: 'Canada jobs data due alongside US NFP. Consensus 10.0K vs prior 1.1K. A weak print would add pressure on the BOC to cut rates at the April 16 meeting. CAD sensitive.' },
-  { id: 23, date: '2026-04-07', utcTime: '03:30', country: 'AU', event: 'RBA Interest Rate Decision', importance: 'high', previous: '4.10%', forecast: '4.10%', actual: null, category: 'Central Bank', outcome: "RBA expected to hold at 4.10%. Any dovish language on the global growth outlook following tariff escalation could open the door to a May cut. AUD and Australian bond yields sensitive to guidance." },
+  { id: 17, date: '2026-04-02', utcTime: '14:00', country: 'US', event: 'ISM Services PMI', importance: 'high', previous: '53.5', forecast: '53.0', actual: null, category: 'PMI', outcome: null },
+  { id: 18, date: '2026-04-02', utcTime: '14:00', country: 'US', event: 'JOLTS Job Openings', importance: 'medium', previous: '7.74M', forecast: '7.60M', actual: null, category: 'Labour', outcome: null },
+  { id: 57, date: '2026-04-03', utcTime: '01:45', country: 'CN', event: 'China Caixin Services PMI', importance: 'medium', previous: '51.4', forecast: '51.5', actual: null, category: 'PMI', outcome: null },
+  { id: 19, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Non-Farm Payrolls (NFP)', importance: 'high', previous: '151K', forecast: '138K', actual: null, category: 'Labour', outcome: null },
+  { id: 20, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Unemployment Rate', importance: 'high', previous: '4.1%', forecast: '4.1%', actual: null, category: 'Labour', outcome: null },
+  { id: 21, date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Average Hourly Earnings (MoM)', importance: 'medium', previous: '0.3%', forecast: '0.3%', actual: null, category: 'Labour', outcome: null },
+  { id: 22, date: '2026-04-03', utcTime: '12:30', country: 'CA', event: 'Canada Employment Change', importance: 'medium', previous: '1.1K', forecast: '10.0K', actual: null, category: 'Labour', outcome: null },
+  { id: 23, date: '2026-04-07', utcTime: '03:30', country: 'AU', event: 'RBA Interest Rate Decision', importance: 'high', previous: '4.10%', forecast: '4.10%', actual: null, category: 'Central Bank', outcome: null },
   { id: 58, date: '2026-04-07', utcTime: '04:30', country: 'AU', event: 'RBA Press Conference', importance: 'medium', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
-  { id: 59, date: '2026-04-07', utcTime: '11:15', country: 'US', event: 'ADP Non-Farm Employment Change', importance: 'high', previous: '62K', forecast: '70K', actual: null, category: 'Labour', outcome: 'ADP private payrolls for March due. Consensus 70K. A soft print would reinforce labour market softening ahead of NFP and push rate cut pricing earlier. USD sensitive.' },
+  { id: 59, date: '2026-04-07', utcTime: '11:15', country: 'US', event: 'ADP Non-Farm Employment Change', importance: 'high', previous: '62K', forecast: '70K', actual: null, category: 'Labour', outcome: null },
   { id: 60, date: '2026-04-07', utcTime: '12:30', country: 'US', event: 'Core Durable Goods Orders (MoM)', importance: 'medium', previous: '0.0%', forecast: '0.3%', actual: null, category: 'GDP', outcome: null },
   { id: 61, date: '2026-04-07', utcTime: '12:30', country: 'US', event: 'Durable Goods Orders (MoM)', importance: 'medium', previous: '0.9%', forecast: '0.0%', actual: null, category: 'GDP', outcome: null },
   { id: 62, date: '2026-04-08', utcTime: '01:00', country: 'DE', event: 'Germany Factory Orders (MoM)', importance: 'medium', previous: '-7.0%', forecast: '0.5%', actual: null, category: 'GDP', outcome: null },
   { id: 63, date: '2026-04-08', utcTime: '06:00', country: 'DE', event: 'Germany Industrial Production (MoM)', importance: 'medium', previous: '-1.6%', forecast: '0.8%', actual: null, category: 'GDP', outcome: null },
   { id: 64, date: '2026-04-08', utcTime: '09:00', country: 'EU', event: 'Eurozone Retail Sales (MoM)', importance: 'medium', previous: '0.3%', forecast: '0.4%', actual: null, category: 'Consumer', outcome: null },
-  { id: 65, date: '2026-04-08', utcTime: '12:01', country: 'US', event: 'FOMC Meeting Minutes', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: 'Minutes from the March FOMC meeting due. Markets will scrutinise the internal debate on inflation vs growth trade-offs, how many members discussed cuts, and any discussion of balance sheet policy. Potential for volatility if hawkish tone surprises.' },
-  { id: 24, date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '3.75%', forecast: '3.50%', actual: null, category: 'Central Bank', outcome: "BOE expected to cut 25bp to 3.50% — the first cut since January. MPC vote split will be key. Any 9-0 vote for cutting would be dovish; a split 5-4 or hawkish minority would limit sterling downside. Watch guidance on future pace of cuts." },
-  { id: 25, date: '2026-04-09', utcTime: '11:30', country: 'UK', event: 'BOE MPC Minutes & Press Conference', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: "Bailey press conference follows the rate decision. Markets will focus on the MPC's assessment of UK inflation and the global growth shock from US tariffs. Any language on 'gradual' vs 'faster' cuts will move sterling and gilts." },
+  { id: 65, date: '2026-04-08', utcTime: '12:01', country: 'US', event: 'FOMC Meeting Minutes', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
+  { id: 24, date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision', importance: 'high', previous: '3.75%', forecast: '3.50%', actual: null, category: 'Central Bank', outcome: null },
+  { id: 25, date: '2026-04-09', utcTime: '11:30', country: 'UK', event: 'BOE MPC Minutes & Press Conference', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
   { id: 66, date: '2026-04-09', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '219K', forecast: '223K', actual: null, category: 'Labour', outcome: null },
-  { id: 67, date: '2026-04-10', utcTime: '06:00', country: 'UK', event: 'UK GDP (MoM) — Feb', importance: 'high', previous: '0.4%', forecast: '0.1%', actual: null, category: 'GDP', outcome: "UK monthly GDP for February due. Consensus 0.1% after January's strong 0.4%. Any negative surprise would heighten recession concerns and reinforce the case for the BOE to cut more aggressively." },
-  { id: 26, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)', importance: 'high', previous: '2.8%', forecast: '2.6%', actual: null, category: 'Inflation', outcome: 'March CPI is arguably the most important release of April. Consensus 2.6% YoY. If tariff pass-through is already visible, a hot print above 2.8% would cement the Fed on hold and pressure risk assets. A soft print below 2.5% would bring cut expectations forward.' },
-  { id: 27, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US Core CPI (MoM)', importance: 'high', previous: '0.4%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: 'Core CPI MoM consensus 0.3%, down from 0.4%. The key question is whether goods deflation is offsetting services stickiness. A 0.4%+ print would be very hawkish for the Fed.' },
-  { id: 68, date: '2026-04-10', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Prelim', importance: 'medium', previous: '57.0', forecast: '54.0', actual: null, category: 'Consumer', outcome: "Preliminary April UoM sentiment. Consensus 54.0, a sharp drop from already-depressed 57.0. Inflation expectations component will be closely watched — if 1-year expectations rise above 5%, it reinforces the Fed's on-hold stance." },
-  { id: 69, date: '2026-04-11', utcTime: '12:30', country: 'US', event: 'US PPI (MoM)', importance: 'medium', previous: '0.0%', forecast: '0.2%', actual: null, category: 'Inflation', outcome: "PPI is a leading indicator for PCE inflation. Consensus 0.2% MoM. A hot print would follow the expected tariff pass-through visible in ISM Prices Paid, and support the Fed's hawkish hold." },
-  { id: 70, date: '2026-04-11', utcTime: '12:30', country: 'US', event: 'US Core PPI (MoM)', importance: 'medium', previous: '-0.1%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
-  { id: 71, date: '2026-04-14', utcTime: '04:00', country: 'EU', event: 'ZEW Economic Sentiment', importance: 'medium', previous: '-2.4', forecast: '-5.0', actual: null, category: 'Consumer', outcome: null },
-  { id: 72, date: '2026-04-14', utcTime: '04:00', country: 'DE', event: 'Germany ZEW Economic Sentiment', importance: 'high', previous: '-3.6', forecast: '-9.0', actual: null, category: 'Consumer', outcome: "German ZEW for April. Consensus -9.0 after March's -3.6. Tariff shock and global growth fears expected to weigh. A deeper collapse below -15 would signal severe investor pessimism. EUR sensitive." },
-  { id: 28, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'US Retail Sales (MoM)', importance: 'high', previous: '0.6%', forecast: '0.5%', actual: null, category: 'Consumer', outcome: 'March retail sales consensus 0.5%. Likely boosted by pre-tariff front-loading in autos and electronics. Core (ex-autos, ex-gas) will be the cleaner read on underlying consumer health.' },
-  { id: 73, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'Core PPI (MoM)', importance: 'medium', previous: '-0.1%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
-  { id: 74, date: '2026-04-14', utcTime: '12:30', country: 'US', event: 'PPI (MoM)', importance: 'medium', previous: '0.0%', forecast: '0.2%', actual: null, category: 'Inflation', outcome: null },
-  { id: 75, date: '2026-04-15', utcTime: '06:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '2.8%', forecast: '3.1%', actual: null, category: 'Inflation', outcome: "UK CPI expected to jump to 3.1% in March as Ofgem energy price cap reset takes effect. A print above 3.2% would complicate the BOE's cutting cycle. Sterling and gilt yields sensitive." },
-  { id: 76, date: '2026-04-15', utcTime: '06:00', country: 'UK', event: 'UK Core CPI (YoY)', importance: 'high', previous: '3.5%', forecast: '3.7%', actual: null, category: 'Inflation', outcome: 'Core CPI expected to rise to 3.7% driven by services. If services inflation surprises to the upside above 5.2%, the BOE may signal a slower cutting pace at the May meeting.' },
-  { id: 77, date: '2026-04-15', utcTime: '09:00', country: 'US', event: 'Empire State Manufacturing Index', importance: 'medium', previous: '-20.0', forecast: '-12.0', actual: null, category: 'PMI', outcome: null },
-  { id: 78, date: '2026-04-15', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '223K', forecast: '225K', actual: null, category: 'Labour', outcome: null },
-  { id: 79, date: '2026-04-15', utcTime: '13:15', country: 'US', event: 'Industrial Production (MoM)', importance: 'medium', previous: '0.7%', forecast: '0.3%', actual: null, category: 'GDP', outcome: null },
-  { id: 80, date: '2026-04-15', utcTime: '14:00', country: 'US', event: 'NAHB Housing Market Index', importance: 'medium', previous: '39', forecast: '39', actual: null, category: 'Housing', outcome: null },
-  { id: 81, date: '2026-04-16', utcTime: '12:30', country: 'US', event: 'Housing Starts', importance: 'medium', previous: '1.50M', forecast: '1.41M', actual: null, category: 'Housing', outcome: null },
-  { id: 82, date: '2026-04-16', utcTime: '12:30', country: 'US', event: 'Building Permits', importance: 'medium', previous: '1.46M', forecast: '1.44M', actual: null, category: 'Housing', outcome: null },
-  { id: 84, date: '2026-04-16', utcTime: '12:30', country: 'US', event: 'Philadelphia Fed Manufacturing Index', importance: 'medium', previous: '-26.4', forecast: '-15.0', actual: null, category: 'PMI', outcome: null },
-  { id: 85, date: '2026-04-16', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Final', importance: 'medium', previous: '57.0', forecast: '54.0', actual: null, category: 'Consumer', outcome: null },
-  { id: 30, date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision', importance: 'high', previous: '2.65%', forecast: '2.40%', actual: null, category: 'Central Bank', outcome: 'ECB expected to cut 25bp to 2.40%, with ~95% probability priced in after strong Eurozone disinflation data. The key question is guidance — any signals on the terminal rate or a pause at 2.25% will move EUR and European bonds.' },
-  { id: 31, date: '2026-04-17', utcTime: '12:45', country: 'EU', event: 'ECB Press Conference — Lagarde', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: 'Lagarde press conference after the ECB cut. Markets will focus on the pace of future cuts and whether the ECB views the US tariff shock as disinflationary (supportive of more cuts) or inflationary via energy pass-through.' },
-  { id: 86, date: '2026-04-22', utcTime: '01:00', country: 'UK', event: 'UK CPI (YoY)', importance: 'high', previous: '3.1%', forecast: '3.4%', actual: null, category: 'Inflation', outcome: null },
-  { id: 87, date: '2026-04-22', utcTime: '01:00', country: 'UK', event: 'UK Core CPI (YoY)', importance: 'high', previous: '3.7%', forecast: '3.8%', actual: null, category: 'Inflation', outcome: null },
-  { id: 88, date: '2026-04-22', utcTime: '03:00', country: 'DE', event: 'Germany Ifo Business Climate', importance: 'high', previous: '86.7', forecast: '85.5', actual: null, category: 'Consumer', outcome: null },
-  { id: 89, date: '2026-04-22', utcTime: '09:00', country: 'EU', event: 'ECB Consumer Confidence', importance: 'medium', previous: '-14.0', forecast: '-15.5', actual: null, category: 'Consumer', outcome: null },
-  { id: 90, date: '2026-04-23', utcTime: '02:15', country: 'FR', event: 'French Flash Manufacturing PMI', importance: 'medium', previous: '48.5', forecast: '48.0', actual: null, category: 'PMI', outcome: null },
-  { id: 91, date: '2026-04-23', utcTime: '02:15', country: 'FR', event: 'French Flash Services PMI', importance: 'medium', previous: '47.0', forecast: '47.5', actual: null, category: 'PMI', outcome: null },
-  { id: 92, date: '2026-04-23', utcTime: '02:30', country: 'DE', event: 'German Flash Manufacturing PMI', importance: 'high', previous: '48.3', forecast: '48.5', actual: null, category: 'PMI', outcome: null },
-  { id: 93, date: '2026-04-23', utcTime: '02:30', country: 'DE', event: 'German Flash Services PMI', importance: 'medium', previous: '51.7', forecast: '51.5', actual: null, category: 'PMI', outcome: null },
-  { id: 32, date: '2026-04-23', utcTime: '08:30', country: 'UK', event: 'UK Flash Manufacturing PMI', importance: 'medium', previous: '44.9', forecast: '46.0', actual: null, category: 'PMI', outcome: null },
-  { id: 94, date: '2026-04-23', utcTime: '08:30', country: 'UK', event: 'UK Flash Services PMI', importance: 'high', previous: '53.2', forecast: '52.5', actual: null, category: 'PMI', outcome: null },
-  { id: 33, date: '2026-04-23', utcTime: '09:00', country: 'EU', event: 'Eurozone Flash Manufacturing PMI', importance: 'high', previous: '48.6', forecast: '48.8', actual: null, category: 'PMI', outcome: null },
-  { id: 95, date: '2026-04-23', utcTime: '09:00', country: 'EU', event: 'Eurozone Flash Services PMI', importance: 'high', previous: '51.0', forecast: '51.0', actual: null, category: 'PMI', outcome: null },
-  { id: 96, date: '2026-04-23', utcTime: '12:30', country: 'CA', event: 'Canada CPI (YoY)', importance: 'high', previous: '2.6%', forecast: '2.4%', actual: null, category: 'Inflation', outcome: null },
-  { id: 34, date: '2026-04-23', utcTime: '13:45', country: 'US', event: 'S&P Global US Flash Manufacturing PMI', importance: 'medium', previous: '50.2', forecast: '49.5', actual: null, category: 'PMI', outcome: null },
-  { id: 97, date: '2026-04-23', utcTime: '13:45', country: 'US', event: 'S&P Global US Flash Services PMI', importance: 'medium', previous: '54.4', forecast: '53.5', actual: null, category: 'PMI', outcome: null },
-  { id: 98, date: '2026-04-23', utcTime: '14:00', country: 'US', event: 'New Home Sales', importance: 'medium', previous: '676K', forecast: '660K', actual: null, category: 'Housing', outcome: null },
-  { id: 99, date: '2026-04-23', utcTime: '14:00', country: 'US', event: 'Richmond Fed Manufacturing Index', importance: 'low', previous: '-4', forecast: '-8', actual: null, category: 'PMI', outcome: null },
-  { id: 200, date: '2026-04-24', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '225K', forecast: '224K', actual: null, category: 'Labour', outcome: null },
-  { id: 201, date: '2026-04-24', utcTime: '14:00', country: 'US', event: 'Existing Home Sales', importance: 'medium', previous: '4.26M', forecast: '4.15M', actual: null, category: 'Housing', outcome: null },
-  { id: 35, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'US GDP Q1 Advance (QoQ Ann.)', importance: 'high', previous: '2.4%', forecast: '0.8%', actual: null, category: 'GDP', outcome: "Advance Q1 GDP is the most anticipated data point of the month. Consensus 0.8%, a dramatic deceleration from Q4's 2.4%. A negative print would confirm recession fears and likely trigger an emergency Fed cut discussion. A beat above 1.5% would stabilise risk assets." },
-  { id: 36, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'Core PCE Price Index (QoQ)', importance: 'high', previous: '2.6%', forecast: '3.0%', actual: null, category: 'Inflation', outcome: 'Q1 core PCE expected at 3.0%, up from 2.6% in Q4. A hot reading alongside weak GDP would be the clearest stagflation signal yet, putting the Fed in a very difficult position.' },
-  { id: 202, date: '2026-04-25', utcTime: '12:30', country: 'US', event: 'Employment Cost Index Q1', importance: 'medium', previous: '0.9%', forecast: '0.9%', actual: null, category: 'Labour', outcome: null },
-  { id: 203, date: '2026-04-25', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Final', importance: 'medium', previous: '57.0', forecast: '52.0', actual: null, category: 'Consumer', outcome: null },
-  { id: 204, date: '2026-04-28', utcTime: '06:00', country: 'DE', event: 'Germany GDP Preliminary Q1 (QoQ)', importance: 'high', previous: '0.2%', forecast: '0.2%', actual: null, category: 'GDP', outcome: null },
-  { id: 205, date: '2026-04-28', utcTime: '09:00', country: 'EU', event: 'Eurozone GDP Flash Q1 (QoQ)', importance: 'high', previous: '0.2%', forecast: '0.2%', actual: null, category: 'GDP', outcome: null },
-  { id: 206, date: '2026-04-28', utcTime: '14:00', country: 'US', event: 'CB Consumer Confidence — Apr', importance: 'high', previous: '92.9', forecast: '88.0', actual: null, category: 'Consumer', outcome: null },
-  { id: 207, date: '2026-04-29', utcTime: '12:30', country: 'US', event: 'Core PCE Price Index (MoM) — Mar', importance: 'high', previous: '0.4%', forecast: '0.1%', actual: null, category: 'Inflation', outcome: "March core PCE — the Fed's preferred inflation gauge. Consensus 0.1% MoM, a sharp deceleration from 0.4%. If it surprises higher, it complicates the expected May cut narrative significantly." },
-  { id: 208, date: '2026-04-29', utcTime: '14:00', country: 'US', event: 'JOLTS Job Openings', importance: 'medium', previous: '7.57M', forecast: '7.50M', actual: null, category: 'Labour', outcome: null },
-  { id: 37, date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '3.50–3.75%', forecast: '3.50–3.75%', actual: null, category: 'Central Bank', outcome: "FOMC expected to hold at 3.50-3.75%. After the Q1 GDP and inflation data, this will be a closely watched hold. Any shift in language towards cuts or concern about growth would be market moving. A surprise cut is a tail risk if GDP was very weak." },
-  { id: 38, date: '2026-04-29', utcTime: '18:30', country: 'US', event: 'FOMC Press Conference — Powell', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: "Powell press conference will be the highlight of the month. With stagflationary data accumulating, markets will be highly sensitive to any shift in Fed's reaction function. How Powell frames the growth vs inflation trade-off will set the tone for May." },
-  { id: 209, date: '2026-04-30', utcTime: '01:30', country: 'CN', event: 'China NBS Manufacturing PMI', importance: 'high', previous: '50.5', forecast: '49.7', actual: null, category: 'PMI', outcome: 'China NBS Manufacturing PMI for April. Consensus 49.7, expected to fall below 50 for the first time since January due to US tariff shock hitting export orders. A miss below 49 would be very bearish for AUD, commodities and EM risk.' },
-  { id: 210, date: '2026-04-30', utcTime: '01:30', country: 'CN', event: 'China NBS Non-Manufacturing PMI', importance: 'medium', previous: '50.8', forecast: '50.5', actual: null, category: 'PMI', outcome: null },
-  { id: 211, date: '2026-04-30', utcTime: '06:00', country: 'DE', event: 'Germany CPI Preliminary (YoY)', importance: 'high', previous: '2.3%', forecast: '2.2%', actual: null, category: 'Inflation', outcome: null },
-  { id: 212, date: '2026-04-30', utcTime: '09:00', country: 'EU', event: 'Eurozone CPI Flash (YoY)', importance: 'high', previous: '2.2%', forecast: '2.1%', actual: null, category: 'Inflation', outcome: 'April Eurozone CPI flash. Consensus 2.1%, extending the disinflation trend. If it prints at or below 2.0%, ECB may accelerate cuts at June meeting. EUR and European bonds sensitive.' },
-  { id: 213, date: '2026-04-30', utcTime: '12:30', country: 'US', event: 'Initial Jobless Claims', importance: 'medium', previous: '222K', forecast: '224K', actual: null, category: 'Labour', outcome: null },
-  { id: 214, date: '2026-04-30', utcTime: '12:30', country: 'CA', event: 'Canada GDP (MoM)', importance: 'medium', previous: '0.4%', forecast: '0.2%', actual: null, category: 'GDP', outcome: null },
+  { id: 67, date: '2026-04-10', utcTime: '06:00', country: 'UK', event: 'UK GDP (MoM) — Feb', importance: 'high', previous: '0.4%', forecast: '0.1%', actual: null, category: 'GDP', outcome: null },
+  { id: 26, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)', importance: 'high', previous: '2.8%', forecast: '2.6%', actual: null, category: 'Inflation', outcome: null },
+  { id: 27, date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US Core CPI (MoM)', importance: 'high', previous: '0.4%', forecast: '0.3%', actual: null, category: 'Inflation', outcome: null },
+  { id: 68, date: '2026-04-10', utcTime: '14:00', country: 'US', event: 'Michigan Consumer Sentiment Prelim', importance: 'medium', previous: '57.0', forecast: '54.0', actual: null, category: 'Consumer', outcome: null },
+  { id: 30, date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision', importance: 'high', previous: '2.65%', forecast: '2.40%', actual: null, category: 'Central Bank', outcome: null },
+  { id: 31, date: '2026-04-17', utcTime: '12:45', country: 'EU', event: 'ECB Press Conference — Lagarde', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
+  { id: 29, date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision', importance: 'high', previous: '3.50–3.75%', forecast: '3.50–3.75%', actual: null, category: 'Central Bank', outcome: null },
+  { id: 38, date: '2026-04-29', utcTime: '18:30', country: 'US', event: 'FOMC Press Conference — Powell', importance: 'high', previous: '—', forecast: '—', actual: null, category: 'Central Bank', outcome: null },
 ];
 
 const CATEGORY_IMPLICATIONS = {
@@ -176,15 +125,9 @@ const CATEGORY_IMPLICATIONS = {
 function mergeEvents(primary, secondary) {
   const result = [...primary];
   const primaryKeys = new Set(primary.map(e => `${e.date}|${e.event.toLowerCase().trim()}`));
-  const primaryShortKeys = new Set(primary.map(e => {
-    const words = e.event.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    return `${e.date}|${words.slice(0, 3).join(' ')}`;
-  }));
   secondary.forEach(ev => {
     const key = `${ev.date}|${ev.event.toLowerCase().trim()}`;
-    const words = ev.event.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    const shortKey = `${ev.date}|${words.slice(0, 3).join(' ')}`;
-    if (!primaryKeys.has(key) && !primaryShortKeys.has(shortKey)) {
+    if (!primaryKeys.has(key)) {
       result.push({ ...ev, id: `ff_${ev.id ?? Math.random()}` });
     }
   });
@@ -200,7 +143,7 @@ function toLocalTime(dateStr, utcTime) {
 function localTzLabel() {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const parts = Intl.DateTimeFormat('en-GB', { timeZoneName: 'short', timeZone: tz }).formatToParts(new Date());
-  return parts.find(p => p.type === 'timeZoneName')?.value || tz.split('/').pop().replace(/_/g, ' ');
+  return parts.find(p => p.type === 'timeZoneName')?.value || 'Local';
 }
 
 function getTodayStr() {
@@ -209,7 +152,7 @@ function getTodayStr() {
 
 function formatDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
 }
 
 function getWeekEnd(today) {
@@ -227,7 +170,7 @@ function isReleased(dateStr, utcTime) {
 
 function ActualBadge({ actual, forecast, dateStr, utcTime }) {
   if (!actual || !isReleased(dateStr, utcTime)) {
-    return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">—</span>;
+    return <span className="text-muted-foreground/30 text-xs font-mono">—</span>;
   }
   const aNum = parseFloat(actual);
   const fNum = parseFloat(forecast);
@@ -250,54 +193,52 @@ function ActualBadge({ actual, forecast, dateStr, utcTime }) {
 function ExpandedPanel({ event }) {
   const implications = CATEGORY_IMPLICATIONS[event.category] || null;
   const released = isReleased(event.date, event.utcTime);
-  const defaultOutcome = `${event.event} is scheduled at ${toLocalTime(event.date, event.utcTime)} (local). ${event.forecast !== '—' ? `Market consensus is ${event.forecast} versus the prior reading of ${event.previous}.` : 'No specific consensus forecast.'} ${event.category === 'Central Bank' ? 'Any forward guidance on rates or policy will be the primary market driver.' : ''}`;
+  const defaultOutcome = `${event.event} is scheduled at ${toLocalTime(event.date, event.utcTime)} local time. ${event.forecast !== '—' ? `Market consensus is ${event.forecast} versus the prior reading of ${event.previous}.` : 'No specific consensus forecast.'} ${event.category === 'Central Bank' ? 'Any forward guidance on rates or policy will be the primary market driver.' : ''}`;
 
   return (
-    <div className="border-t border-border/15 bg-muted/5">
-      <div className="px-5 py-4 pl-[4.5rem] space-y-4">
-        <div className="flex gap-2.5">
-          <Activity className="w-3.5 h-3.5 text-primary/70 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1">{released && event.actual ? 'Desk View' : 'Preview'}</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">{event.outcome || defaultOutcome}</p>
-          </div>
+    <div className="border-t border-border/10 bg-muted/5 px-4 py-4 space-y-4">
+      <div className="flex gap-2.5">
+        <Activity className="w-3.5 h-3.5 text-primary/70 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1">{released && event.actual ? 'Desk View' : 'Preview'}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{event.outcome || defaultOutcome}</p>
         </div>
-        {implications && (
-          <>
-            <div className="flex gap-2.5">
-              <BarChart2 className="w-3.5 h-3.5 text-accent/80 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1.5">Instruments to Watch</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {implications.instruments.map(inst => (
-                    <span key={inst} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent/90 border border-accent/20 font-medium">{inst}</span>
-                  ))}
-                </div>
+      </div>
+      {implications && (
+        <>
+          <div className="flex gap-2.5">
+            <BarChart2 className="w-3.5 h-3.5 text-accent/80 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1.5">Instruments to Watch</p>
+              <div className="flex flex-wrap gap-1.5">
+                {implications.instruments.map(inst => (
+                  <span key={inst} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent/90 border border-accent/20 font-medium">{inst}</span>
+                ))}
               </div>
             </div>
-            {(implications.bullish || implications.bearish) && (
-              <div className="flex gap-2.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80 shrink-0 mt-0.5" />
-                <div className="space-y-1.5 w-full">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Market Implications</p>
-                  {implications.bullish && (
-                    <div className="flex gap-2">
-                      <span className="text-[10px] font-bold text-emerald-400 shrink-0 uppercase tracking-wide w-7 leading-5">Beat</span>
-                      <p className="text-xs text-muted-foreground/80 leading-5">{implications.bullish}</p>
-                    </div>
-                  )}
-                  {implications.bearish && (
-                    <div className="flex gap-2">
-                      <span className="text-[10px] font-bold text-red-400 shrink-0 uppercase tracking-wide w-7 leading-5">{event.category === 'Holiday' ? 'Note' : 'Miss'}</span>
-                      <p className="text-xs text-muted-foreground/80 leading-5">{implications.bearish}</p>
-                    </div>
-                  )}
-                </div>
+          </div>
+          {(implications.bullish || implications.bearish) && (
+            <div className="flex gap-2.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80 shrink-0 mt-0.5" />
+              <div className="space-y-1.5 w-full">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Market Implications</p>
+                {implications.bullish && (
+                  <div className="flex gap-2">
+                    <span className="text-[10px] font-bold text-emerald-400 shrink-0 uppercase tracking-wide w-7 leading-5">Beat</span>
+                    <p className="text-xs text-muted-foreground/80 leading-5">{implications.bullish}</p>
+                  </div>
+                )}
+                {implications.bearish && (
+                  <div className="flex gap-2">
+                    <span className="text-[10px] font-bold text-red-400 shrink-0 uppercase tracking-wide w-7 leading-5">{event.category === 'Holiday' ? 'Note' : 'Miss'}</span>
+                    <p className="text-xs text-muted-foreground/80 leading-5">{implications.bearish}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -306,35 +247,45 @@ function EventRow({ event, today }) {
   const [open, setOpen] = useState(false);
   const isToday = event.date === today;
   const isHigh = event.importance === 'high';
-  const catColor = CATEGORY_COLORS[event.category] || 'text-muted-foreground';
-  const hasPending = event.forecast !== '—' && !event.actual && !isReleased(event.date, event.utcTime);
+  const catStyle = CATEGORY_COLORS[event.category] || 'text-muted-foreground bg-muted/30';
+  const localTime = toLocalTime(event.date, event.utcTime);
 
   return (
-    <div className={`border-b border-border/20 last:border-0 ${isToday && isHigh ? 'bg-primary/3' : ''}`}>
-      <button className="w-full text-left px-5 py-3.5 hover:bg-muted/10 transition-colors" onClick={() => setOpen(o => !o)}>
-        <div className="flex items-center gap-4">
-          <span className={`text-xs font-mono w-14 shrink-0 ${isToday ? 'text-primary font-semibold' : 'text-muted-foreground/60'}`}>{toLocalTime(event.date, event.utcTime)}</span>
-          <span className="text-[10px] font-bold text-muted-foreground/60 w-6 shrink-0 tracking-wide">{COUNTRY_LABELS[event.country] || event.country}</span>
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isHigh ? 'bg-amber-400' : event.importance === 'medium' ? 'bg-blue-400/70' : 'bg-border'}`} />
-          <div className="flex-1 min-w-0 flex items-center gap-2">
+    <div className={`border-b border-border/20 last:border-0 ${isToday && isHigh ? 'bg-primary/[0.02]' : ''}`}>
+      <button className="w-full text-left hover:bg-muted/10 transition-colors" onClick={() => setOpen(o => !o)}>
+        <div className="grid items-center px-4 py-3" style={{ gridTemplateColumns: '72px 36px 14px 1fr 72px 72px 88px 24px' }}>
+          {/* Time */}
+          <span className={`text-xs font-mono font-semibold tabular-nums ${isToday ? 'text-primary' : 'text-muted-foreground/70'}`}>
+            {localTime}
+          </span>
+          {/* Country */}
+          <span className="text-[10px] font-bold text-muted-foreground/60 tracking-wide">{COUNTRY_LABELS[event.country] || event.country}</span>
+          {/* Impact dot */}
+          <span className={`w-2 h-2 rounded-full inline-block ${isHigh ? 'bg-amber-400' : event.importance === 'medium' ? 'bg-blue-400/70' : 'bg-border'}`} />
+          {/* Event + category badge */}
+          <div className="flex items-center gap-2 min-w-0 pr-3">
             <span className={`text-sm font-medium truncate ${isToday ? 'text-foreground' : 'text-foreground/80'}`}>{event.event}</span>
-            <span className={`text-xs shrink-0 hidden sm:inline ${catColor}`}>{event.category}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 hidden sm:inline ${catStyle}`}>{event.category}</span>
           </div>
-          <div className="flex items-center gap-5 shrink-0">
-            <div className="hidden md:flex flex-col items-end w-16">
-              <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wide">Prev</span>
-              <span className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.previous}</span>
-            </div>
-            <div className="hidden md:flex flex-col items-end w-16">
-              <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wide">Fcst</span>
-              <span className={`text-xs font-mono tabular-nums ${hasPending ? 'text-primary/70' : 'text-muted-foreground/70'}`}>{event.forecast}</span>
-            </div>
-            <div className="flex flex-col items-end w-20">
-              <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wide">Actual</span>
-              <ActualBadge actual={event.actual} forecast={event.forecast} dateStr={event.date} utcTime={event.utcTime} />
-            </div>
-            <span className="text-muted-foreground/30 w-4">{open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}</span>
+          {/* Previous */}
+          <div className="text-right hidden md:block">
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.previous}</p>
           </div>
+          {/* Forecast */}
+          <div className="text-right hidden md:block">
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">FCST</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.forecast}</p>
+          </div>
+          {/* Actual */}
+          <div className="text-right">
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">ACTUAL</p>
+            <ActualBadge actual={event.actual} forecast={event.forecast} dateStr={event.date} utcTime={event.utcTime} />
+          </div>
+          {/* Chevron */}
+          <span className="text-muted-foreground/30 flex justify-end">
+            {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </span>
         </div>
       </button>
       <AnimatePresence>
@@ -352,24 +303,29 @@ function DateGroup({ dateStr, events, today }) {
   const isToday = dateStr === today;
   const highCount = events.filter(e => e.importance === 'high').length;
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <div className="flex items-center gap-3 mb-2 px-1">
         {isToday && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
-        <span className={`text-xs font-semibold uppercase tracking-widest ${isToday ? 'text-primary' : 'text-muted-foreground/60'}`}>{isToday ? 'Today · ' : ''}{formatDate(dateStr)}</span>
-        {highCount > 0 && <span className="text-[10px] text-amber-400/70 px-1.5 py-0.5 rounded bg-amber-400/8 border border-amber-400/15 ml-auto">{highCount} high impact</span>}
+        <span className={`text-[11px] font-bold tracking-widest ${isToday ? 'text-primary' : 'text-muted-foreground/60'}`}>
+          {isToday ? 'TODAY · ' : ''}{formatDate(dateStr)}
+        </span>
+        {highCount > 0 && (
+          <span className="text-[10px] text-amber-400/70 px-1.5 py-0.5 rounded bg-amber-400/8 border border-amber-400/15 ml-auto">
+            {highCount} high impact
+          </span>
+        )}
       </div>
       <div className="glass rounded-xl overflow-hidden">
-        <div className="flex items-center gap-4 px-5 py-2 border-b border-border/30 bg-muted/5">
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-14">Time ({localTzLabel()})</span>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-6 shrink-0">Ctry</span>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-3 shrink-0" />
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 flex-1">Event</span>
-          <div className="flex items-center gap-5 shrink-0">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-16 text-right hidden md:block">Previous</span>
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-16 text-right hidden md:block">Forecast</span>
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/40 w-20 text-right">Actual</span>
-            <span className="w-4" />
-          </div>
+        {/* Column headers */}
+        <div className="grid items-center px-4 py-2 border-b border-border/20 bg-muted/5" style={{ gridTemplateColumns: '72px 36px 14px 1fr 72px 72px 88px 24px' }}>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">TIME ({localTzLabel()})</span>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">CTRY</span>
+          <span />
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">EVENT</span>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right hidden md:block">PREVIOUS</span>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right hidden md:block">FORECAST</span>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right">ACTUAL</span>
+          <span />
         </div>
         {events.map(e => <EventRow key={e.id} event={e} today={today} />)}
       </div>
@@ -377,18 +333,35 @@ function DateGroup({ dateStr, events, today }) {
   );
 }
 
-const IMPACT_FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'high', label: 'High Impact' },
-];
+function FetchStatus({ loading, fetched, error }) {
+  if (loading) return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      <span>Fetching live data...</span>
+    </div>
+  );
+  if (error) return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
+      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 inline-block" />
+      <span>Showing static data</span>
+    </div>
+  );
+  if (fetched) return (
+    <div className="flex items-center gap-2 text-xs text-emerald-400">
+      <CheckCircle2 className="w-3.5 h-3.5" />
+      <span>Live data fetched</span>
+    </div>
+  );
+  return null;
+}
 
 export default function EconomicCalendar() {
   const [tab, setTab] = useState('today');
   const [impactFilter, setImpactFilter] = useState('all');
   const [today, setToday] = useState(getTodayStr);
-  const [liveEventsMql5, setLiveEventsMql5] = useState(null);
-  const [liveEventsFF, setLiveEventsFF] = useState(null);
+  const [liveEvents, setLiveEvents] = useState(null);
   const [liveLoading, setLiveLoading] = useState(false);
+  const [liveFetched, setLiveFetched] = useState(false);
   const [liveError, setLiveError] = useState(null);
 
   useEffect(() => {
@@ -405,16 +378,22 @@ export default function EconomicCalendar() {
   const fetchLive = useCallback(async (rng) => {
     setLiveLoading(true);
     setLiveError(null);
+    setLiveFetched(false);
     try {
       const [resMql5, resFF] = await Promise.all([
         base44.functions.invoke('calendarToday', { source: 'mql5', range: rng }),
         base44.functions.invoke('calendarToday', { source: 'forex-factory', range: rng }),
       ]);
-      if (resMql5?.data?.events) setLiveEventsMql5(resMql5.data.events);
-      if (resFF?.data?.events) setLiveEventsFF(resFF.data.events);
-      if (!resMql5?.data?.events && !resFF?.data?.events) setLiveError('Could not load live data');
-    } catch (err) {
-      setLiveError('Live feed unavailable');
+      const mql5 = resMql5?.data?.events || [];
+      const ff = resFF?.data?.events || [];
+      if (mql5.length || ff.length) {
+        setLiveEvents(mergeEvents(mql5, ff));
+        setLiveFetched(true);
+      } else {
+        setLiveError('no data');
+      }
+    } catch {
+      setLiveError('unavailable');
     } finally {
       setLiveLoading(false);
     }
@@ -422,16 +401,11 @@ export default function EconomicCalendar() {
 
   useEffect(() => {
     if (tab === 'today' || tab === 'week') {
-      setLiveEventsMql5(null);
-      setLiveEventsFF(null);
+      setLiveEvents(null);
+      setLiveFetched(false);
       fetchLive(tab === 'week' ? 'week' : 'today');
     }
   }, [tab]);
-
-  const liveEvents = useMemo(() => {
-    if (!liveEventsMql5 && !liveEventsFF) return null;
-    return mergeEvents(liveEventsMql5 || [], liveEventsFF || []);
-  }, [liveEventsMql5, liveEventsFF]);
 
   const monthEnd = useMemo(() => {
     const d = new Date(today + 'T00:00:00');
@@ -480,7 +454,7 @@ export default function EconomicCalendar() {
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
       <PageBackground />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-4">
@@ -491,8 +465,9 @@ export default function EconomicCalendar() {
           <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data.</p>
         </motion.div>
 
+        {/* Stats row */}
         {tab === 'today' && (
-          <motion.div className="flex gap-4 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}>
+          <motion.div className="flex gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}>
             <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
               <Zap className="w-4 h-4 text-amber-400" />
               <div>
@@ -510,6 +485,7 @@ export default function EconomicCalendar() {
           </motion.div>
         )}
 
+        {/* Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex gap-1 p-1 glass rounded-xl w-fit flex-wrap">
             {[{ key: 'today', label: 'Today' }, { key: 'week', label: 'This Week' }, { key: 'month', label: 'This Month' }, { key: 'previous', label: 'Previous' }].map(t => (
@@ -517,14 +493,18 @@ export default function EconomicCalendar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 ml-auto flex-wrap">
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Fetch status */}
+            {(tab === 'today' || tab === 'week') && (
+              <FetchStatus loading={liveLoading} fetched={liveFetched} error={liveError} />
+            )}
+            {/* Impact filter */}
             <div className="flex items-center gap-1 p-1 glass rounded-lg">
               <Filter className="w-3 h-3 text-muted-foreground/50 ml-1 mr-0.5" />
-              {IMPACT_FILTERS.map(f => (
+              {[{ key: 'all', label: 'All' }, { key: 'high', label: 'High Impact' }].map(f => (
                 <button key={f.key} onClick={() => setImpactFilter(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>{f.label}</button>
               ))}
             </div>
-
           </div>
         </div>
 
@@ -532,16 +512,22 @@ export default function EconomicCalendar() {
           {grouped.map(([dateStr, events]) => (
             <DateGroup key={dateStr} dateStr={dateStr} events={events} today={today} />
           ))}
-          {grouped.length === 0 && (
+          {grouped.length === 0 && !liveLoading && (
             <div className="text-center py-20 text-muted-foreground">
               <Calendar className="w-10 h-10 mx-auto mb-4 opacity-20" />
               <p className="text-sm">No events for this period</p>
             </div>
           )}
+          {liveLoading && grouped.length === 0 && (
+            <div className="text-center py-20 text-muted-foreground">
+              <Loader2 className="w-8 h-8 mx-auto mb-4 opacity-40 animate-spin" />
+              <p className="text-sm">Loading calendar data...</p>
+            </div>
+          )}
         </motion.div>
 
         <p className="text-xs text-muted-foreground/30 text-center mt-8">
-          Click any row to expand the desk view and market implications. Times are shown in your local timezone.
+          Click any row to expand the desk view and market implications. Times shown in your local timezone.
         </p>
       </div>
     </div>

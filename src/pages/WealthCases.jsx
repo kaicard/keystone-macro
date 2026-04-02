@@ -5,6 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+const PieTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl text-xs pointer-events-none">
+      <p className="font-semibold text-foreground mb-0.5">{payload[0].name}</p>
+      <p className="font-bold text-sm" style={{ color: payload[0].payload.fill }}>{payload[0].value}%</p>
+    </div>
+  );
+};
+
 const COLORS = ['hsl(38, 80%, 55%)', 'hsl(210, 60%, 50%)', 'hsl(160, 50%, 45%)', 'hsl(280, 50%, 55%)', 'hsl(340, 60%, 55%)', 'hsl(45, 70%, 50%)', 'hsl(200, 50%, 50%)'];
 
 const RISK_COLORS = {
@@ -317,7 +327,7 @@ export default function WealthCases() {
                       <Pie data={chartData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={2} dataKey="value">
                         {chartData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                       </Pie>
-                      <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={{ background: 'hsl(222 25% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '8px', fontSize: '12px' }} />
+                      <Tooltip content={<PieTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

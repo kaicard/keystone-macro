@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Radio, RefreshCw, ChevronDown, ChevronUp, ChevronRight, ExternalLink } from 'lucide-react';
+import { Radio, RefreshCw, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -156,16 +156,7 @@ export default function LiveNewsFeed() {
                            <p className="text-xs text-muted-foreground leading-5">{item.what_to_watch}</p>
                          </div>
                        )}
-                       <a
-                          href={item.url || (item.url_hint ? `https://${item.url_hint}/search?q=${encodeURIComponent(item.headline)}` : `https://www.google.com/search?q=${encodeURIComponent(item.headline)}`)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
-                          className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Read article
-                        </a>
+                       <span className="text-xs text-muted-foreground/40 italic">Keystone Macro Intelligence</span>
                      </div>
                   </motion.div>
                 )}

@@ -3,7 +3,17 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+
+const PieTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl text-xs">
+      <p className="font-semibold text-foreground mb-0.5">{payload[0].name}</p>
+      <p className="text-primary font-bold text-sm">{payload[0].value}%</p>
+    </div>
+  );
+};
 import PortfolioPerformanceChart from './PortfolioPerformanceChart';
 
 const COLORS = ['hsl(38, 80%, 55%)', 'hsl(210, 60%, 50%)', 'hsl(160, 50%, 45%)', 'hsl(280, 50%, 55%)', 'hsl(340, 60%, 55%)', 'hsl(45, 70%, 50%)'];
@@ -111,11 +121,7 @@ export default function PortfolioCard({ portfolio, riskColors, onBack }) {
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{ background: 'hsl(222 25% 12%)', border: '1px solid hsl(222 20% 20%)', borderRadius: '8px' }}
-                    labelStyle={{ color: 'hsl(210 20% 92%)' }}
-                    formatter={(value) => [`${value}%`, '']}
-                  />
+                  <Tooltip content={<PieTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
