@@ -380,8 +380,6 @@ function DateGroup({ dateStr, events, today }) {
 const IMPACT_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'high', label: 'High Impact' },
-  { key: 'medium', label: 'Medium' },
-  { key: 'low', label: 'Low' },
 ];
 
 export default function EconomicCalendar() {
