@@ -659,7 +659,6 @@ export default function EconomicCalendar() {
                 {[
                   { key: 'mql5', label: 'MQL5' },
                   { key: 'forex-factory', label: 'Forex Factory' },
-                  { key: 'fxstreet', label: 'FX Street' },
                 ].map(s => (
                   <button
                     key={s.key}
