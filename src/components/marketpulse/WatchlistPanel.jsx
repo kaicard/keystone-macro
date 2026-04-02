@@ -77,7 +77,7 @@ export default function WatchlistPanel({ watchlist, onRemove, liveData, onSelect
                   </div>
                   <button
                     onClick={() => onRemove(item.ticker)}
-                    className="absolute top-2 right-2 opacity-0 group-hover/watch:opacity-100 transition-opacity bg-background/80 rounded-full p-0.5 hover:text-red-400"
+                    className="absolute bottom-2.5 right-3 opacity-0 group-hover/watch:opacity-60 transition-opacity hover:!opacity-100 hover:text-red-400 text-muted-foreground"
                   >
                     <X className="w-3 h-3" />
                   </button>
