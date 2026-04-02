@@ -16,7 +16,7 @@ import MarketPulse from '@/pages/MarketPulse';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';
-import EconomicCalendar from '@/pages/EconomicCalendar';
+import EconomicCalendar from '@/pages/EconomicCalendar.jsx';
 import Terms from '@/pages/Terms';
 import Newsletter from '@/pages/Newsletter';
 
