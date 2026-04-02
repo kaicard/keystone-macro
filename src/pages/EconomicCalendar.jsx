@@ -546,6 +546,7 @@ function DateGroup({ dateStr, events, today }) {
 export default function EconomicCalendar() {
   const [tab, setTab] = useState('today');
   const [today, setToday] = useState(getTodayStr);
+  const [source, setSource] = useState('mql5');
   const [liveEvents, setLiveEvents] = useState(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError, setLiveError] = useState(null);
@@ -561,11 +562,11 @@ export default function EconomicCalendar() {
     return () => clearTimeout(timer);
   }, [today]);
 
-  const fetchLive = useCallback(async () => {
+  const fetchLive = useCallback(async (src = source, rng = (tab === 'week' ? 'week' : 'today')) => {
     setLiveLoading(true);
     setLiveError(null);
     try {
-      const res = await base44.functions.invoke('calendarToday', {});
+      const res = await base44.functions.invoke('calendarToday', { source: src, range: rng });
       if (res?.data?.events) {
         setLiveEvents(res.data.events);
       } else {
@@ -576,11 +577,14 @@ export default function EconomicCalendar() {
     } finally {
       setLiveLoading(false);
     }
-  }, []);
+  }, [source, tab]);
 
   useEffect(() => {
-    fetchLive();
-  }, [fetchLive]);
+    if (tab === 'today' || tab === 'week') {
+      setLiveEvents(null);
+      fetchLive(source, tab === 'week' ? 'week' : 'today');
+    }
+  }, [tab, source]);
 
   const monthEnd = useMemo(() => {
     const d = new Date(today + 'T00:00:00');
@@ -588,16 +592,13 @@ export default function EconomicCalendar() {
     return d.toISOString().split('T')[0];
   }, [today]);
 
-  // For today tab: use live data (if loaded), else static fallback
-  // For all other tabs: use static EVENTS
   const filtered = useMemo(() => {
     const weekEnd = getWeekEnd(today);
-    if (tab === 'today') {
-      const source = liveEvents ?? EVENTS.filter(e => e.date === today);
-      return Array.isArray(source) ? source : [];
+    if (tab === 'today' || tab === 'week') {
+      const src = liveEvents ?? EVENTS.filter(e => tab === 'today' ? e.date === today : (e.date >= today && e.date <= weekEnd));
+      return Array.isArray(src) ? src : [];
     }
     return EVENTS.filter(e => {
-      if (tab === 'week')     return e.date >= today && e.date <= weekEnd;
       if (tab === 'month')    return e.date >= today && e.date <= monthEnd;
       if (tab === 'previous') return e.date < today;
       return true;
@@ -632,37 +633,59 @@ export default function EconomicCalendar() {
           <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data.</p>
         </motion.div>
 
-        {tab === 'today' && (
+        {(tab === 'today' || tab === 'week') && (
           <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-            <div className="flex gap-4 mb-3">
-              <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <div>
-                  <p className="text-xs text-muted-foreground">High Impact Today</p>
-                  <p className="text-lg font-semibold">{todayHighCount}</p>
+            {tab === 'today' && (
+              <div className="flex gap-4 mb-3">
+                <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">High Impact Today</p>
+                    <p className="text-lg font-semibold">{todayHighCount}</p>
+                  </div>
+                </div>
+                <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Released</p>
+                    <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {(liveEvents ?? EVENTS.filter(e => e.date === today)).length}</span></p>
+                  </div>
                 </div>
               </div>
-              <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Released</p>
-                  <p className="text-lg font-semibold">{todayReleasedCount} <span className="text-sm font-normal text-muted-foreground">/ {(liveEvents ?? EVENTS.filter(e => e.date === today)).length}</span></p>
-                </div>
+            )}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              {/* Source picker */}
+              <div className="flex items-center gap-1 p-1 glass rounded-lg">
+                {[
+                  { key: 'mql5', label: 'MQL5' },
+                  { key: 'forex-factory', label: 'Forex Factory' },
+                  { key: 'fxstreet', label: 'FX Street' },
+                ].map(s => (
+                  <button
+                    key={s.key}
+                    onClick={() => setSource(s.key)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                      source === s.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                {liveLoading ? (
-                  <><RefreshCw className="w-3 h-3 animate-spin" /> Fetching live calendar...</>
-                ) : liveError ? (
-                  <span className="text-red-400/70">{liveError} — showing cached data</span>
-                ) : liveEvents ? (
-                  <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live data from jblanked.com</>
-                ) : null}
-              </span>
-              <button onClick={fetchLive} disabled={liveLoading} className="flex items-center gap-1 hover:text-foreground transition-colors disabled:opacity-40">
-                <RefreshCw className={`w-3 h-3 ${liveLoading ? 'animate-spin' : ''}`} /> Refresh
-              </button>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  {liveLoading ? (
+                    <><RefreshCw className="w-3 h-3 animate-spin" /> Fetching...</>
+                  ) : liveError ? (
+                    <span className="text-red-400/70">{liveError}</span>
+                  ) : liveEvents ? (
+                    <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live</>
+                  ) : null}
+                </span>
+                <button onClick={() => fetchLive(source, tab === 'week' ? 'week' : 'today')} disabled={liveLoading} className="flex items-center gap-1 hover:text-foreground transition-colors disabled:opacity-40">
+                  <RefreshCw className={`w-3 h-3 ${liveLoading ? 'animate-spin' : ''}`} /> Refresh
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

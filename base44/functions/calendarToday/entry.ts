@@ -1,61 +1,74 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+const BASE = 'https://www.jblanked.com/news/api';
+
+const ENDPOINTS = {
+  mql5:          { today: `${BASE}/mql5/calendar/today/`,          week: `${BASE}/mql5/calendar/week/`          },
+  'forex-factory': { today: `${BASE}/forex-factory/calendar/today/`, week: `${BASE}/forex-factory/calendar/week/` },
+  fxstreet:      { today: `${BASE}/fxstreet/calendar/today/`,      week: `${BASE}/fxstreet/calendar/week/`      },
+};
+
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const source = body.source ?? 'mql5';
+    const range  = body.range  ?? 'today'; // 'today' | 'week'
+
+    const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
+    const url = range === 'week' ? sourceMap.week : sourceMap.today;
+
+    const apiKey = Deno.env.get('JBLANKED_API_KEY');
+    const response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Api-Key ${apiKey}` },
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      return Response.json({ error: `API error ${response.status}`, details: err }, { status: response.status });
+    }
+
+    const data = await response.json();
+    const events = data.map((item, idx) => normalise(item, idx));
+    return Response.json({ events, source, range });
+  } catch (err) {
+    return Response.json({ error: err.message }, { status: 500 });
   }
-
-  const apiKey = Deno.env.get('JBLANKED_API_KEY');
-
-  const response = await fetch('https://www.jblanked.com/news/api/mql5/calendar/today/', {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Api-Key ${apiKey}`,
-    },
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    return Response.json({ error: `API error ${response.status}`, details: err }, { status: response.status });
-  }
-
-  const data = await response.json();
-
-  // Normalise to the shape the calendar UI expects
-  // API date format: "2026.04.02 15:30:00"
-  const events = data.map((item, idx) => {
-    const rawDate = item.Date ?? item.date ?? '';
-    // Replace dots in date portion: "2026.04.02 15:30:00" -> "2026-04-02 15:30:00"
-    const normalised = rawDate.replace(/^(\d{4})\.(\d{2})\.(\d{2})/, '$1-$2-$3');
-    const [datePart, timePart] = normalised.split(' ');
-    const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
-
-    const rawActual = item.Actual ?? item.actual;
-    const actual = (rawActual === 0 || rawActual === '0') ? null : rawActual != null ? String(rawActual) : null;
-
-    return {
-      id: item.EventID ?? item.eventID ?? idx,
-      date: datePart ?? '',
-      utcTime,
-      country: mapCurrency(item.Currency ?? item.currency ?? ''),
-      event: item.Name ?? item.name ?? '',
-      importance: mapImpact(item.Impact ?? item.impact),
-      category: mapCategory(item.Category ?? item.category ?? ''),
-      previous: item.Previous ?? item.previous != null ? String(item.Previous ?? item.previous) : '—',
-      forecast: item.Forecast ?? item.forecast != null ? String(item.Forecast ?? item.forecast) : '—',
-      actual,
-      outcome: (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
-    };
-  });
-
-  return Response.json({ events });
 });
+
+function normalise(item, idx) {
+  const rawDate = item.Date ?? item.date ?? '';
+  const normalised = rawDate.replace(/^(\d{4})\.(\d{2})\.(\d{2})/, '$1-$2-$3');
+  const [datePart, timePart] = normalised.split(' ');
+  const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
+
+  const rawActual = item.Actual ?? item.actual;
+  const actual = (rawActual === 0 || rawActual === '0') ? null : rawActual != null ? String(rawActual) : null;
+
+  const prev = item.Previous ?? item.previous;
+  const fore = item.Forecast ?? item.forecast;
+
+  return {
+    id:         item.EventID ?? item.eventID ?? idx,
+    date:       datePart ?? '',
+    utcTime,
+    country:    mapCurrency(item.Currency ?? item.currency ?? ''),
+    event:      item.Name ?? item.name ?? '',
+    importance: mapImpact(item.Impact ?? item.impact),
+    category:   mapCategory(item.Category ?? item.category ?? item.Name ?? item.name ?? ''),
+    previous:   prev != null ? String(prev) : '—',
+    forecast:   fore != null ? String(fore) : '—',
+    actual,
+    outcome:    (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
+  };
+}
 
 function mapCurrency(cur) {
   const map = { USD:'US', EUR:'EU', GBP:'UK', JPY:'JP', CNY:'CN', CAD:'CA', AUD:'AU', CHF:'CH', NZD:'NZ', SEK:'SE', NOK:'NO', DKK:'DK', HKD:'HK', SGD:'SG', KRW:'KR', INR:'IN', BRL:'BR', MXN:'MX', ZAR:'ZA' };
-  return map[cur] ?? cur.slice(0,2);
+  return map[cur] ?? (cur.length >= 2 ? cur.slice(0, 2) : cur);
 }
 
 function mapImpact(impact) {
@@ -72,9 +85,9 @@ function mapCategory(cat) {
   if (c.includes('rate') || c.includes('central') || c.includes('bank') || c.includes('monetary') || c.includes('boj') || c.includes('fed') || c.includes('ecb') || c.includes('boe')) return 'Central Bank';
   if (c.includes('inflation') || c.includes('cpi') || c.includes('ppi') || c.includes('price')) return 'Inflation';
   if (c.includes('employ') || c.includes('job') || c.includes('labour') || c.includes('labor') || c.includes('payroll') || c.includes('claims')) return 'Labour';
-  if (c.includes('gdp') || c.includes('growth') || c.includes('production') || c.includes('trade') || c.includes('current account') || c.includes('currency report')) return 'GDP';
+  if (c.includes('gdp') || c.includes('growth') || c.includes('production') || c.includes('trade')) return 'GDP';
   if (c.includes('pmi') || c.includes('manufacturing') || c.includes('services') || c.includes('business')) return 'PMI';
   if (c.includes('consumer') || c.includes('retail') || c.includes('sentiment') || c.includes('confidence') || c.includes('spending')) return 'Consumer';
   if (c.includes('housing') || c.includes('home') || c.includes('building') || c.includes('construction') || c.includes('mortgage')) return 'Housing';
-  return 'GDP';
+  return 'Other';
 }
