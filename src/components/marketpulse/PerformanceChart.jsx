@@ -6,7 +6,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const TIMEFRAMES = ['1W', '1M', '3M', '6M', 'YTD', '1Y'];
+const TIMEFRAMES = ['1W', '1M', '3M', '6M', 'YTD', '1Y', '5Y'];
 
 // Full palette of available instruments
 const ALL_INSTRUMENTS = [
@@ -40,7 +40,11 @@ const ALL_INSTRUMENTS = [
 const DEFAULT_KEYS = ['sp500', 'nasdaq', 'ftse', 'dax'];
 
 function generateData(tf, seriesKeys) {
-  const points = { '1W': 7, '1M': 22, '3M': 63, '6M': 126, 'YTD': 85, '1Y': 252 }[tf] || 22;
+  // Accurate trading day counts
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const ytdDays = Math.round((now - startOfYear) / (1000 * 60 * 60 * 24) * (252 / 365));
+  const points = { '1W': 5, '1M': 21, '3M': 63, '6M': 126, 'YTD': Math.max(ytdDays, 1), '1Y': 252, '5Y': 1260 }[tf] || 21;
 
   let seed = tf.charCodeAt(0) * 137 + tf.length * 31;
   const rand = () => {
