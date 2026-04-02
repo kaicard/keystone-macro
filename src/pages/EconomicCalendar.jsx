@@ -525,16 +525,7 @@ export default function EconomicCalendar() {
                 <button key={f.key} onClick={() => setImpactFilter(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>{f.label}</button>
               ))}
             </div>
-            {(tab === 'today' || tab === 'week') && (
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  {liveLoading ? (<><RefreshCw className="w-3 h-3 animate-spin" /> Fetching...</>) : liveError ? (<span className="text-red-400/70">{liveError}</span>) : liveEvents ? (<><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live</>) : null}
-                </span>
-                <button onClick={() => fetchLive(tab === 'week' ? 'week' : 'today')} disabled={liveLoading} className="flex items-center gap-1 hover:text-foreground transition-colors disabled:opacity-40">
-                  <RefreshCw className={`w-3 h-3 ${liveLoading ? 'animate-spin' : ''}`} /> Refresh
-                </button>
-              </div>
-            )}
+
           </div>
         </div>
 
