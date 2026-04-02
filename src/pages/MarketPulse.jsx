@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Star } from 'lucide-react';
 import { useLiveQuotes } from '@/hooks/useLiveQuotes';
+import { useWatchlist } from '@/hooks/useWatchlist';
 import { getAllExchangeStatuses, getInstrumentStatus } from '@/lib/marketHours';
 import { useMarketData, MarketTile } from '@/components/marketpulse/LiveMarketData';
+import WatchlistPanel from '@/components/marketpulse/WatchlistPanel';
 import RegimePanel from '@/components/marketpulse/RegimePanel';
 import MarketSummary from '@/components/marketpulse/MarketSummary';
 import TopMovers from '@/components/marketpulse/TopMovers';
@@ -54,22 +56,38 @@ function getYahooUrl(item) {
   return `https://finance.yahoo.com/quote/${sym}`;
 }
 
-function LiveTile({ item, onSelect }) {
+function LiveTile({ item, onSelect, watchlist }) {
   const status = getInstrumentStatus(item.name || item.ticker);
+  const { isWatched, toggleWatchlist } = watchlist;
+  const watched = isWatched(item.ticker);
+
   return (
-    <div onClick={() => onSelect(item)} className="cursor-pointer">
-      <MarketTile
-        name={item.name || item.ticker}
-        value={fmtPrice(item.price, item.name)}
-        change={fmtChange(item.change_pct)}
-        direction={item.direction}
-        closed={!status.open}
-      />
+    <div className="relative group/tile">
+      <div onClick={() => onSelect(item)} className="cursor-pointer">
+        <MarketTile
+          name={item.name || item.ticker}
+          value={fmtPrice(item.price, item.name)}
+          change={fmtChange(item.change_pct)}
+          direction={item.direction}
+          closed={!status.open}
+        />
+      </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); toggleWatchlist(item); }}
+        className={`absolute top-2 right-2 transition-all rounded-full p-0.5 ${
+          watched
+            ? 'opacity-100 text-primary'
+            : 'opacity-0 group-hover/tile:opacity-100 text-muted-foreground hover:text-primary'
+        }`}
+        title={watched ? 'Remove from watchlist' : 'Add to watchlist'}
+      >
+        <Star className={`w-3.5 h-3.5 ${watched ? 'fill-primary' : ''}`} />
+      </button>
     </div>
   );
 }
 
-function LiveGrid({ items, cols = 4, onSelect }) {
+function LiveGrid({ items, cols = 4, onSelect, watchlist }) {
   const gridClass = {
     2: 'grid-cols-2',
     4: 'grid-cols-2 md:grid-cols-4',
@@ -88,7 +106,7 @@ function LiveGrid({ items, cols = 4, onSelect }) {
 
   return (
     <div className={`grid ${gridClass} gap-4`}>
-      {items.map(item => <LiveTile key={item.ticker} item={item} onSelect={onSelect} />)}
+      {items.map(item => <LiveTile key={item.ticker} item={item} onSelect={onSelect} watchlist={watchlist} />)}
     </div>
   );
 }
@@ -105,6 +123,7 @@ export default function MarketPulse() {
   const { data: live, loading: liveLoading, lastFetched, secondsUntilRefresh, refresh } = liveQuotes;
   const { data: llm, loading: llmLoading } = llmData;
   const [selectedInstrument, setSelectedInstrument] = React.useState(null);
+  const watchlistHook = useWatchlist();
 
   const loading = liveLoading || llmLoading;
 
@@ -170,6 +189,16 @@ export default function MarketPulse() {
             </button>
           </div>
 
+          {/* Watchlist */}
+          <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+            <WatchlistPanel
+              watchlist={watchlistHook.watchlist}
+              onRemove={watchlistHook.removeFromWatchlist}
+              liveData={live}
+              onSelect={setSelectedInstrument}
+            />
+          </motion.div>
+
           {/* Regime Panel */}
           <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <RegimePanel regime={llm?.regime} loading={llmLoading} />
@@ -199,7 +228,7 @@ export default function MarketPulse() {
                   <PerformanceChart />
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
@@ -223,17 +252,17 @@ export default function MarketPulse() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
-                    <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} />
+                    <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
-                    <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} />
+                    <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                   </div>
                   {live?.vix && (
                     <div>
                       <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <LiveTile item={live.vix} onSelect={setSelectedInstrument} />
+                        <LiveTile item={live.vix} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                       </div>
                     </div>
                   )}
@@ -244,17 +273,17 @@ export default function MarketPulse() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Single Names</h3>
-                    <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} />
+                    <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="etfs">
-                <LiveGrid items={live?.etfs} cols={4} onSelect={setSelectedInstrument} />
+                <LiveGrid items={live?.etfs} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
               </TabsContent>
 
               <TabsContent value="sectors">
@@ -285,15 +314,15 @@ export default function MarketPulse() {
               </TabsContent>
 
               <TabsContent value="commodities">
-                <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} />
+                <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
               </TabsContent>
 
               <TabsContent value="fx">
-                <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} />
+                <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
               </TabsContent>
 
               <TabsContent value="crypto">
-                <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} />
+                <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
               </TabsContent>
             </Tabs>
           </motion.div>
