@@ -564,13 +564,18 @@ export default function EconomicCalendar() {
   const fetchLive = useCallback(async () => {
     setLiveLoading(true);
     setLiveError(null);
-    const res = await base44.functions.invoke('calendarToday', {});
-    if (res?.data?.events) {
-      setLiveEvents(res.data.events);
-    } else {
-      setLiveError('Could not load live data');
+    try {
+      const res = await base44.functions.invoke('calendarToday', {});
+      if (res?.data?.events) {
+        setLiveEvents(res.data.events);
+      } else {
+        setLiveError('Could not load live data');
+      }
+    } catch (err) {
+      setLiveError('Live feed unavailable');
+    } finally {
+      setLiveLoading(false);
     }
-    setLiveLoading(false);
   }, []);
 
   useEffect(() => {
