@@ -3,9 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 const BASE = 'https://www.jblanked.com/news/api';
 
 const ENDPOINTS = {
-  mql5:          { today: `${BASE}/mql5/calendar/today/`,          week: `${BASE}/mql5/calendar/week/`          },
+  mql5:            { today: `${BASE}/mql5/calendar/today/`,          week: `${BASE}/mql5/calendar/week/`          },
   'forex-factory': { today: `${BASE}/forex-factory/calendar/today/`, week: `${BASE}/forex-factory/calendar/week/` },
-  fxstreet:      { today: `${BASE}/fxstreet/calendar/today/`,      week: `${BASE}/fxstreet/calendar/week/`      },
+  fxstreet:        { today: `${BASE}/fxstreet/calendar/today/`,      week: `${BASE}/fxstreet/calendar/week/`      },
 };
 
 Deno.serve(async (req) => {
@@ -16,12 +16,27 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const source = body.source ?? 'mql5';
-    const range  = body.range  ?? 'today'; // 'today' | 'week'
+    const range  = body.range  ?? 'today';
 
+    const cacheKey = `calendar_${source}_${range}`;
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Check cache first
+    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: cacheKey });
+    if (cached?.length > 0) {
+      const entry = cached[0];
+      const cachedDate = entry.fetched_at?.slice(0, 10);
+      if (cachedDate === today) {
+        const events = JSON.parse(entry.payload);
+        return Response.json({ events, source, range, cached: true });
+      }
+    }
+
+    // Fetch fresh from jblanked
     const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
     const url = range === 'week' ? sourceMap.week : sourceMap.today;
-
     const apiKey = Deno.env.get('JBLANKED_API_KEY');
+
     const response = await fetch(url, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Api-Key ${apiKey}` },
     });
@@ -33,7 +48,17 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     const events = data.map((item, idx) => normalise(item, idx));
-    return Response.json({ events, source, range });
+
+    // Save to cache
+    const payload = JSON.stringify(events);
+    const fetched_at = new Date().toISOString();
+    if (cached?.length > 0) {
+      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
+    } else {
+      await base44.asServiceRole.entities.MarketCache.create({ key: cacheKey, payload, fetched_at });
+    }
+
+    return Response.json({ events, source, range, cached: false });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
