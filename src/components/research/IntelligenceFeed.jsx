@@ -143,11 +143,6 @@ Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity 
     }
   });
 
-  const now = new Date();
-  const utcHour = String(now.getUTCHours()).padStart(2, '0');
-  const utcMin = String(now.getUTCMinutes()).padStart(2, '0');
-  const currentUtcTime = `${utcHour}:${utcMin}`;
-
   return (result?.items || [])
     .filter(item => {
       // Hard filter: drop any item with a future time
