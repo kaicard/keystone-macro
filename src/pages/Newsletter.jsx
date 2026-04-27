@@ -24,7 +24,7 @@ const TOPICS = [
 
 const INCLUDES = [
   { icon: Sun, label: '7am Morning Brief', desc: 'Markets, macro headlines, and what to watch for the day ahead' },
-  { icon: Moon, label: '9pm Evening Wrap', desc: 'Full day review, desk views, trade ideas, and positioning insights' },
+  { icon: Moon, label: '10pm Evening Wrap', desc: 'Full day review, desk views, trade ideas, and positioning insights' },
   { icon: Calendar, label: '10 Editions Per Week', desc: 'Monday through Friday, every trading week of the year' },
   { icon: BarChart2, label: 'Trade Ideas', desc: 'Historical and illustrative trade ideas with full thesis and levels' },
   { icon: BookOpen, label: 'Full Archive Access', desc: 'Every edition ever published, searchable and categorised' },
