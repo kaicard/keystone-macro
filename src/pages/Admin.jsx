@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, FileText, Briefcase, Users, Mail, Trash2, Edit, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -127,10 +128,40 @@ function ResearchForm({ note, onSave, onClose }) {
   );
 }
 
+const ADMIN_EMAILS = ['kaicard05@gmail.com', 'hello@keystonemacro.com'];
+
 export default function Admin() {
   const queryClient = useQueryClient();
   const [editingNote, setEditingNote] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="pt-20 lg:pt-24 pb-20 min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+    return <Navigate to="/" replace />;
+  }
 
   const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
   const { data: subscribers = [] } = useQuery({ queryKey: ['admin-subs'], queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 100) });
