@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   Mail, CheckCircle, ArrowRight, Sun, Moon, BarChart2, Globe, Zap,
-  BookOpen, Calendar, Clock, TrendingUp, Shield, Star, ChevronRight
+  BookOpen, Calendar, TrendingUp, Shield, Star, ChevronRight, Lock
 } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
 
@@ -38,10 +37,29 @@ export default function Newsletter() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [cancelEmail, setCancelEmail] = useState('');
+  const [cancelStatus, setCancelStatus] = useState(null);
+
   const { data: editions = [] } = useQuery({
     queryKey: ['newsletter-editions-public'],
     queryFn: () => base44.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 6),
   });
+
+  const checkSubscription = async (email) => {
+    if (!email) return;
+    const results = await base44.entities.NewsletterSubscription.filter({ email, status: 'active' });
+    setIsSubscribed(results?.length > 0);
+  };
+
+  const handleCancel = async (e) => {
+    e.preventDefault();
+    if (!cancelEmail) return;
+    const results = await base44.entities.NewsletterSubscription.filter({ email: cancelEmail });
+    if (!results?.length) { setCancelStatus('not_found'); return; }
+    await base44.entities.NewsletterSubscription.update(results[0].id, { status: 'unsubscribed' });
+    setCancelStatus('cancelled');
+  };
 
   const toggleTopic = (id) => {
     setSelectedTopics(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]);
@@ -197,7 +215,12 @@ export default function Newsletter() {
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={loading || !form.email} className="w-full h-12 text-base gap-2">
+                  <Button
+                    type="submit"
+                    disabled={loading || !form.email}
+                    className="w-full h-12 text-base gap-2"
+                    onClick={() => checkSubscription(form.email)}
+                  >
                     {loading ? 'Redirecting to checkout…' : (
                       <>Subscribe — $19.99/month <ArrowRight className="w-4 h-4" /></>
                     )}
@@ -217,29 +240,77 @@ export default function Newsletter() {
           </div>
         </div>
 
-        {/* Recent editions */}
+        {/* Recent editions — subscribers only */}
         {editions.length > 0 && (
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <h2 className="font-display text-2xl font-semibold mb-6">Recent Editions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {editions.map(ed => (
-                <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="glass rounded-xl p-5 hover:border-primary/20 transition-all group">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                      {ed.edition_type === 'morning' ? <Sun className="w-3.5 h-3.5 text-primary" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
-                    </div>
-                    <span className="text-xs text-muted-foreground capitalize">{ed.edition_type} Edition · {ed.publish_date}</span>
-                  </div>
-                  <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-2 line-clamp-2">{ed.title}</h3>
-                  {ed.market_summary && <p className="text-xs text-muted-foreground line-clamp-2">{ed.market_summary}</p>}
-                  <div className="flex items-center gap-1 mt-3 text-xs text-primary/70">
-                    Read <ChevronRight className="w-3 h-3" />
-                  </div>
-                </Link>
-              ))}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-2xl font-semibold">Recent Editions</h2>
+              {!isSubscribed && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Lock className="w-3.5 h-3.5" />
+                  Subscribers only
+                </div>
+              )}
             </div>
+            {isSubscribed ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {editions.map(ed => (
+                  <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="glass rounded-xl p-5 hover:border-primary/20 transition-all group">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                        {ed.edition_type === 'morning' ? <Sun className="w-3.5 h-3.5 text-primary" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
+                      </div>
+                      <span className="text-xs text-muted-foreground capitalize">{ed.edition_type} Edition · {ed.publish_date}</span>
+                    </div>
+                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-2 line-clamp-2">{ed.title}</h3>
+                    {ed.market_summary && <p className="text-xs text-muted-foreground line-clamp-2">{ed.market_summary}</p>}
+                    <div className="flex items-center gap-1 mt-3 text-xs text-primary/70">
+                      Read <ChevronRight className="w-3 h-3" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="glass rounded-2xl p-10 text-center border border-border/50">
+                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-2">Subscriber Access Only</h3>
+                <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">The full edition archive is available exclusively to active subscribers. Subscribe above to unlock every edition.</p>
+                <p className="text-xs text-muted-foreground/60">Already subscribed? Enter your email in the form above to verify access.</p>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Manage subscription */}
+        <div id="manage" className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+          <div className="glass rounded-2xl p-8 border border-border/50">
+            <h2 className="font-display text-lg font-semibold mb-1">Already subscribed?</h2>
+            <p className="text-sm text-muted-foreground mb-6">Need to cancel your subscription? Enter your email below and we'll unsubscribe you immediately.</p>
+            {cancelStatus === 'cancelled' ? (
+              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-muted/40 rounded-xl px-4 py-3">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                You have been unsubscribed. No further editions will be sent to this address.
+              </div>
+            ) : (
+              <form onSubmit={handleCancel} className="flex gap-3 flex-col sm:flex-row">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={cancelEmail}
+                  onChange={e => { setCancelEmail(e.target.value); setCancelStatus(null); }}
+                  className="h-10 flex-1"
+                  required
+                />
+                <Button type="submit" variant="outline" className="h-10 shrink-0">Cancel Subscription</Button>
+              </form>
+            )}
+            {cancelStatus === 'not_found' && (
+              <p className="text-xs text-destructive mt-2">No active subscription found for that email address.</p>
+            )}
+          </div>
+        </div>
 
       </div>
     </div>
