@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import PortfolioBuilder from '@/components/portfolios/PortfolioBuilder';
 import PortfolioCard from '@/components/portfolios/PortfolioCard';
 import ScenarioSimulator from '@/components/portfolios/ScenarioSimulator';
-import WealthCasesTab from '@/components/portfolios/WealthCasesTab';
+import WealthCasesTab from '@/components/portfolios/WealthCasesTab.jsx';
 
 const modelPortfolios = [
   {
