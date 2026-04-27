@@ -40,7 +40,8 @@ const SENTIMENT_DOT = {
   neutral:  'bg-amber-400/60',
 };
 
-// Timezone helpers
+const MAX_ITEMS = 60; // Maximum items to keep in the feed before oldest drop off
+
 function getLocalTzLabel() {
   try {
     const parts = Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(new Date());
@@ -100,9 +101,22 @@ async function saveToCache(items, recordId) {
   } catch (_) {}
 }
 
+// Merge new items on top of existing ones, deduplicating by slug
+function mergeItems(existing, incoming) {
+  const existingSlugs = new Set(existing.map(i => i.slug));
+  const newOnly = incoming.filter(i => !existingSlugs.has(i.slug));
+  // Prepend new items, keep existing, trim to MAX_ITEMS
+  const merged = [...newOnly, ...existing].slice(0, MAX_ITEMS);
+  // Sort by published_time_utc descending
+  return merged.sort((a, b) =>
+    (b.published_time_utc || b.published_time || '').localeCompare(
+     (a.published_time_utc || a.published_time || '')
+    )
+  );
+}
+
 async function generateHeadlines() {
   const now = new Date();
-  // Get current UTC time as HH:MM — this is the hard ceiling for all published times
   const utcHour = String(now.getUTCHours()).padStart(2, '0');
   const utcMin = String(now.getUTCMinutes()).padStart(2, '0');
   const currentUtcTime = `${utcHour}:${utcMin}`;
@@ -145,7 +159,6 @@ Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity 
 
   return (result?.items || [])
     .filter(item => {
-      // Hard filter: drop any item with a future time
       const t = item.published_time_utc || '00:00';
       return t <= currentUtcTime;
     })
@@ -156,7 +169,8 @@ Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity 
       slug: generateSlug(item.headline),
       generated_at: new Date().toISOString(),
       enriched: false,
-    })).sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
+    }))
+    .sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
 }
 
 async function enrichItem(item) {
@@ -183,10 +197,6 @@ Provide:
   });
 
   return { ...item, ...result, enriched: true };
-}
-
-async function generateIntelligenceFeed() {
-  return generateHeadlines();
 }
 
 function IntelligenceItem({ item, index }) {
@@ -284,23 +294,27 @@ export default function IntelligenceFeed() {
   const [enriching, setEnriching] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [newCount, setNewCount] = useState(0);
   const [activeBeat, setActiveBeat] = useState('all');
   const [showAll, setShowAll] = useState(false);
   const cacheIdRef = useRef(null);
   const hasFetched = useRef(false);
   const INITIAL_VISIBLE = 10;
 
-  const enrichInBackground = useCallback(async (headlines, recordId) => {
+  const enrichInBackground = useCallback(async (headlines, recordId, existingItems = []) => {
     setEnriching(true);
     const BATCH = 4;
     let enriched = [...headlines];
     for (let i = 0; i < enriched.length; i += BATCH) {
       const batch = enriched.slice(i, i + BATCH);
-      const results = await Promise.all(batch.map(item => item.enriched ? item : enrichItem(item).catch(() => item)));
+      const results = await Promise.all(
+        batch.map(item => item.enriched ? item : enrichItem(item).catch(() => item))
+      );
       results.forEach((r, j) => { enriched[i + j] = r; });
-      setAllItems([...enriched]);
-      // Save after each batch so cache stays current
-      await saveToCache(enriched, cacheIdRef.current);
+      // Merge enriched new items back with existing
+      const merged = mergeItems(existingItems, enriched);
+      setAllItems(merged);
+      await saveToCache(merged, cacheIdRef.current || recordId);
     }
     setEnriching(false);
   }, []);
@@ -309,29 +323,47 @@ export default function IntelligenceFeed() {
     setLoading(true);
     setError(null);
     try {
-      // Always check cache first — today's cache is authoritative (stable headlines all day)
       const { data: cached, recordId } = await loadFromCache();
       cacheIdRef.current = recordId;
 
       if (cached?.length && !forceRefresh) {
-        const sorted = [...cached].sort((a, b) => (b.published_time_utc || b.published_time || '').localeCompare(a.published_time_utc || a.published_time || ''));
+        // Load cache — sort newest first
+        const sorted = [...cached].sort((a, b) =>
+          (b.published_time_utc || b.published_time || '').localeCompare(
+           (a.published_time_utc || a.published_time || '')
+          )
+        );
         setAllItems(sorted);
         setLastUpdated(new Date());
         setLoading(false);
-        // If any items are still unenriched, continue enrichment
         const unenriched = sorted.filter(i => !i.enriched);
-        if (unenriched.length > 0) enrichInBackground(sorted, recordId);
+        if (unenriched.length > 0) enrichInBackground(unenriched, recordId, sorted);
         return;
       }
 
-      // No cache or forced refresh — generate fresh
+      // Force refresh — generate NEW headlines and prepend to existing
       clearOldCaches();
-      const headlines = await generateHeadlines();
-      setAllItems(headlines);
+      const newHeadlines = await generateHeadlines();
+
+      // Get current items from state or cache to merge with
+      const currentItems = cached?.length ? cached : [];
+      const merged = mergeItems(currentItems, newHeadlines);
+
+      // Count truly new items
+      const existingSlugs = new Set(currentItems.map(i => i.slug));
+      const brandNew = newHeadlines.filter(i => !existingSlugs.has(i.slug));
+      setNewCount(brandNew.length);
+      setTimeout(() => setNewCount(0), 5000); // Clear badge after 5s
+
+      setAllItems(merged);
       setLastUpdated(new Date());
       setLoading(false);
-      // Enrich in background and save to cache
-      enrichInBackground(headlines, cacheIdRef.current);
+
+      // Save merged to cache then enrich new items only
+      await saveToCache(merged, cacheIdRef.current);
+      if (brandNew.length > 0) {
+        enrichInBackground(brandNew, cacheIdRef.current, merged);
+      }
     } catch (err) {
       console.error('Intelligence feed error:', err?.message || err);
       setError(err?.message || 'Failed to load intelligence feed');
@@ -344,7 +376,7 @@ export default function IntelligenceFeed() {
       hasFetched.current = true;
       loadFeed();
     }
-    const interval = setInterval(() => loadFeed(true), 30 * 60 * 1000);
+    const interval = setInterval(() => loadFeed(true), 15 * 60 * 1000); // Every 15 min
     return () => clearInterval(interval);
   }, [loadFeed]);
 
@@ -361,25 +393,37 @@ export default function IntelligenceFeed() {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
           </div>
           <span className="font-semibold text-sm">Research Intelligence</span>
+          {newCount > 0 && (
+            <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-semibold">
+              +{newCount} new
+            </span>
+          )}
           {lastUpdated && (
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Times in {tzLabel}
+              Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {tzLabel}
             </span>
           )}
           {enriching && (
             <span className="text-xs text-primary/60 flex items-center gap-1 hidden sm:flex">
-              <RefreshCw className="w-3 h-3 animate-spin" /> Enriching analysis...
+              <RefreshCw className="w-3 h-3 animate-spin" /> Enriching...
             </span>
           )}
         </div>
-        <button
-          onClick={() => { setShowAll(false); loadFeed(true); }}
-          disabled={loading}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          {allItems.length > 0 && (
+            <span className="text-xs text-muted-foreground/40 hidden sm:inline">
+              {allItems.length} items
+            </span>
+          )}
+          <button
+            onClick={() => { setShowAll(false); loadFeed(true); }}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/30 scrollbar-hide">
@@ -410,7 +454,7 @@ export default function IntelligenceFeed() {
             <p className="text-xs text-muted-foreground/40">Scanning global macro developments</p>
           </div>
         ) : (
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             <motion.div key={activeBeat} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
               {visible.map((item, i) => <IntelligenceItem key={`${item.slug}-${i}`} item={item} index={i} />)}
             </motion.div>
