@@ -74,52 +74,51 @@ async function generateIntelligenceFeed() {
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const prompt = `You are a senior macro research analyst at Keystone Macro, a professional macro intelligence platform.
-Today is ${dateStr}, current time ${timeStr} BST.
+  const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, current time ${timeStr} BST.
 
-Generate 18 current, market-moving intelligence items covering major beats in global macro, markets, and geopolitics as of today.
-These should read like a professional trading desk briefing — sharp, specific, analytical.
+Generate 18 current market-moving intelligence items covering global macro, markets, and geopolitics.
+Write like a professional trading desk briefing — sharp, specific, analytical.
 
-CRITICAL RULES:
-- Write entirely in your own words. Do NOT reproduce any source text verbatim.
-- Use real, plausible market context. Be specific with levels, percentages, and names.
-- published_time must be a REAL time between 06:00 and ${timeStr} in HH:MM format — vary them realistically. No placeholders.
-- desk_view must be 2-3 sentences of analytical depth — what it means for markets, what to watch, what it signals.
-- what_to_watch must name specific instruments (e.g. "EUR/USD, Bund 10y, DAX").
-- Categories: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy.
-- Sentiment: positive, negative, or neutral.
+RULES:
+- Write entirely in your own words
+- Be specific with levels, percentages, names
+- published_time must be realistic HH:MM between 06:00 and ${timeStr}
+- desk_view must be 2-3 sentences of real analytical depth
+- what_to_watch must name specific instruments
+- Categories: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
+- Sentiment: positive, negative, or neutral
+- beat must be one of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
 
-Return ONLY valid JSON, no markdown, no preamble:
-{
-  "items": [
-    {
-      "headline": "string",
-      "category": "string",
-      "sentiment": "positive|negative|neutral",
-      "published_time": "HH:MM",
-      "impact": "string — one-line market impact",
-      "desk_view": "string — 2-3 sentence analytical view",
-      "what_to_watch": "string — specific instruments",
-      "beat": "macro|equities|us_economy|uk_economy|eu_economy|rates|commodities|fx|geopolitics|credit|tech"
+Respond with ONLY a JSON object, no markdown:
+{"items":[{"headline":"string","category":"string","sentiment":"string","published_time":"HH:MM","impact":"string","desk_view":"string","what_to_watch":"string","beat":"string"}]}`;
+
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt,
+    response_json_schema: {
+      type: "object",
+      properties: {
+        items: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              headline:       { type: "string" },
+              category:       { type: "string" },
+              sentiment:      { type: "string" },
+              published_time: { type: "string" },
+              impact:         { type: "string" },
+              desk_view:      { type: "string" },
+              what_to_watch:  { type: "string" },
+              beat:           { type: "string" }
+            }
+          }
+        }
+      }
     }
-  ]
-}`;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
-    }),
   });
 
-  const data = await response.json();
-  const text = data.content?.find(b => b.type === 'text')?.text || '';
-  const clean = text.replace(/```json|```/g, '').trim();
-  const parsed = JSON.parse(clean);
-  return parsed.items.map(item => ({
+  const items = result?.items || [];
+  return items.map(item => ({
     ...item,
     slug: generateSlug(item.headline),
     generated_at: new Date().toISOString()
