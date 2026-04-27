@@ -2,31 +2,43 @@ import React, { useState, useMemo } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Grid3X3, List, Clock, Filter, ArrowRight, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import LiveNewsFeed from '@/components/research/LiveNewsFeed';
-import NewsHub from '@/components/research/NewsHub';
+import IntelligenceFeed from '@/components/research/IntelligenceFeed';
 import TrendingThemes from '@/components/research/TrendingThemes';
-import ResearchNoteModal from '@/components/research/ResearchNoteModal';
 import { sampleNotes } from '@/lib/researchNotes';
 
-const categories = ['All', 'Macro', 'Equities', 'Fixed Income', 'Multi-Asset', 'Commodities', 'Wealth Strategy', 'Behavioural Finance', 'Risk Management', 'Trade Reviews'];
+const categories = [
+  'All', 'Macro', 'Equities', 'Fixed Income', 'Multi-Asset',
+  'Commodities', 'Wealth Strategy', 'Behavioural Finance',
+  'Risk Management', 'Trade Reviews'
+];
 
 const categoryColors = {
-  'Macro': 'bg-chart-1/10 text-chart-1',
-  'Multi-Asset': 'bg-chart-2/10 text-chart-2',
-  'Equities': 'bg-chart-3/10 text-chart-3',
-  'Wealth Strategy': 'bg-chart-4/10 text-chart-4',
-  'Fixed Income': 'bg-chart-5/10 text-chart-5',
-  'Commodities': 'bg-amber-400/10 text-amber-400',
+  'Macro':               'bg-chart-1/10 text-chart-1',
+  'Multi-Asset':         'bg-chart-2/10 text-chart-2',
+  'Equities':            'bg-chart-3/10 text-chart-3',
+  'Wealth Strategy':     'bg-chart-4/10 text-chart-4',
+  'Fixed Income':        'bg-chart-5/10 text-chart-5',
+  'Commodities':         'bg-amber-400/10 text-amber-400',
   'Behavioural Finance': 'bg-purple-400/10 text-purple-400',
-  'Risk Management': 'bg-red-400/10 text-red-400',
-  'Trade Reviews': 'bg-cyan-400/10 text-cyan-400',
+  'Risk Management':     'bg-red-400/10 text-red-400',
+  'Trade Reviews':       'bg-cyan-400/10 text-cyan-400',
 };
+
+function generateSlug(title) {
+  return title
+    ?.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim() || '';
+}
 
 function NoteCard({ note, viewMode, delay, onClick }) {
   return (
@@ -72,15 +84,15 @@ function NoteCard({ note, viewMode, delay, onClick }) {
 const INITIAL_VISIBLE = 6;
 
 export default function Research() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
-  const [selectedNote, setSelectedNote] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
-  const { data: dbNotes } = useQuery({
+  const { data: dbNotes = [] } = useQuery({
     queryKey: ['research-notes'],
-    queryFn: () => base44.entities.ResearchNote.list('-created_date', 50),
+    queryFn: () => base44.entities.ResearchNote.list('-publish_date', 100),
     initialData: [],
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000,
@@ -88,7 +100,6 @@ export default function Research() {
 
   const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
 
-  // Always sort most recent first
   const sorted = useMemo(() =>
     [...allNotes].sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date)),
     [allNotes]
@@ -97,60 +108,42 @@ export default function Research() {
   const filtered = useMemo(() => {
     setShowAll(false);
     return sorted.filter(note => {
-      const matchesSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = activeCategory === 'All' || note.category === activeCategory;
-      return matchesSearch && matchesCategory;
+      const matchSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
+      const matchCat = activeCategory === 'All' || note.category === activeCategory;
+      return matchSearch && matchCat;
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorted, search, activeCategory]);
 
   const featured = filtered.find(n => n.is_featured) || filtered[0];
-
   const nonFeatured = filtered.filter(n => n !== featured || search || activeCategory !== 'All');
   const visibleNotes = showAll ? nonFeatured : nonFeatured.slice(0, INITIAL_VISIBLE);
   const hasMore = nonFeatured.length > INITIAL_VISIBLE && !showAll;
   const isFiltering = search || activeCategory !== 'All';
+
+  const handleNoteClick = (note) => {
+    const slug = note.slug || generateSlug(note.title);
+    navigate(`/Research/${slug}`);
+  };
 
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* Header */}
-        <motion.div
-          className="mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Research & Intelligence</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl">
-            Live market intelligence, macro themes, and original research notes.
-          </p>
+          <p className="text-muted-foreground text-lg max-w-2xl">Live market intelligence, macro themes, and original research notes.</p>
         </motion.div>
 
-        {/* Intelligence Feed stacked above News by Beat */}
-        <motion.div
-          className="mb-8 space-y-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <LiveNewsFeed />
-          <NewsHub />
+        <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+          <IntelligenceFeed />
         </motion.div>
 
-        {/* Trending Themes */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
           <TrendingThemes />
         </motion.div>
 
-        {/* Research Notes Header */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
           <div>
             <h2 className="font-display text-2xl font-semibold">Research Notes</h2>
@@ -159,12 +152,7 @@ export default function Research() {
           <div className="flex gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search notes..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-10 glass border-border/30"
-              />
+              <Input placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 glass border-border/30" />
             </div>
             <Select value={activeCategory} onValueChange={setActiveCategory}>
               <SelectTrigger className="w-40 glass border-border/30">
@@ -172,9 +160,7 @@ export default function Research() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
+                {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
               </SelectContent>
             </Select>
             <div className="flex border border-border rounded-lg overflow-hidden shrink-0">
@@ -188,14 +174,11 @@ export default function Research() {
           </div>
         </div>
 
-        {/* Featured */}
         {featured && activeCategory === 'All' && !search && (
           <motion.div
             className="glass rounded-2xl p-8 mb-8 hover:border-primary/30 transition-all cursor-pointer glow-primary group"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => setSelectedNote(featured)}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            onClick={() => handleNoteClick(featured)}
           >
             <div className="flex items-start justify-between gap-4">
               <Badge className="bg-primary/10 text-primary border-0 mb-4">Featured</Badge>
@@ -212,22 +195,14 @@ export default function Research() {
           </motion.div>
         )}
 
-        {/* Notes Grid */}
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
           <AnimatePresence>
             {visibleNotes.map((note, i) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                viewMode={viewMode}
-                delay={i * 0.04}
-                onClick={() => setSelectedNote(note)}
-              />
+              <NoteCard key={note.id} note={note} viewMode={viewMode} delay={i * 0.04} onClick={() => handleNoteClick(note)} />
             ))}
           </AnimatePresence>
         </div>
 
-        {/* See More / See Less */}
         {nonFeatured.length > INITIAL_VISIBLE && !isFiltering && (
           <div className="flex justify-center mt-10">
             <button
@@ -247,11 +222,6 @@ export default function Research() {
           </div>
         )}
       </div>
-
-      {/* Note Reader Modal */}
-      {selectedNote && (
-        <ResearchNoteModal note={selectedNote} onClose={() => setSelectedNote(null)} />
-      )}
     </div>
   );
 }
