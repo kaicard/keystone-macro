@@ -29,7 +29,9 @@ const SENTIMENT_STYLES = {
 
 async function loadCachedItems() {
   try {
-    const results = await base44.entities.MarketCache.filter({ key: 'intelligenceFeed' });
+    const today = new Date().toISOString().split('T')[0];
+    const key = `intelligenceFeed_${today}`;
+    const results = await base44.entities.MarketCache.filter({ key });
     if (results?.length) return JSON.parse(results[0].payload);
   } catch (_) {}
   return [];
