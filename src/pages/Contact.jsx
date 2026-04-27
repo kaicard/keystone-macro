@@ -19,6 +19,7 @@ export default function Contact() {
     e.preventDefault();
     setLoading(true);
     await base44.entities.ContactMessage.create(form);
+    await base44.functions.invoke('sendContactEmail', form);
     setSubmitted(true);
     setLoading(false);
     toast({ title: 'Message sent', description: 'Thank you for reaching out. I\'ll get back to you shortly.' });
