@@ -192,7 +192,7 @@ export default function Newsletter() {
                 {/* Price */}
                 <div className="text-center mb-8">
                   <div className="flex items-end justify-center gap-1 mb-1">
-                    <span className="text-5xl font-bold">$19</span>
+                    <span className="text-5xl font-bold">£9</span>
                     <span className="text-2xl font-bold text-muted-foreground">.99</span>
                     <span className="text-muted-foreground mb-1">/month</span>
                   </div>
@@ -249,7 +249,7 @@ export default function Newsletter() {
                     onClick={() => checkSubscription(form.email)}
                   >
                     {loading ? 'Redirecting to checkout…' : (
-                      <>Subscribe — $19.99/month <ArrowRight className="w-4 h-4" /></>
+                      <>Subscribe — £9.99/month <ArrowRight className="w-4 h-4" /></>
                     )}
                   </Button>
                 </form>
