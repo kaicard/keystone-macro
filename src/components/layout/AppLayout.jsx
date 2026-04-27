@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
+import FloatingChat from './FloatingChat';
 
 export default function AppLayout() {
   return (
@@ -16,6 +17,7 @@ export default function AppLayout() {
           </PageTransition>
         </main>
         <Footer />
+        <FloatingChat />
       </div>
     </ThemeProvider>
   );

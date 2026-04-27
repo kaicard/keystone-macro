@@ -1,0 +1,189 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
+import { Sparkles, X, Send, RotateCcw, Maximize2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+
+const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics. Give direct, institutional-grade analysis. Be concise but substantive. Use markdown sparingly — this is a chat widget so keep responses focused and readable. Reference specific data and levels where relevant.`;
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-3 py-2">
+      {[0, 1, 2].map(i => (
+        <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60"
+          animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }} />
+      ))}
+    </div>
+  );
+}
+
+export default function FloatingChat() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading, open]);
+
+  const buildHistory = (msgs) =>
+    msgs.map(m => `${m.role === 'user' ? 'USER' : 'ANALYST'}: ${m.content}`).join('\n\n');
+
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    const newMsgs = [...messages, { role: 'user', content: text }];
+    setMessages(newMsgs);
+    setLoading(true);
+
+    const history = buildHistory(messages);
+    const prompt = `${SYSTEM_PROMPT}\n\n${history ? `HISTORY:\n${history}\n\n` : ''}USER: ${text}\n\nRespond concisely as the Keystone Macro analyst. 2-4 sentences max unless the question requires more depth.`;
+
+    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'claude_sonnet_4_6' });
+    const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
+    setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    setLoading(false);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  return (
+    <>
+      {/* Floating button */}
+      <AnimatePresence>
+        {!open && (
+          <motion.button
+            onClick={() => setOpen(true)}
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 transition-transform"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Sparkles className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Chat panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] flex flex-col glass-strong rounded-2xl shadow-2xl shadow-black/30 overflow-hidden border border-border/50"
+            style={{ height: '520px' }}
+            initial={{ opacity: 0, scale: 0.85, y: 30, originX: 1, originY: 1 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 30 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-card/50 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Keystone AI</p>
+                  <p className="text-[10px] text-muted-foreground">Senior Macro Analyst</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <button onClick={() => setMessages([])} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <button onClick={() => { setOpen(false); navigate('/AI'); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="font-semibold text-sm mb-1">Ask the Desk</p>
+                  <p className="text-xs text-muted-foreground mb-4">Macro analysis, market views, positioning ideas</p>
+                  <div className="space-y-2 w-full">
+                    {["Fed policy and duration risk?", "Oil supply and geopolitical premium?", "Best EM trades right now?"].map(q => (
+                      <button key={q} onClick={() => { setInput(q); }} className="w-full text-left text-xs text-muted-foreground hover:text-foreground glass rounded-lg px-3 py-2 transition-colors">
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {msg.role === 'assistant' && (
+                    <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <Sparkles className="w-3 h-3 text-primary" />
+                    </div>
+                  )}
+                  <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                    msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'glass rounded-tl-sm'
+                  }`}>
+                    {msg.role === 'user' ? (
+                      <p>{msg.content}</p>
+                    ) : (
+                      <ReactMarkdown className="prose prose-xs dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0 [&_strong]:text-foreground">
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="flex gap-2 justify-start">
+                  <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                  </div>
+                  <div className="glass rounded-xl rounded-tl-sm">
+                    <TypingDots />
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input */}
+            <div className="border-t border-border/30 p-3 bg-card/30 shrink-0">
+              <div className="flex gap-2 items-end">
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKey}
+                  placeholder="Ask about markets, macro, positioning…"
+                  rows={1}
+                  className="flex-1 resize-none bg-muted/40 rounded-xl px-3 py-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring border border-border/30 min-h-[36px] max-h-24"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || loading}
+                  className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 disabled:opacity-40 hover:bg-primary/90 transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}

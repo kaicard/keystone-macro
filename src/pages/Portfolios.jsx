@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Shield, TrendingUp, Target, Umbrella, GraduationCap, BarChart3, Sliders, Globe, Coins, Leaf, Building2 } from 'lucide-react';
+import { Shield, TrendingUp, Target, Umbrella, GraduationCap, BarChart3, Globe, Leaf, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import PortfolioBuilder from '@/components/portfolios/PortfolioBuilder';
 import PortfolioCard from '@/components/portfolios/PortfolioCard';
 import ScenarioSimulator from '@/components/portfolios/ScenarioSimulator';
+import WealthCasesTab from '@/components/portfolios/WealthCasesTab';
 
 const modelPortfolios = [
   {
@@ -182,10 +183,11 @@ export default function Portfolios() {
         </motion.div>
 
         <Tabs defaultValue="models" className="space-y-8">
-          <TabsList className="glass border-border/30">
+          <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
             <TabsTrigger value="models">Model Portfolios</TabsTrigger>
             <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
             <TabsTrigger value="simulator">Scenario Simulator</TabsTrigger>
+            <TabsTrigger value="wealth">Wealth Cases</TabsTrigger>
           </TabsList>
 
           <TabsContent value="models">
@@ -241,6 +243,10 @@ export default function Portfolios() {
 
           <TabsContent value="simulator">
             <ScenarioSimulator />
+          </TabsContent>
+
+          <TabsContent value="wealth">
+            <WealthCasesTab />
           </TabsContent>
         </Tabs>
       </div>

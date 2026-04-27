@@ -16,6 +16,7 @@ import CreditAndCurve from '@/components/marketpulse/CreditAndCurve';
 import LiveTickerBar from '@/components/marketpulse/LiveTickerBar';
 import InstrumentChartModal from '@/components/marketpulse/InstrumentChartModal';
 import PerformanceChart from '@/components/marketpulse/PerformanceChart';
+import TradeIdeas from '@/components/marketpulse/TradeIdeas';
 
 function fmtPrice(price, name) {
   if (price == null) return '—';
@@ -221,6 +222,7 @@ export default function MarketPulse() {
                 <TabsTrigger value="commodities">Commodities</TabsTrigger>
                 <TabsTrigger value="fx">FX</TabsTrigger>
                 <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                <TabsTrigger value="tradeideas">Trade Ideas</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
@@ -323,6 +325,10 @@ export default function MarketPulse() {
 
               <TabsContent value="crypto">
                 <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+              </TabsContent>
+
+              <TabsContent value="tradeideas">
+                <TradeIdeas />
               </TabsContent>
             </Tabs>
           </motion.div>

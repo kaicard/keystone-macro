@@ -40,6 +40,23 @@ const SENTIMENT_DOT = {
   neutral:  'bg-amber-400/60',
 };
 
+// Timezone helpers
+function getLocalTzLabel() {
+  try {
+    const parts = Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(new Date());
+    return parts.find(p => p.type === 'timeZoneName')?.value || 'Local';
+  } catch { return 'Local'; }
+}
+
+function utcTimeToLocal(utcTimeStr) {
+  if (!utcTimeStr) return null;
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const dt = new Date(`${today}T${utcTimeStr}:00Z`);
+    return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  } catch { return utcTimeStr; }
+}
+
 function generateSlug(headline) {
   return headline?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 80).trim() || '';
 }
@@ -73,27 +90,30 @@ async function generateIntelligenceFeed() {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const tzLabel = getLocalTzLabel();
 
-  const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, current time ${timeStr} BST.
+  const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, current time ${timeStr} ${tzLabel}.
 
-Generate 18 current market-moving intelligence items covering global macro, markets, and geopolitics.
-Write like a professional trading desk briefing — sharp, specific, analytical.
+Generate exactly 20 market-moving intelligence items covering global macro, markets, and geopolitics. Write like a Goldman Sachs or JPMorgan trading desk morning note — sharp, specific, data-driven.
 
-RULES:
-- Write entirely in your own words
-- Be specific with levels, percentages, names
-- published_time must be realistic HH:MM between 06:00 and ${timeStr}
-- desk_view must be 2-3 sentences of real analytical depth
-- what_to_watch must name specific instruments
-- Categories: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
-- Sentiment: positive, negative, or neutral
-- beat must be one of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
+STRICT REQUIREMENTS FOR EACH ITEM:
+- headline: Sharp, specific, professional — include specific levels/percentages/names (e.g. "US 10-year Treasury yields breach 4.65% as Fed minutes signal higher-for-longer policy stance")
+- category: Must be one of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
+- sentiment: positive, negative, or neutral
+- published_time_utc: UTC time as HH:MM between 06:00 and ${timeStr} UTC. Spread realistically across the trading day.
+- impact: EXACTLY 2-3 sentences. Must cover: (1) what happened specifically with data, (2) immediate market reaction with specific moves, (3) what it signals for the coming sessions.
+- desk_view: EXACTLY 4-5 sentences covering: (1) the specific development and its context, (2) why it matters structurally for markets, (3) what the market reaction has been and positioning implications, (4) what to watch in the next 24-48 hours, (5) what this signals for the broader macro picture and cross-asset implications.
+- what_to_watch: List EXACTLY 4-5 specific instruments with a brief reason for each, formatted as: "INSTRUMENT (reason); INSTRUMENT (reason); ..."
+- beat: One of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
 
-Respond with ONLY a JSON object, no markdown:
-{"items":[{"headline":"string","category":"string","sentiment":"string","published_time":"HH:MM","impact":"string","desk_view":"string","what_to_watch":"string","beat":"string"}]}`;
+Cover a broad range of beats. Include items across US, EU, UK, EM, Asia. Be specific with company names, bond tenors, FX pairs, commodity contracts.
+
+Respond ONLY with valid JSON:
+{"items":[{"headline":"string","category":"string","sentiment":"string","published_time_utc":"HH:MM","impact":"string","desk_view":"string","what_to_watch":"string","beat":"string"}]}`;
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt,
+    model: 'claude_sonnet_4_6',
     response_json_schema: {
       type: "object",
       properties: {
@@ -102,14 +122,14 @@ Respond with ONLY a JSON object, no markdown:
           items: {
             type: "object",
             properties: {
-              headline:       { type: "string" },
-              category:       { type: "string" },
-              sentiment:      { type: "string" },
-              published_time: { type: "string" },
-              impact:         { type: "string" },
-              desk_view:      { type: "string" },
-              what_to_watch:  { type: "string" },
-              beat:           { type: "string" }
+              headline:            { type: "string" },
+              category:            { type: "string" },
+              sentiment:           { type: "string" },
+              published_time_utc:  { type: "string" },
+              impact:              { type: "string" },
+              desk_view:           { type: "string" },
+              what_to_watch:       { type: "string" },
+              beat:                { type: "string" }
             }
           }
         }
@@ -118,11 +138,15 @@ Respond with ONLY a JSON object, no markdown:
   });
 
   const items = result?.items || [];
-  return items.map(item => ({
-    ...item,
-    slug: generateSlug(item.headline),
-    generated_at: new Date().toISOString()
-  }));
+  return items
+    .map(item => ({
+      ...item,
+      published_time: item.published_time_utc,
+      published_time_local: utcTimeToLocal(item.published_time_utc),
+      slug: generateSlug(item.headline),
+      generated_at: new Date().toISOString()
+    }))
+    .sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
 }
 
 function IntelligenceItem({ item, index }) {
@@ -130,12 +154,14 @@ function IntelligenceItem({ item, index }) {
   const navigate = useNavigate();
   const catStyle = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
   const sentDot = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
+  const tzLabel = getLocalTzLabel();
+  const displayTime = item.published_time_local || item.published_time;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: index * 0.03 }}
+      transition={{ duration: 0.2, delay: index * 0.025 }}
       className="border-b border-border/20 last:border-0"
     >
       <button className="w-full text-left px-5 py-4 hover:bg-muted/10 transition-colors group" onClick={() => setExpanded(e => !e)}>
@@ -144,9 +170,11 @@ function IntelligenceItem({ item, index }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <Badge variant="outline" className={`text-[10px] py-0 px-1.5 border shrink-0 ${catStyle}`}>{item.category}</Badge>
-              {item.published_time && (
+              {displayTime && (
                 <span className="text-xs text-muted-foreground/50 font-mono flex items-center gap-1">
-                  <Clock className="w-3 h-3" />{item.published_time}
+                  <Clock className="w-3 h-3" />
+                  {displayTime}
+                  <span className="text-muted-foreground/30 text-[10px] ml-0.5">{tzLabel}</span>
                 </span>
               )}
             </div>
@@ -171,14 +199,26 @@ function IntelligenceItem({ item, index }) {
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 pl-10 mr-4 space-y-3">
+              {item.impact && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide mb-1.5">Impact</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.impact}</p>
+                </div>
+              )}
               <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
                 <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-1.5">Desk View</p>
                 <p className="text-sm text-foreground/90 leading-relaxed">{item.desk_view}</p>
               </div>
               {item.what_to_watch && (
-                <div className="flex gap-2 items-start">
-                  <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide shrink-0 pt-0.5">Watch</span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.what_to_watch}</p>
+                <div className="bg-muted/20 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1.5">Instruments to Watch</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.what_to_watch.split(';').map((w, i) => w.trim() && (
+                      <span key={i} className="text-xs bg-accent/10 text-accent/90 border border-accent/20 px-2 py-0.5 rounded-full">
+                        {w.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
               <div className="flex items-center justify-between">
@@ -206,7 +246,7 @@ export default function IntelligenceFeed() {
   const [showAll, setShowAll] = useState(false);
   const cacheIdRef = useRef(null);
   const hasFetched = useRef(false);
-  const INITIAL_VISIBLE = 8;
+  const INITIAL_VISIBLE = 10;
 
   const loadFeed = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -215,7 +255,9 @@ export default function IntelligenceFeed() {
         const { data: cached, recordId } = await loadFromCache();
         if (cached?.length) {
           cacheIdRef.current = recordId;
-          setAllItems(cached);
+          // Re-sort cached items newest first
+          const sorted = [...cached].sort((a, b) => (b.published_time_utc || b.published_time || '').localeCompare(a.published_time_utc || a.published_time || ''));
+          setAllItems(sorted);
           setLastUpdated(new Date());
           setLoading(false);
           return;
@@ -244,6 +286,7 @@ export default function IntelligenceFeed() {
 
   const filtered = activeBeat === 'all' ? allItems : allItems.filter(item => item.beat === activeBeat);
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
+  const tzLabel = getLocalTzLabel();
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -256,7 +299,7 @@ export default function IntelligenceFeed() {
           <span className="font-semibold text-sm">Research Intelligence</span>
           {lastUpdated && (
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              Updated {lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Times in {tzLabel}
             </span>
           )}
         </div>
