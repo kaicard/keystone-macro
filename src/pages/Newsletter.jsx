@@ -268,42 +268,85 @@ export default function Newsletter() {
 
         {/* Recent editions — subscribers only */}
         {editions.length > 0 && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-2xl font-semibold">Recent Editions</h2>
-              {!isSubscribed && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Lock className="w-3.5 h-3.5" />
-                  Subscribers only
-                </div>
-              )}
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-display text-3xl font-semibold">Recent Editions</h2>
+              </div>
+              <p className="text-muted-foreground text-sm">Latest market analysis and research insights</p>
             </div>
+
             {isSubscribed ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {editions.map(ed => (
-                  <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="glass rounded-xl p-5 hover:border-primary/20 transition-all group">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                        {ed.edition_type === 'morning' ? <Sun className="w-3.5 h-3.5 text-primary" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
+              <div className="space-y-4">
+                {editions.map((ed, idx) => (
+                  <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="group block">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="border border-border/40 rounded-2xl p-7 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm"
+                    >
+                      <div className="flex items-start justify-between gap-6">
+                        <div className="flex-1 min-w-0">
+                          {/* Header with type and date */}
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/5 border border-primary/10">
+                              {ed.edition_type === 'morning' ? (
+                                <>
+                                  <Sun className="w-3.5 h-3.5 text-primary" />
+                                  <span className="text-xs font-semibold text-primary">Morning Brief</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Moon className="w-3.5 h-3.5 text-primary" />
+                                  <span className="text-xs font-semibold text-primary">Evening Wrap</span>
+                                </>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground/60">{ed.publish_date}</span>
+                          </div>
+
+                          {/* Title */}
+                          <h3 className="font-display text-xl font-semibold leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                            {ed.title}
+                          </h3>
+
+                          {/* Market snapshot preview */}
+                          {ed.market_summary && (
+                            <p className="text-sm text-muted-foreground/80 line-clamp-2 mb-4 leading-relaxed">
+                              {ed.market_summary}
+                            </p>
+                          )}
+
+                          {/* Read more link */}
+                          <div className="inline-flex items-center gap-2 text-sm text-primary/70 group-hover:text-primary transition-colors">
+                            <span className="font-medium">Read full edition</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+
+                        {/* Visual accent */}
+                        <div className="hidden sm:flex items-center justify-center w-20 h-20 rounded-xl bg-primary/5 border border-primary/10 shrink-0">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-primary">{ed.tags?.length || 0}</div>
+                            <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">Topics</div>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-xs text-muted-foreground capitalize">{ed.edition_type} Edition · {ed.publish_date}</span>
-                    </div>
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-2 line-clamp-2">{ed.title}</h3>
-                    {ed.market_summary && <p className="text-xs text-muted-foreground line-clamp-2">{ed.market_summary}</p>}
-                    <div className="flex items-center gap-1 mt-3 text-xs text-primary/70">
-                      Read <ChevronRight className="w-3 h-3" />
-                    </div>
+                    </motion.div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="glass rounded-2xl p-10 text-center border border-border/50">
-                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-                  <Lock className="w-5 h-5 text-muted-foreground" />
+              <div className="glass rounded-2xl p-12 text-center border border-border/50">
+                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-6">
+                  <Lock className="w-6 h-6 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold mb-2">Subscriber Access Only</h3>
-                <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">The full edition archive is available exclusively to active subscribers. Subscribe above to unlock every edition.</p>
-                <p className="text-xs text-muted-foreground/60">Already subscribed? Enter your email in the form above to verify access.</p>
+                <h3 className="font-display text-xl font-semibold mb-3">Premium Editions</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto leading-relaxed">Subscribe to access the complete archive of every edition, including full market analysis, trade ideas, and desk commentary.</p>
+                <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="mx-auto">
+                  View Subscription Plans
+                </Button>
               </div>
             )}
           </div>
