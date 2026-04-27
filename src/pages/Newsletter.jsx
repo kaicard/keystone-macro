@@ -279,64 +279,67 @@ export default function Newsletter() {
 
             {isSubscribed ? (
               <div className="space-y-4">
-                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) => (
-                  <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="group block">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="border border-border/40 rounded-2xl p-7 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm"
-                    >
-                      <div className="flex items-start justify-between gap-6">
-                        <div className="flex-1 min-w-0">
-                          {/* Header with type and date */}
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/5 border border-primary/10">
-                              {ed.edition_type === 'morning' ? (
-                                <>
-                                  <Sun className="w-3.5 h-3.5 text-primary" />
-                                  <span className="text-xs font-semibold text-primary">Morning Brief</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Moon className="w-3.5 h-3.5 text-primary" />
-                                  <span className="text-xs font-semibold text-primary">Evening Wrap</span>
-                                </>
-                              )}
-                            </div>
+                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) => {
+                  const marketItems = ed.market_summary ? ed.market_summary.split(' · ').slice(0, 3) : [];
+                  return (
+                    <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="group block">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="border border-border/40 rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm"
+                      >
+                        {/* Header section */}
+                        <div className="px-7 pt-7 pb-5 border-b border-border/20">
+                          <div className="flex items-center gap-2 mb-3">
+                            {ed.edition_type === 'morning' ? (
+                              <>
+                                <Sun className="w-3.5 h-3.5 text-primary" />
+                                <span className="text-xs font-semibold text-primary">Morning Brief</span>
+                              </>
+                            ) : (
+                              <>
+                                <Moon className="w-3.5 h-3.5 text-primary" />
+                                <span className="text-xs font-semibold text-primary">Evening Wrap</span>
+                              </>
+                            )}
+                            <span className="text-xs text-muted-foreground/50">·</span>
                             <span className="text-xs text-muted-foreground/60">{ed.publish_date}</span>
                           </div>
-
-                          {/* Title */}
-                          <h3 className="font-display text-xl font-semibold leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="font-display text-2xl font-semibold leading-tight group-hover:text-primary transition-colors">
                             {ed.title}
                           </h3>
+                        </div>
 
-                          {/* Market snapshot preview */}
-                          {ed.market_summary && (
-                            <p className="text-sm text-muted-foreground/80 line-clamp-2 mb-4 leading-relaxed">
-                              {ed.market_summary}
-                            </p>
-                          )}
+                        {/* Market snapshot */}
+                        {marketItems.length > 0 && (
+                          <div className="px-7 py-5 bg-muted/30 border-b border-border/20">
+                            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Market Snapshot</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              {marketItems.map((item, i) => (
+                                <div key={i} className="text-sm">
+                                  <div className="text-muted-foreground/70 text-xs mb-1">{item.split(':')[0]?.trim()}</div>
+                                  <div className="font-semibold text-foreground">{item.split(':')[1]?.trim()}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                          {/* Read more link */}
-                          <div className="inline-flex items-center gap-2 text-sm text-primary/70 group-hover:text-primary transition-colors">
-                            <span className="font-medium">Read full edition</span>
+                        {/* Footer - Read more */}
+                        <div className="px-7 py-5 flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm text-primary/70 group-hover:text-primary transition-colors font-medium">
+                            Read full edition
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </div>
+                          {ed.tags && ed.tags.length > 0 && (
+                            <div className="text-xs text-muted-foreground/60">{ed.tags.length} sections</div>
+                          )}
                         </div>
-
-                        {/* Visual accent */}
-                        <div className="hidden sm:flex items-center justify-center w-20 h-20 rounded-xl bg-primary/5 border border-primary/10 shrink-0">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-primary">{ed.tags?.length || 0}</div>
-                            <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">Topics</div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                ))}
+                      </motion.div>
+                    </Link>
+                  );
+                })}
                 {!showAllEditions && editions.length > 4 && (
                   <motion.button
                     initial={{ opacity: 0 }}
