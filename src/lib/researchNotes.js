@@ -2,7 +2,206 @@
 // read_time_minutes is calculated at ~200 words per minute
 
 export const sampleNotes = [
-  // ── March 2026 — most recent first ──────────────────────────────────────
+  // ── April 2026 — most recent first ──────────────────────────────────────
+  {
+    id: 24,
+    title: 'Dollar Weakness: Structural Shift or Tactical Opportunity?',
+    subtitle: 'The DXY is at multi-year lows — what is driving it and how long does it last',
+    category: 'FX',
+    tags: ['USD', 'DXY', 'FX', 'Dollar', 'Global Macro'],
+    publish_date: '2026-04-24',
+    read_time_minutes: 6,
+    is_featured: true,
+    executive_summary: 'The US dollar has weakened materially in April, with the DXY testing its lowest levels since 2022. The driver is not a single factor but a confluence of eroding US exceptionalism, fiscal credibility concerns, and repositioning away from USD assets. We assess whether this is the beginning of a structural dollar bear market.',
+    body: `## The Dollar's April Reversal
+
+The DXY has fallen approximately 4-5% in April alone — a significant move for the world's reserve currency. This is not the typical Fed-driven dollar move. It is happening as US growth is being downgraded, as tariff policy creates uncertainty about the attractiveness of US assets, and as foreign investors question whether the traditional "safe haven" premium on USD assets is still deserved.
+
+## Three Drivers, One Direction
+
+**1. The US Fiscal Credibility Premium is Eroding**
+
+For decades, the USD has benefited from a credibility premium — the belief that the US will honour its debts, maintain institutional independence, and remain the global reserve anchor. Recent events — threats to Fed independence, trade policy unpredictability, and fiscal deficits showing no sign of consolidation — are chipping at this premium. Foreign central banks that have historically recycled surpluses into USD assets are quietly diversifying.
+
+**2. Growth Differential Compression**
+
+The USD bull cycle of 2022-2025 was powered by US growth outperformance. As tariff headwinds weigh on US growth and Europe's fiscal expansion supports European growth (see our March Germany note), the growth differential that justified USD strength is compressing. A world where the US grows at 1.7% and Europe grows at 1.5-1.8% is not a world that supports a strong dollar.
+
+**3. Positioning and Flows**
+
+CFTC data shows speculative long-USD positioning has unwound sharply. When a crowded trade reverses, the move is non-linear. The technical picture — DXY breaking below 100 — is also triggering systematic selling.
+
+## Asset Class Implications
+
+**EUR/USD:** The move to 1.12-1.15 that we flagged in our Germany note is now the base case. The fiscal pivot in Europe combined with dollar weakness is a powerful combination for EUR.
+
+**Gold:** Dollar weakness is structurally positive for gold. Every 1% fall in the DXY typically corresponds to a 1-2% rise in gold. At $3,200+, gold is reflecting both dollar weakness and geopolitical risk premium.
+
+**EM:** Dollar weakness is a significant tailwind for EM assets — it reduces the cost of USD-denominated debt service and supports capital flows into higher-yielding EM assets. Watch BRL, INR, and ZAR as beneficiaries.
+
+**UK:** GBP/USD has broken above 1.32. Our 1.33-1.35 target is now in play. UK assets look relatively attractive on a currency-adjusted basis for international investors.
+
+## Is This Structural?
+
+We think it is — with caveats. The structural case for dollar weakness rests on:
+- Deteriorating US fiscal credibility
+- Compression of growth differentials
+- Diversification of reserve currencies (EUR, gold, potentially CNY)
+
+The tactical caveat: if global risk sentiment deteriorates sharply (recession fears), the USD historically rallies as a safe haven regardless of fundamentals. Do not be maximum short USD without hedging for tail risk.`,
+    key_risks: 'Global risk-off event triggers flight to USD safety regardless of fundamentals; Fed signals hawkishness that re-widens the rate differential; US growth outperforms expectations, restoring exceptionalism narrative.',
+    takeaway: 'Dollar weakness looks structural, not tactical. Add EUR/USD upside, consider gold as a USD hedge, and favour EM assets with USD-denominated debt. Reduce USD cash overweights.',
+    what_would_change_mind: 'Three consecutive months of US data significantly outperforming European data; or a global risk event that forces USD safe-haven demand regardless of the structural picture.',
+  },
+  {
+    id: 23,
+    title: 'Tariff Impact: Q1 Earnings Season Reality Check',
+    subtitle: 'What corporate America is actually saying about tariff costs — and what it means for the rest of 2026',
+    category: 'Equities',
+    tags: ['Earnings', 'Tariffs', 'US Equities', 'Corporate', 'Margins'],
+    publish_date: '2026-04-17',
+    read_time_minutes: 7,
+    executive_summary: 'Q1 2026 earnings season is providing the first hard data on tariff pass-through, margin compression, and demand destruction. The picture is nuanced — consumer-facing companies are struggling while defence, energy, and domestically-oriented services are holding up. We analyse the divergence and update our sector views.',
+    body: `## The Earnings Scorecard
+
+Q1 2026 earnings are revealing a bifurcated corporate landscape. The aggregate numbers look reasonable — S&P 500 EPS tracking approximately 5% growth YoY — but this masks a dramatic split between sectors exposed to tariff headwinds and those insulated from them.
+
+## The Losers: Goods-Intensive Consumer and Retail
+
+Companies with significant import exposure from China, Mexico, and Canada are reporting material margin compression. Several large-cap consumer discretionary companies have withdrawn full-year guidance, citing inability to forecast the tariff impact trajectory.
+
+Key themes from management calls:
+- **Pass-through is partial and slow:** Companies are absorbing 40-60% of tariff costs at the margin level rather than raising prices in full, fearing demand destruction.
+- **Inventory pre-loading masking current quarter:** Many companies pulled forward orders before April 1 tariff deadlines. Q2 will show the true inventory correction as pre-loaded stock is drawn down.
+- **China alternatives are limited:** Even companies that have been diversifying away from China for 3+ years report that full supply chain migration takes 18-36 months minimum.
+
+## The Winners: Services, Defence, Domestic Infrastructure
+
+Services businesses — financial services, software, healthcare services — are largely insulated from goods tariffs. These companies are seeing no input cost inflation and, in some cases, are benefiting as customers seek domestically produced alternatives.
+
+Defence sector Q1 results have been uniformly strong, with backlog growth accelerating as NATO members increase procurement commitments.
+
+## The Hidden Q2 Risk
+
+The most important takeaway from Q1 calls is the inventory pre-loading distortion. Q1 numbers look better than Q2 will — companies accelerated purchases before tariff deadlines, pulling demand forward. Q2 will face:
+- Inventory drawdown (lower new orders)
+- Full tariff rate on new imports
+- Continued margin compression as pricing power is tested
+
+## Valuation Implications
+
+At 19-20x forward P/E, the S&P 500 is pricing in a soft-landing scenario where tariffs cause modest disruption but not material earnings deterioration. This requires:
+1. Tariff rates to moderate (some evidence of this with pauses and negotiations)
+2. Consumer demand to prove resilient
+3. Supply chains to adapt faster than currently indicated
+
+If any of these assumptions prove too optimistic — which Q2 earnings will reveal — the valuation case for US equities weakens materially.`,
+    key_risks: 'Q2 earnings reveal deeper tariff impact than Q1; guidance withdrawals accelerate, creating a vacuum of forward information; consumer confidence deteriorates as price increases pass through; credit conditions tighten for leveraged consumer-facing companies.',
+    takeaway: 'Rotate within equities: reduce consumer discretionary and goods-exposed retail, add services, defence, and domestically-oriented industrials. Watch Q2 earnings closely — the true tariff impact is still ahead of us.',
+    what_would_change_mind: 'A material tariff reduction deal that restores supply chain visibility; or Q2 results demonstrating that pass-through is occurring without meaningful demand destruction, validating the soft-landing thesis.',
+  },
+  {
+    id: 22,
+    title: 'Oil at $65: Demand Destruction or OPEC+ Miscalculation?',
+    subtitle: 'Crude is testing multi-year lows — dissecting the supply, demand, and geopolitical picture',
+    category: 'Commodities',
+    tags: ['Oil', 'Crude', 'OPEC', 'Energy', 'Commodities'],
+    publish_date: '2026-04-10',
+    read_time_minutes: 6,
+    executive_summary: 'Brent crude has fallen toward $65/bbl — its lowest level since 2021. OPEC+ has surprised markets with a production increase even as global demand growth slows. We assess the supply-demand balance, the OPEC+ strategy, and the cross-asset implications of sustained lower oil prices.',
+    body: `## The Selloff in Context
+
+Brent crude has fallen approximately 15% year-to-date, driven by three simultaneous headwinds: OPEC+ increasing supply faster than expected, tariff-driven demand uncertainty weighing on the global growth outlook, and a strong dollar period (which compresses dollar-denominated commodity prices).
+
+The market is now asking: is $65 a floor or a waystation?
+
+## OPEC+ Strategy: Discipline Breaking Down?
+
+The surprise April OPEC+ decision to increase production by 411,000 barrels/day — larger than expected — appears to reflect two dynamics:
+
+**1. Internal Pressure from Saudi Arabia:** Saudi Arabia's fiscal breakeven is estimated at $85-90/bbl. At $65, the kingdom is running significant fiscal deficits that cannot be sustained long-term without either cutting production or drawing down reserves. Yet Saudi has chosen to increase production — suggesting a decision to trade short-term revenue for market share, potentially targeting US shale economics.
+
+**2. Non-compliance from Members:** Several OPEC+ members — Iraq, UAE, Kazakhstan — have been producing above their quotas. The formal production increase may partly reflect the reality of what is already happening, formalising overproduction rather than adding genuinely new barrels.
+
+## Demand: Genuine Weakness or Temporary?
+
+The demand picture is more nuanced than headlines suggest:
+
+- **China:** Petroleum demand growth is slowing but not collapsing. EV penetration is reducing gasoline demand but diesel and jet fuel remain robust.
+- **US:** Tariff uncertainty is weighing on industrial demand. ISM Manufacturing PMI new orders components have weakened.
+- **India:** The one positive — Indian crude demand is growing at 3-4% YoY as industrialisation accelerates.
+
+Net demand growth globally is running at approximately 800,000 barrels/day — below the 1.2M consensus at the start of 2026.
+
+## Cross-Asset Implications
+
+**Energy equities:** Integrated majors (Shell, BP, ExxonMobil) are under margin pressure below $75/bbl. At $65, free cash flow generation is impaired and dividend sustainability comes into question for some. E&P companies with higher cost structures face more acute pressure.
+
+**Inflation:** Lower oil is a meaningful disinflationary impulse — each $10 fall in crude reduces headline CPI by approximately 0.2-0.3% with a 2-3 month lag. This gives the Fed and BOE slightly more room to cut rates.
+
+**US Shale:** Many US shale producers have breakevens of $55-65/bbl. At $65, new drilling activity slows materially — which over 6-12 months reduces supply, creating a potential price floor.
+
+## Our View
+
+We see $60-65 as a technical support zone. Below $60, US shale economics are impaired, OPEC+ members face intolerable fiscal pressure, and the probability of an emergency production cut rises. Above $70, global demand dynamics do not currently justify the price.
+
+Tactical: we are neutral on energy equities but watching for a mean-reversion trade above $70 if demand data stabilises.`,
+    key_risks: 'Global recession materialises, collapsing demand well below current estimates; OPEC+ abandons all discipline in a market-share war; US shale proves more resilient to low prices than expected, adding supply; Iran deal restores Iranian barrels to market.',
+    takeaway: 'Oil at $65 is disinflationary (positive for rates) but negative for energy equities and oil-dependent sovereigns. Watch $60 as the key support level. A demand recovery or OPEC+ reversal could provide a tactical long opportunity, but the structural trend is not bullish.',
+    what_would_change_mind: 'A formal OPEC+ production cut announcement; or evidence of significant global demand recovery, particularly from China industrial activity surprising to the upside.',
+  },
+  {
+    id: 21,
+    title: 'Recession Risk: How to Read the Signals in Real Time',
+    subtitle: 'A framework for monitoring recession probability across the indicators that matter',
+    category: 'Macro',
+    tags: ['Recession', 'Leading Indicators', 'US Economy', 'Risk', 'Framework'],
+    publish_date: '2026-04-03',
+    read_time_minutes: 7,
+    executive_summary: 'With the Atlanta Fed GDPNow tracker showing near-zero US growth and tariff uncertainty at its peak, recession probability estimates have risen sharply. We set out our real-time monitoring framework — which indicators to watch, how to weight them, and what the current composite signal says.',
+    body: `## The Recession Probability Debate
+
+As of early April 2026, Wall Street recession probability estimates range from 25% (JP Morgan) to 60% (Goldman Sachs, conditional on tariff escalation). This spread reflects genuine uncertainty, not analytical failure. When policy is the primary risk variable, standard economic models — which are calibrated to historical relationships between economic variables — lose predictive power.
+
+What we need is a real-time indicator framework that is less model-dependent and more signal-driven.
+
+## The Five Indicators We Watch Most Closely
+
+**1. The Yield Curve (2Y/10Y Spread)**
+Currently: Re-steepening after 18 months of inversion. The re-steepening itself is a warning — historically, the recession begins not when the curve is most inverted but when it re-steepens from inversion. The market is pricing in Fed cuts as the growth outlook deteriorates.
+
+**2. Credit Spreads (IG and HY OAS)**
+Currently: IG spreads have widened to ~110bps; HY to ~380bps. These are above cycle lows but not at levels consistent with imminent recession (typically >500bps on HY). Credit markets are pricing deterioration, not crisis.
+
+**3. Initial Jobless Claims (Weekly)**
+Currently: Claims have ticked up from cycle lows of 220K to ~245K. Not alarming, but directionally consistent with labour market softening. We watch for a sustained move above 260-270K as the threshold that signals meaningful deterioration.
+
+**4. ISM Manufacturing PMI**
+Currently: 49.0 — contraction territory but barely. The sub-indices matter more than the headline: new orders (forward-looking) are at 45, the weakest since the 2023 mini-downturn. If new orders fall below 40, manufacturing recession is confirmed.
+
+**5. Consumer Spending Real-Time Data**
+Currently: Credit card spending data (tracked by BAC and JPMorgan) shows spending growth decelerating to ~2% from ~4% a year ago. Not collapsing, but the trend is clear.
+
+## The Composite Signal
+
+Using our five-indicator composite — weighted by historical predictive accuracy — the current reading is **"Elevated Risk, Not Imminent Recession"**. This translates to a 30-35% recession probability in the next 12 months, above the historical base rate of ~15%.
+
+## The Tariff Variable
+
+The wild card that no historical model can adequately price is the tariff trajectory. If current tariff levels are sustained or escalated, our composite would shift to "High Risk" (>50%) within 1-2 months. If a tariff deal or pause is announced, the reverse — a quick improvement to "Moderate Risk" (20%) — is equally plausible.
+
+## Portfolio Implications by Scenario
+
+**Soft Landing (base case, 45%):** Stay positioned, slightly defensive. Reduce cyclicals, add quality.
+
+**Mild Recession (30%):** Add Treasuries (2-5Y), reduce equity beta, add gold. Avoid high-yield credit.
+
+**Hard Recession (25%):** Significant defensive rotation — short equity, long Treasuries, long USD, gold overweight.`,
+    key_risks: 'Tariff escalation beyond current levels is the primary upside risk to recession probability; labour market deterioration accelerating faster than leading indicators currently suggest; credit event in leveraged lending triggering broader financial conditions tightening.',
+    takeaway: 'Recession risk is elevated but not our base case. Monitor the five indicators weekly. The most important single data point right now is initial jobless claims — a sustained move above 270K would shift our base case to recession.',
+    what_would_change_mind: 'A tariff deal that restores business investment confidence; or strong Q1 GDP combined with resilient consumer spending data showing tariff absorption without demand destruction.',
+  },
+  // ── March 2026 ──────────────────────────────────────────────────────────
   {
     id: 20,
     title: 'Germany\'s Fiscal Pivot: What the €500bn Package Means for Europe',
