@@ -330,10 +330,7 @@ export default function IntelligenceFeed() {
       <div>
         {loading && allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="relative">
-              <Zap className="w-6 h-6 text-primary/40" />
-              <RefreshCw className="w-4 h-4 text-primary animate-spin absolute -bottom-1 -right-1" />
-            </div>
+            <RefreshCw className="w-4 h-4 text-primary animate-spin" />
             <p className="text-sm text-muted-foreground">Generating intelligence feed...</p>
             <p className="text-xs text-muted-foreground/40">Scanning global macro developments</p>
           </div>
