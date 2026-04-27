@@ -86,7 +86,7 @@ async function saveToCache(items, recordId) {
   } catch (_) {}
 }
 
-async function generateIntelligenceFeed() {
+async function generateHeadlines() {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -94,26 +94,19 @@ async function generateIntelligenceFeed() {
 
   const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, current time ${timeStr} ${tzLabel}.
 
-Generate exactly 20 market-moving intelligence items covering global macro, markets, and geopolitics. Write like a Goldman Sachs or JPMorgan trading desk morning note — sharp, specific, data-driven.
+Generate exactly 20 market-moving intelligence headlines covering global macro, markets, and geopolitics. Write like a Goldman Sachs or JPMorgan trading desk morning note — sharp, specific, data-driven.
 
-STRICT REQUIREMENTS FOR EACH ITEM:
-- headline: Sharp, specific, professional — include specific levels/percentages/names (e.g. "US 10-year Treasury yields breach 4.65% as Fed minutes signal higher-for-longer policy stance")
-- category: Must be one of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
+For each item:
+- headline: Sharp, specific — include levels/percentages/names (e.g. "US 10-year Treasury yields breach 4.65% as Fed minutes signal higher-for-longer")
+- category: One of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
 - sentiment: positive, negative, or neutral
-- published_time_utc: UTC time as HH:MM between 06:00 and ${timeStr} UTC. Spread realistically across the trading day.
-- impact: EXACTLY 2-3 sentences. Must cover: (1) what happened specifically with data, (2) immediate market reaction with specific moves, (3) what it signals for the coming sessions.
-- desk_view: EXACTLY 4-5 sentences covering: (1) the specific development and its context, (2) why it matters structurally for markets, (3) what the market reaction has been and positioning implications, (4) what to watch in the next 24-48 hours, (5) what this signals for the broader macro picture and cross-asset implications.
-- what_to_watch: List EXACTLY 4-5 specific instruments with a brief reason for each, formatted as: "INSTRUMENT (reason); INSTRUMENT (reason); ..."
+- published_time_utc: HH:MM between 06:00 and ${timeStr} UTC, spread realistically
 - beat: One of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
 
-Cover a broad range of beats. Include items across US, EU, UK, EM, Asia. Be specific with company names, bond tenors, FX pairs, commodity contracts.
-
-Respond ONLY with valid JSON:
-{"items":[{"headline":"string","category":"string","sentiment":"string","published_time_utc":"HH:MM","impact":"string","desk_view":"string","what_to_watch":"string","beat":"string"}]}`;
+Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity contracts.`;
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt,
-    model: 'claude_sonnet_4_6',
     response_json_schema: {
       type: "object",
       properties: {
@@ -122,14 +115,11 @@ Respond ONLY with valid JSON:
           items: {
             type: "object",
             properties: {
-              headline:            { type: "string" },
-              category:            { type: "string" },
-              sentiment:           { type: "string" },
-              published_time_utc:  { type: "string" },
-              impact:              { type: "string" },
-              desk_view:           { type: "string" },
-              what_to_watch:       { type: "string" },
-              beat:                { type: "string" }
+              headline:           { type: "string" },
+              category:           { type: "string" },
+              sentiment:          { type: "string" },
+              published_time_utc: { type: "string" },
+              beat:               { type: "string" }
             }
           }
         }
@@ -137,16 +127,44 @@ Respond ONLY with valid JSON:
     }
   });
 
-  const items = result?.items || [];
-  return items
-    .map(item => ({
-      ...item,
-      published_time: item.published_time_utc,
-      published_time_local: utcTimeToLocal(item.published_time_utc),
-      slug: generateSlug(item.headline),
-      generated_at: new Date().toISOString()
-    }))
-    .sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
+  return (result?.items || []).map(item => ({
+    ...item,
+    published_time: item.published_time_utc,
+    published_time_local: utcTimeToLocal(item.published_time_utc),
+    slug: generateSlug(item.headline),
+    generated_at: new Date().toISOString(),
+    enriched: false,
+  })).sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
+}
+
+async function enrichItem(item) {
+  const prompt = `You are a senior macro research analyst at Keystone Macro. Enrich this intelligence headline with analysis:
+
+Headline: "${item.headline}"
+Category: ${item.category}
+
+Provide:
+- impact: EXACTLY 2-3 sentences covering: what happened with data, immediate market reaction with specific moves, what it signals for coming sessions.
+- desk_view: EXACTLY 4-5 sentences covering: development context, why it matters structurally, market reaction and positioning, what to watch next 24-48 hours, broader macro cross-asset implications.
+- what_to_watch: EXACTLY 4-5 specific instruments with reason, formatted as: "INSTRUMENT (reason); INSTRUMENT (reason); ..."`;
+
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt,
+    response_json_schema: {
+      type: "object",
+      properties: {
+        impact:        { type: "string" },
+        desk_view:     { type: "string" },
+        what_to_watch: { type: "string" }
+      }
+    }
+  });
+
+  return { ...item, ...result, enriched: true };
+}
+
+async function generateIntelligenceFeed() {
+  return generateHeadlines();
 }
 
 function IntelligenceItem({ item, index }) {
@@ -241,6 +259,7 @@ function IntelligenceItem({ item, index }) {
 export default function IntelligenceFeed() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeBeat, setActiveBeat] = useState('all');
@@ -248,6 +267,21 @@ export default function IntelligenceFeed() {
   const cacheIdRef = useRef(null);
   const hasFetched = useRef(false);
   const INITIAL_VISIBLE = 10;
+
+  const enrichInBackground = useCallback(async (headlines, recordId) => {
+    setEnriching(true);
+    // Enrich 3 at a time in parallel batches
+    const BATCH = 3;
+    let enriched = [...headlines];
+    for (let i = 0; i < enriched.length; i += BATCH) {
+      const batch = enriched.slice(i, i + BATCH);
+      const results = await Promise.all(batch.map(item => enrichItem(item).catch(() => item)));
+      results.forEach((r, j) => { enriched[i + j] = r; });
+      setAllItems([...enriched]);
+    }
+    await saveToCache(enriched, recordId);
+    setEnriching(false);
+  }, []);
 
   const loadFeed = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -257,7 +291,6 @@ export default function IntelligenceFeed() {
         const { data: cached, recordId } = await loadFromCache();
         if (cached?.length) {
           cacheIdRef.current = recordId;
-          // Re-sort cached items newest first
           const sorted = [...cached].sort((a, b) => (b.published_time_utc || b.published_time || '').localeCompare(a.published_time_utc || a.published_time || ''));
           setAllItems(sorted);
           setLastUpdated(new Date());
@@ -266,17 +299,23 @@ export default function IntelligenceFeed() {
         }
         cacheIdRef.current = recordId;
       }
-      const items = await generateIntelligenceFeed();
-      setAllItems(items);
+      // Step 1: get headlines fast (~5s)
+      const headlines = await generateHeadlines();
+      setAllItems(headlines);
       setLastUpdated(new Date());
-      await saveToCache(items, cacheIdRef.current);
+      setLoading(false);
+      // Step 2: enrich in background (non-blocking)
+      enrichInBackground(headlines, cacheIdRef.current).then(async () => {
+        // Refresh cacheId after save
+        const { recordId } = await loadFromCache().catch(() => ({ recordId: cacheIdRef.current }));
+        cacheIdRef.current = recordId;
+      });
     } catch (err) {
       console.error('Intelligence feed error:', err?.message || err);
       setError(err?.message || 'Failed to load intelligence feed');
-    } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enrichInBackground]);
 
   useEffect(() => {
     if (!hasFetched.current) {
@@ -303,6 +342,11 @@ export default function IntelligenceFeed() {
           {lastUpdated && (
             <span className="text-xs text-muted-foreground hidden sm:inline">
               Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Times in {tzLabel}
+            </span>
+          )}
+          {enriching && (
+            <span className="text-xs text-primary/60 flex items-center gap-1 hidden sm:flex">
+              <RefreshCw className="w-3 h-3 animate-spin" /> Enriching analysis...
             </span>
           )}
         </div>
