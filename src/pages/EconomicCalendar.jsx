@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, TrendingUp, TrendingDown, Minus, Zap, ChevronDown, ChevronUp, BarChart2, AlertTriangle, Activity, RefreshCw, Filter, CheckCircle2, Loader2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 
 const COUNTRY_LABELS = {
   US: 'US', UK: 'UK', EU: 'EU', JP: 'JP', CN: 'CN',
@@ -121,6 +120,18 @@ const CATEGORY_IMPLICATIONS = {
   'Housing': { instruments: ['Homebuilder stocks', 'Mortgage REITs', 'Lumber futures', 'Rate-sensitive bonds'], bullish: 'Strong starts/permits → construction and materials rally; signals domestic economic health.', bearish: 'Weak data → housing slowdown; homebuilder stocks and mortgage REITs sell off.' },
   'Holiday': { instruments: ['All markets'], bullish: '', bearish: 'Liquidity is thin. Gaps on open are more likely. Reduce position sizing around the holiday.' },
 };
+
+function getCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (/interest rate|rate decision|monetary policy|central bank|boe|fomc|rba|ecb|boj|fed|mpc|snb/.test(t)) return 'Central Bank';
+  if (/cpi|ppi|inflation|price index|pce/.test(t)) return 'Inflation';
+  if (/nonfarm|employment|unemployment|jobless|labor|labour|payroll|wages|earning/.test(t)) return 'Labour';
+  if (/pmi|purchasing|manufacturing|services/.test(t)) return 'PMI';
+  if (/retail|consumer|sentiment|confidence/.test(t)) return 'Consumer';
+  if (/housing|home sales|building permits|construction/.test(t)) return 'Housing';
+  if (/gdp|gross domestic|industrial production|trade balance/.test(t)) return 'GDP';
+  return 'GDP';
+}
 
 function mergeEvents(primary, secondary) {
   const result = [...primary];
@@ -254,35 +265,25 @@ function EventRow({ event, today }) {
     <div className={`border-b border-border/20 last:border-0 ${isToday && isHigh ? 'bg-primary/[0.02]' : ''}`}>
       <button className="w-full text-left hover:bg-muted/10 transition-colors" onClick={() => setOpen(o => !o)}>
         <div className="grid items-center px-4 py-3" style={{ gridTemplateColumns: '72px 36px 14px 1fr 72px 72px 88px 24px' }}>
-          {/* Time */}
-          <span className={`text-xs font-mono font-semibold tabular-nums ${isToday ? 'text-primary' : 'text-muted-foreground/70'}`}>
-            {localTime}
-          </span>
-          {/* Country */}
+          <span className={`text-xs font-mono font-semibold tabular-nums ${isToday ? 'text-primary' : 'text-muted-foreground/70'}`}>{localTime}</span>
           <span className="text-[10px] font-bold text-muted-foreground/60 tracking-wide">{COUNTRY_LABELS[event.country] || event.country}</span>
-          {/* Impact dot */}
           <span className={`w-2 h-2 rounded-full inline-block ${isHigh ? 'bg-amber-400' : event.importance === 'medium' ? 'bg-blue-400/70' : 'bg-border'}`} />
-          {/* Event + category badge */}
           <div className="flex items-center gap-2 min-w-0 pr-3">
             <span className={`text-sm font-medium truncate ${isToday ? 'text-foreground' : 'text-foreground/80'}`}>{event.event}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 hidden sm:inline ${catStyle}`}>{event.category}</span>
           </div>
-          {/* Previous */}
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
             <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.previous}</p>
           </div>
-          {/* Forecast */}
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">FCST</p>
             <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.forecast}</p>
           </div>
-          {/* Actual */}
           <div className="text-right">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">ACTUAL</p>
             <ActualBadge actual={event.actual} forecast={event.forecast} dateStr={event.date} utcTime={event.utcTime} />
           </div>
-          {/* Chevron */}
           <span className="text-muted-foreground/30 flex justify-end">
             {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </span>
@@ -316,7 +317,6 @@ function DateGroup({ dateStr, events, today }) {
         )}
       </div>
       <div className="glass rounded-xl overflow-hidden">
-        {/* Column headers */}
         <div className="grid items-center px-4 py-2 border-b border-border/20 bg-muted/5" style={{ gridTemplateColumns: '72px 36px 14px 1fr 72px 72px 88px 24px' }}>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">TIME ({localTzLabel()})</span>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">CTRY</span>
@@ -380,14 +380,32 @@ export default function EconomicCalendar() {
     setLiveError(null);
     setLiveFetched(false);
     try {
-      const [resMql5, resFF] = await Promise.all([
-        base44.functions.invoke('calendarToday', { source: 'mql5', range: rng }),
-        base44.functions.invoke('calendarToday', { source: 'forex-factory', range: rng }),
-      ]);
-      const mql5 = resMql5?.data?.events || [];
-      const ff = resFF?.data?.events || [];
-      if (mql5.length || ff.length) {
-        setLiveEvents(mergeEvents(mql5, ff));
+      const url = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const res = await fetch(proxy);
+      const json = await res.json();
+      const data = JSON.parse(json.contents);
+      if (!Array.isArray(data) || !data.length) throw new Error('empty');
+      const mapped = data.map((ev, i) => ({
+        id: `ff_${i}`,
+        date: ev.date?.split('T')[0] || '',
+        utcTime: ev.time || '00:00',
+        country: (ev.country || '').toUpperCase(),
+        event: ev.title || '',
+        importance: ev.impact === 'High' ? 'high' : ev.impact === 'Medium' ? 'medium' : 'low',
+        previous: ev.previous || '—',
+        forecast: ev.estimate || '—',
+        actual: ev.actual || null,
+        category: getCategory(ev.title || ''),
+        outcome: null,
+      }));
+      const currentToday = getTodayStr();
+      const weekEnd = getWeekEnd(currentToday);
+      const filteredByRange = rng === 'today'
+        ? mapped.filter(e => e.date === currentToday)
+        : mapped.filter(e => e.date >= currentToday && e.date <= weekEnd);
+      if (filteredByRange.length) {
+        setLiveEvents(mergeEvents(EVENTS, filteredByRange));
         setLiveFetched(true);
       } else {
         setLiveError('no data');
@@ -465,7 +483,6 @@ export default function EconomicCalendar() {
           <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data.</p>
         </motion.div>
 
-        {/* Stats row */}
         {tab === 'today' && (
           <motion.div className="flex gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}>
             <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
@@ -485,20 +502,16 @@ export default function EconomicCalendar() {
           </motion.div>
         )}
 
-        {/* Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex gap-1 p-1 glass rounded-xl w-fit flex-wrap">
             {[{ key: 'today', label: 'Today' }, { key: 'week', label: 'This Week' }, { key: 'month', label: 'This Month' }, { key: 'previous', label: 'Previous' }].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)} className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>{t.label}</button>
             ))}
           </div>
-
           <div className="flex items-center gap-3 ml-auto">
-            {/* Fetch status */}
             {(tab === 'today' || tab === 'week') && (
               <FetchStatus loading={liveLoading} fetched={liveFetched} error={liveError} />
             )}
-            {/* Impact filter */}
             <div className="flex items-center gap-1 p-1 glass rounded-lg">
               <Filter className="w-3 h-3 text-muted-foreground/50 ml-1 mr-0.5" />
               {[{ key: 'all', label: 'All' }, { key: 'high', label: 'High Impact' }].map(f => (
