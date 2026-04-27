@@ -137,6 +137,25 @@ export default function Admin() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
+  const { data: subscribers = [] } = useQuery({ queryKey: ['admin-subs'], queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 100) });
+  const { data: messages = [] } = useQuery({ queryKey: ['admin-msgs'], queryFn: () => base44.entities.ContactMessage.list('-created_date', 100) });
+
+  const createNote = useMutation({
+    mutationFn: (data) => base44.entities.ResearchNote.create(data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note created' }); }
+  });
+
+  const updateNote = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.ResearchNote.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note updated' }); }
+  });
+
+  const deleteNote = useMutation({
+    mutationFn: (id) => base44.entities.ResearchNote.delete(id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note deleted' }); }
+  });
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -162,25 +181,6 @@ export default function Admin() {
   if (!user || !ADMIN_EMAILS.includes(user.email)) {
     return <Navigate to="/" replace />;
   }
-
-  const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
-  const { data: subscribers = [] } = useQuery({ queryKey: ['admin-subs'], queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 100) });
-  const { data: messages = [] } = useQuery({ queryKey: ['admin-msgs'], queryFn: () => base44.entities.ContactMessage.list('-created_date', 100) });
-
-  const createNote = useMutation({
-    mutationFn: (data) => base44.entities.ResearchNote.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note created' }); }
-  });
-
-  const updateNote = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ResearchNote.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note updated' }); }
-  });
-
-  const deleteNote = useMutation({
-    mutationFn: (id) => base44.entities.ResearchNote.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-notes'] }); toast({ title: 'Note deleted' }); }
-  });
 
   const handleSave = (data) => {
     if (editingNote?.id) {
