@@ -40,6 +40,7 @@ export default function Newsletter() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [cancelEmail, setCancelEmail] = useState('');
   const [cancelStatus, setCancelStatus] = useState(null);
+  const [showAllEditions, setShowAllEditions] = useState(false);
 
   const { data: editions = [] } = useQuery({
     queryKey: ['newsletter-editions-public'],
@@ -278,7 +279,7 @@ export default function Newsletter() {
 
             {isSubscribed ? (
               <div className="space-y-4">
-                {editions.map((ed, idx) => (
+                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) => (
                   <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="group block">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -336,6 +337,16 @@ export default function Newsletter() {
                     </motion.div>
                   </Link>
                 ))}
+                {!showAllEditions && editions.length > 4 && (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={() => setShowAllEditions(true)}
+                    className="w-full py-4 mt-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/40 rounded-xl hover:border-primary/20 hover:bg-primary/5"
+                  >
+                    View {editions.length - 4} more editions
+                  </motion.button>
+                )}
               </div>
             ) : (
               <div className="glass rounded-2xl p-12 text-center border border-border/50">
