@@ -13,7 +13,6 @@ import Research from '@/pages/Research';
 import ResearchArticle from '@/pages/ResearchArticle';         // NEW — individual research note
 import ResearchIntelligence from '@/pages/ResearchIntelligence'; // NEW — individual intelligence item
 import Portfolios from '@/pages/Portfolios';                   // WealthCases merged in here
-import AIPortfolioLab from '@/pages/AIPortfolioLab';
 import MarketPulse from '@/pages/MarketPulse';                 // Trade Ideas tab added inside
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
@@ -72,7 +71,7 @@ const AuthenticatedApp = () => {
         <Route path="/MarketPulse" element={<MarketPulse />} />
 
         {/* AI */}
-        <Route path="/AIPortfolioLab" element={<AIPortfolioLab />} />
+        <Route path="/AIPortfolioLab" element={<Navigate to="/AI" replace />} />
         <Route path="/AI" element={<KeystoneAI />} />
 
         {/* Economic Calendar */}
