@@ -1,0 +1,91 @@
+{
+  "name": "TradeIdea",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Trade idea title"
+    },
+    "asset_class": {
+      "type": "string",
+      "enum": [
+        "Equities",
+        "Fixed Income",
+        "FX",
+        "Commodities",
+        "Rates",
+        "Credit",
+        "Crypto",
+        "Multi-Asset"
+      ],
+      "description": "Asset class"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "long",
+        "short"
+      ],
+      "description": "Trade direction"
+    },
+    "entry_level": {
+      "type": "string",
+      "description": "Entry price or level"
+    },
+    "exit_level": {
+      "type": "string",
+      "description": "Target exit price or level"
+    },
+    "stop_level": {
+      "type": "string",
+      "description": "Stop loss level"
+    },
+    "catalyst": {
+      "type": "string",
+      "description": "Primary catalyst for the trade"
+    },
+    "methodology": {
+      "type": "string",
+      "description": "Analytical methodology (macro, technical, quantitative, etc.)"
+    },
+    "thesis": {
+      "type": "string",
+      "description": "Full trade thesis in markdown"
+    },
+    "outcome": {
+      "type": "string",
+      "description": "Outcome of the trade (if historical)"
+    },
+    "pnl_estimate": {
+      "type": "string",
+      "description": "Estimated P&L or return"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the trade idea"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed",
+        "monitoring",
+        "historical"
+      ],
+      "default": "historical"
+    }
+  },
+  "required": [
+    "title",
+    "asset_class",
+    "direction"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "NewsletterEdition",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Edition title"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL slug"
+    },
+    "edition_type": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "evening"
+      ],
+      "description": "Morning or evening edition"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Publication date"
+    },
+    "published_at": {
+      "type": "string",
+      "description": "Exact publish timestamp"
+    },
+    "body": {
+      "type": "string",
+      "description": "Edition body in markdown"
+    },
+    "market_summary": {
+      "type": "string",
+      "description": "Brief market summary"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title",
+    "edition_type",
+    "publish_date"
+  ]
+}
