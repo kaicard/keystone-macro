@@ -93,8 +93,21 @@ export default function NewsletterEdition() {
 
           {/* Body */}
           {edition.body ? (
-            <div className="glass rounded-2xl p-8">
-              <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&_h1]:font-display [&_h2]:font-display [&_h2]:text-xl [&_h3]:font-semibold [&_h3]:text-base [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_strong]:text-foreground [&_a]:text-primary [&_blockquote]:border-primary/30 [&_blockquote]:text-muted-foreground">
+            <div className="glass rounded-2xl p-8 sm:p-10">
+              <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none
+                [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mb-8 [&_h2]:mt-10 [&_h2]:text-foreground
+                [&_h2:first-child]:mt-0
+                [&_h3]:font-semibold [&_h3]:text-lg [&_h3]:mb-4 [&_h3]:mt-6 [&_h3]:text-foreground
+                [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_p]:mb-6 [&_p]:text-base
+                [&_strong]:text-foreground [&_strong]:font-semibold
+                [&_a]:text-primary [&_a]:font-medium
+                [&_blockquote]:border-l-4 [&_blockquote]:border-primary/50 [&_blockquote]:bg-primary/5 [&_blockquote]:px-6 [&_blockquote]:py-4 [&_blockquote]:rounded-lg [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
+                [&_blockquote_p]:mb-0
+                [&_ul]:space-y-2 [&_ul]:my-6
+                [&_ol]:space-y-2 [&_ol]:my-6
+                [&_li]:text-muted-foreground
+                [&_hr]:my-8 [&_hr]:opacity-20
+              ">
                 {edition.body}
               </ReactMarkdown>
             </div>
