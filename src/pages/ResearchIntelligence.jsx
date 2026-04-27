@@ -98,9 +98,9 @@ export default function ResearchIntelligence() {
           <div className="flex items-center gap-2 flex-wrap mb-4">
             <Badge variant="outline" className={`text-xs border ${catStyle}`}>{item.category}</Badge>
             <Badge variant="outline" className={`text-xs border ${sentStyle.badge}`}>{item.sentiment}</Badge>
-            {item.published_time && (
+            {(item.published_time_local || item.published_time) && (
               <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
-                <Clock className="w-3 h-3" />{item.published_time} BST
+                <Clock className="w-3 h-3" />{item.published_time_local || item.published_time} {Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value || ''}
               </span>
             )}
           </div>

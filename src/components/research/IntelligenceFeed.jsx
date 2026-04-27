@@ -61,38 +61,54 @@ function generateSlug(headline) {
   return headline?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 80).trim() || '';
 }
 
+function getTodayCacheKey() {
+  const d = new Date();
+  return `intelligenceFeed_${d.toISOString().split('T')[0]}`;
+}
+
 async function loadFromCache() {
   try {
-    const results = await base44.entities.MarketCache.filter({ key: 'intelligenceFeed' });
+    const key = getTodayCacheKey();
+    const results = await base44.entities.MarketCache.filter({ key });
     if (results?.length) {
       const record = results[0];
-      const age = Date.now() - new Date(record.fetched_at).getTime();
-      if (age < 30 * 60 * 1000) return { data: JSON.parse(record.payload), recordId: record.id };
-      return { data: null, recordId: record.id };
+      return { data: JSON.parse(record.payload), recordId: record.id };
     }
   } catch (_) {}
   return { data: null, recordId: null };
 }
 
+async function clearOldCaches() {
+  try {
+    const todayKey = getTodayCacheKey();
+    const all = await base44.entities.MarketCache.list();
+    const old = all.filter(r => r.key?.startsWith('intelligenceFeed') && r.key !== todayKey);
+    await Promise.all(old.map(r => base44.entities.MarketCache.delete(r.id)));
+  } catch (_) {}
+}
+
 async function saveToCache(items, recordId) {
   const payload = JSON.stringify(items);
   const fetched_at = new Date().toISOString();
+  const key = getTodayCacheKey();
   try {
     if (recordId) {
       await base44.entities.MarketCache.update(recordId, { payload, fetched_at });
     } else {
-      await base44.entities.MarketCache.create({ key: 'intelligenceFeed', payload, fetched_at });
+      await base44.entities.MarketCache.create({ key, payload, fetched_at });
     }
   } catch (_) {}
 }
 
 async function generateHeadlines() {
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  // Get current UTC time as HH:MM — this is the hard ceiling for all published times
+  const utcHour = String(now.getUTCHours()).padStart(2, '0');
+  const utcMin = String(now.getUTCMinutes()).padStart(2, '0');
+  const currentUtcTime = `${utcHour}:${utcMin}`;
   const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const tzLabel = getLocalTzLabel();
 
-  const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, current time ${timeStr} ${tzLabel}.
+  const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}. Current UTC time is ${currentUtcTime}.
 
 Generate exactly 20 market-moving intelligence headlines covering global macro, markets, and geopolitics. Write like a Goldman Sachs or JPMorgan trading desk morning note — sharp, specific, data-driven.
 
@@ -100,7 +116,7 @@ For each item:
 - headline: Sharp, specific — include levels/percentages/names (e.g. "US 10-year Treasury yields breach 4.65% as Fed minutes signal higher-for-longer")
 - category: One of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
 - sentiment: positive, negative, or neutral
-- published_time_utc: HH:MM between 06:00 and ${timeStr} UTC, spread realistically
+- published_time_utc: HH:MM in UTC. CRITICAL: ALL times MUST be strictly before ${currentUtcTime} UTC. Do NOT generate any time at or after ${currentUtcTime}. Spread realistically from 06:00 to no later than ${currentUtcTime}.
 - beat: One of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
 
 Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity contracts.`;
@@ -127,14 +143,25 @@ Cover US, EU, UK, EM, Asia. Be specific with names, tenors, FX pairs, commodity 
     }
   });
 
-  return (result?.items || []).map(item => ({
-    ...item,
-    published_time: item.published_time_utc,
-    published_time_local: utcTimeToLocal(item.published_time_utc),
-    slug: generateSlug(item.headline),
-    generated_at: new Date().toISOString(),
-    enriched: false,
-  })).sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
+  const now = new Date();
+  const utcHour = String(now.getUTCHours()).padStart(2, '0');
+  const utcMin = String(now.getUTCMinutes()).padStart(2, '0');
+  const currentUtcTime = `${utcHour}:${utcMin}`;
+
+  return (result?.items || [])
+    .filter(item => {
+      // Hard filter: drop any item with a future time
+      const t = item.published_time_utc || '00:00';
+      return t <= currentUtcTime;
+    })
+    .map(item => ({
+      ...item,
+      published_time: item.published_time_utc,
+      published_time_local: utcTimeToLocal(item.published_time_utc),
+      slug: generateSlug(item.headline),
+      generated_at: new Date().toISOString(),
+      enriched: false,
+    })).sort((a, b) => (b.published_time_utc || '').localeCompare(a.published_time_utc || ''));
 }
 
 async function enrichItem(item) {
@@ -270,16 +297,16 @@ export default function IntelligenceFeed() {
 
   const enrichInBackground = useCallback(async (headlines, recordId) => {
     setEnriching(true);
-    // Enrich 3 at a time in parallel batches
-    const BATCH = 3;
+    const BATCH = 4;
     let enriched = [...headlines];
     for (let i = 0; i < enriched.length; i += BATCH) {
       const batch = enriched.slice(i, i + BATCH);
-      const results = await Promise.all(batch.map(item => enrichItem(item).catch(() => item)));
+      const results = await Promise.all(batch.map(item => item.enriched ? item : enrichItem(item).catch(() => item)));
       results.forEach((r, j) => { enriched[i + j] = r; });
       setAllItems([...enriched]);
+      // Save after each batch so cache stays current
+      await saveToCache(enriched, cacheIdRef.current);
     }
-    await saveToCache(enriched, recordId);
     setEnriching(false);
   }, []);
 
@@ -287,29 +314,29 @@ export default function IntelligenceFeed() {
     setLoading(true);
     setError(null);
     try {
-      if (!forceRefresh) {
-        const { data: cached, recordId } = await loadFromCache();
-        if (cached?.length) {
-          cacheIdRef.current = recordId;
-          const sorted = [...cached].sort((a, b) => (b.published_time_utc || b.published_time || '').localeCompare(a.published_time_utc || a.published_time || ''));
-          setAllItems(sorted);
-          setLastUpdated(new Date());
-          setLoading(false);
-          return;
-        }
-        cacheIdRef.current = recordId;
+      // Always check cache first — today's cache is authoritative (stable headlines all day)
+      const { data: cached, recordId } = await loadFromCache();
+      cacheIdRef.current = recordId;
+
+      if (cached?.length && !forceRefresh) {
+        const sorted = [...cached].sort((a, b) => (b.published_time_utc || b.published_time || '').localeCompare(a.published_time_utc || a.published_time || ''));
+        setAllItems(sorted);
+        setLastUpdated(new Date());
+        setLoading(false);
+        // If any items are still unenriched, continue enrichment
+        const unenriched = sorted.filter(i => !i.enriched);
+        if (unenriched.length > 0) enrichInBackground(sorted, recordId);
+        return;
       }
-      // Step 1: get headlines fast (~5s)
+
+      // No cache or forced refresh — generate fresh
+      clearOldCaches();
       const headlines = await generateHeadlines();
       setAllItems(headlines);
       setLastUpdated(new Date());
       setLoading(false);
-      // Step 2: enrich in background (non-blocking)
-      enrichInBackground(headlines, cacheIdRef.current).then(async () => {
-        // Refresh cacheId after save
-        const { recordId } = await loadFromCache().catch(() => ({ recordId: cacheIdRef.current }));
-        cacheIdRef.current = recordId;
-      });
+      // Enrich in background and save to cache
+      enrichInBackground(headlines, cacheIdRef.current);
     } catch (err) {
       console.error('Intelligence feed error:', err?.message || err);
       setError(err?.message || 'Failed to load intelligence feed');
