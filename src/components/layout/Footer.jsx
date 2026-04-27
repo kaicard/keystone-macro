@@ -61,7 +61,7 @@ export default function Footer() {
               Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.
             </p>
             <div className="flex items-center gap-3">
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20 transition-all duration-200">
                 <Linkedin className="w-4 h-4" />
               </a>

@@ -41,7 +41,7 @@ export default function Contact() {
             <p className="font-medium text-sm group-hover:text-primary transition-colors">Email</p>
             <p className="text-xs text-muted-foreground mt-1">hello@keystonemacro.com</p>
           </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer"
             className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
             <Linkedin className="w-6 h-6 text-primary mx-auto mb-3" />
             <p className="font-medium text-sm group-hover:text-primary transition-colors">LinkedIn</p>
