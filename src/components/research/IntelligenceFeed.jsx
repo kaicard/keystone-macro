@@ -41,7 +41,7 @@ const SENTIMENT_DOT = {
 };
 
 const MAX_ITEMS = 60;
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour — long enough to be fast, short enough to stay fresh
+const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 function getLocalTzLabel() {
   try {
@@ -69,7 +69,6 @@ function generateSlug(headline) {
 
 function getCacheKey() {
   const d = new Date();
-  // Key changes every 2 hours — keeps feed fresh without regenerating constantly
   const slot = Math.floor(d.getUTCHours() / 2);
   return `intelligenceFeed_${d.toISOString().split('T')[0]}_s${slot}`;
 }
@@ -92,10 +91,8 @@ async function loadFromCache() {
     if (results?.length) {
       const record = results[0];
       const age = Date.now() - new Date(record.fetched_at).getTime();
-      if (age < CACHE_TTL_MS) {
-        return { data: JSON.parse(record.payload), recordId: record.id, fresh: true };
-      }
-      return { data: JSON.parse(record.payload), recordId: record.id, fresh: false };
+      const fresh = age < CACHE_TTL_MS;
+      return { data: JSON.parse(record.payload), recordId: record.id, fresh };
     }
   } catch (_) {}
   return { data: null, recordId: null, fresh: false };
@@ -114,8 +111,8 @@ async function saveToCache(items, recordId) {
   } catch (_) {}
 }
 
-// ─── SINGLE API CALL — generates headlines + full analysis together ───────────
-async function generateFullFeed() {
+// ─── STEP 1: Generate 20 headlines only (fits in 1000 tokens easily) ──────────
+async function generateHeadlines() {
   const now = new Date();
   const utcHour = String(now.getUTCHours()).padStart(2, '0');
   const utcMin  = String(now.getUTCMinutes()).padStart(2, '0');
@@ -124,39 +121,17 @@ async function generateFullFeed() {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
 
-  const prompt = `You are a senior macro research analyst at Keystone Macro, a professional Bloomberg-quality intelligence platform.
-Today is ${dateStr}. Current UTC time is ${currentUtcTime}.
-
-Generate exactly 20 complete intelligence items covering global macro, markets, and geopolitics.
-Write like a Goldman Sachs or JPMorgan trading desk briefing — sharp, specific, data-driven, institutional quality.
-
-For EACH item provide ALL fields in one go:
-
-headline: Sharp and specific — always include levels, percentages, or names.
-  Example: "US 10-year yields breach 4.65% as Fed minutes signal rates on hold through Q3"
-  Example: "Brent crude rallies to $89.40 as OPEC+ confirms supply cut extension into H2"
-
-category: One of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
-
-sentiment: positive, negative, or neutral
-
-published_time_utc: HH:MM in UTC. MUST be strictly before ${currentUtcTime}. Spread from 06:00 to ${currentUtcTime}.
-
-beat: One of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
-
-impact: 2-3 sentences. What happened, specific market moves with levels, what it signals for the next session.
-  Example: "Headline CPI came in at 3.2% YoY, above the 2.9% consensus, the first upside surprise in four months. USD/JPY spiked 0.8% to 151.40; 2-year Treasury yields rose 11bp to 4.92%. The print materially reduces the probability of a June Fed cut, now priced at just 28%."
-
-desk_view: 4-5 sentences of deep analytical context.
-  Cover: structural background, why this development matters beyond the headline number, cross-asset positioning implications, what the next 48 hours look like, key risk or catalyst to monitor.
-
-what_to_watch: Exactly 4-5 instruments with specific reason each.
-  Format: "US 2-year Treasury (rate expectations repricing); EUR/USD (dollar strength testing 1.0820 support); Gold (inflation hedge demand); SPX (tech multiple compression on higher rates); TLT (duration risk)"
-
-Cover: US, EU, UK, EM, Asia, commodities, FX, geopolitics. No two items on the same topic.`;
-
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt,
+    prompt: `You are a senior macro analyst at Keystone Macro. Today is ${dateStr}, UTC time ${currentUtcTime}.
+
+Generate exactly 20 sharp, specific market intelligence headlines. Each headline must include a specific level, percentage, or name. Cover US, EU, UK, EM, Asia, commodities, FX, geopolitics — no two items on the same topic.
+
+For each item:
+- headline: specific with data points (e.g. "Brent crude rallies to $89 as OPEC+ confirms cut extension")
+- category: Macro / Equities / Rates / Commodities / FX / Geopolitics / Credit / Technology / US Economy / UK Economy / EU Economy
+- sentiment: positive / negative / neutral
+- published_time_utc: HH:MM, strictly before ${currentUtcTime}, spread from 06:00
+- beat: macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech`,
     response_json_schema: {
       type: 'object',
       properties: {
@@ -170,9 +145,6 @@ Cover: US, EU, UK, EM, Asia, commodities, FX, geopolitics. No two items on the s
               sentiment:          { type: 'string' },
               published_time_utc: { type: 'string' },
               beat:               { type: 'string' },
-              impact:             { type: 'string' },
-              desk_view:          { type: 'string' },
-              what_to_watch:      { type: 'string' },
             }
           }
         }
@@ -188,21 +160,61 @@ Cover: US, EU, UK, EM, Asia, commodities, FX, geopolitics. No two items on the s
       published_time_local: utcTimeToLocal(item.published_time_utc),
       slug:                 generateSlug(item.headline),
       generated_at:         new Date().toISOString(),
-      enriched:             true, // Everything is fully enriched in one call
+      enriched:             false,
     }))
     .sort((a, b) =>
       (b.published_time_utc || '').localeCompare(a.published_time_utc || '')
     );
 }
 
-// ─── ITEM COMPONENT ───────────────────────────────────────────────────────────
+// ─── STEP 2: Enrich in batches of 5 — each call fits in 1000 tokens ──────────
+async function enrichBatch(items) {
+  const headlineList = items
+    .map((item, i) => `${i + 1}. [${item.category}] ${item.headline}`)
+    .join('\n');
 
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt: `You are a senior macro analyst at Keystone Macro. Enrich these ${items.length} intelligence headlines with analysis.
+
+${headlineList}
+
+For each item (numbered 1-${items.length}) provide:
+- impact: 2 sentences. What happened, specific market moves, what it signals.
+- desk_view: 3 sentences. Structural context, cross-asset implications, what to watch next 48 hours.
+- what_to_watch: 3-4 instruments with reason. Format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              impact:        { type: 'string' },
+              desk_view:     { type: 'string' },
+              what_to_watch: { type: 'string' },
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const enriched = result?.items || [];
+  return items.map((item, i) => ({
+    ...item,
+    ...(enriched[i] || {}),
+    enriched: true,
+  }));
+}
+
+// ─── ITEM COMPONENT ───────────────────────────────────────────────────────────
 function IntelligenceItem({ item, index }) {
   const [expanded, setExpanded] = useState(false);
-  const navigate   = useNavigate();
-  const catStyle   = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
-  const sentDot    = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
-  const tzLabel    = getLocalTzLabel();
+  const navigate    = useNavigate();
+  const catStyle    = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
+  const sentDot     = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
+  const tzLabel     = getLocalTzLabel();
   const displayTime = item.published_time_local || item.published_time;
 
   return (
@@ -254,55 +266,43 @@ function IntelligenceItem({ item, index }) {
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 pl-10 mr-4 space-y-3">
-              {/* Impact */}
-              {item.impact && (
-                <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide mb-1.5">
-                    Impact
-                  </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.impact}</p>
+              {item.enriched ? (
+                <>
+                  {item.impact && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wide mb-1.5">Impact</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{item.impact}</p>
+                    </div>
+                  )}
+                  {item.desk_view && (
+                    <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
+                      <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-1.5">Desk View</p>
+                      <p className="text-sm text-foreground/90 leading-relaxed">{item.desk_view}</p>
+                    </div>
+                  )}
+                  {item.what_to_watch && (
+                    <div className="bg-muted/20 rounded-lg p-3">
+                      <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1.5">Instruments to Watch</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {item.what_to_watch.split(';').map((w, i) => w.trim() && (
+                          <span key={i} className="text-xs bg-accent/10 text-accent/90 border border-accent/20 px-2 py-0.5 rounded-full">
+                            {w.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2 py-2">
+                  <RefreshCw className="w-3.5 h-3.5 text-primary/40 animate-spin" />
+                  <p className="text-xs text-muted-foreground/50">Loading analysis...</p>
                 </div>
               )}
-
-              {/* Desk View */}
-              {item.desk_view && (
-                <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
-                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-1.5">
-                    Desk View
-                  </p>
-                  <p className="text-sm text-foreground/90 leading-relaxed">{item.desk_view}</p>
-                </div>
-              )}
-
-              {/* Instruments */}
-              {item.what_to_watch && (
-                <div className="bg-muted/20 rounded-lg p-3">
-                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1.5">
-                    Instruments to Watch
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.what_to_watch.split(';').map((w, i) => w.trim() && (
-                      <span
-                        key={i}
-                        className="text-xs bg-accent/10 text-accent/90 border border-accent/20 px-2 py-0.5 rounded-full"
-                      >
-                        {w.trim()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Footer */}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-muted-foreground/30 italic">
-                  Keystone Macro Intelligence
-                </span>
+                <span className="text-[10px] text-muted-foreground/30 italic">Keystone Macro Intelligence</span>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/Research/Intelligence/${item.slug}`);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/Research/Intelligence/${item.slug}`); }}
                   className="inline-flex items-center gap-1 text-xs text-primary/60 hover:text-primary transition-colors"
                 >
                   Full analysis <ArrowRight className="w-3 h-3" />
@@ -317,29 +317,62 @@ function IntelligenceItem({ item, index }) {
 }
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-
 export default function IntelligenceFeed() {
-  const [allItems, setAllItems]     = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState(null);
+  const [allItems, setAllItems]       = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [enriching, setEnriching]     = useState(false);
+  const [error, setError]             = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [newCount, setNewCount]     = useState(0);
-  const [activeBeat, setActiveBeat] = useState('all');
-  const [showAll, setShowAll]       = useState(false);
-  const cacheIdRef  = useRef(null);
-  const hasFetched  = useRef(false);
+  const [newCount, setNewCount]       = useState(0);
+  const [activeBeat, setActiveBeat]   = useState('all');
+  const [showAll, setShowAll]         = useState(false);
+  const cacheIdRef = useRef(null);
+  const hasFetched = useRef(false);
   const INITIAL_VISIBLE = 10;
+  const BATCH_SIZE = 5; // 5 items per enrichment call — fits in 1000 tokens
+
+  const enrichInBackground = useCallback(async (headlines, currentItems) => {
+    setEnriching(true);
+    let working = [...currentItems];
+
+    for (let i = 0; i < headlines.length; i += BATCH_SIZE) {
+      const batch = headlines.slice(i, i + BATCH_SIZE);
+      try {
+        const enrichedBatch = await enrichBatch(batch);
+        // Replace unenriched versions with enriched ones
+        enrichedBatch.forEach(enrichedItem => {
+          const idx = working.findIndex(w => w.slug === enrichedItem.slug);
+          if (idx !== -1) working[idx] = enrichedItem;
+          else working.unshift(enrichedItem);
+        });
+        const merged = mergeItems(
+          working.filter(w => !enrichedBatch.find(e => e.slug === w.slug)),
+          enrichedBatch
+        );
+        working = merged;
+        setAllItems([...working]);
+        saveToCache(working, cacheIdRef.current);
+      } catch (_) {
+        // Batch failed — mark as enriched with empty fields so spinner stops
+        batch.forEach(item => {
+          const idx = working.findIndex(w => w.slug === item.slug);
+          if (idx !== -1) working[idx] = { ...working[idx], enriched: true };
+        });
+        setAllItems([...working]);
+      }
+    }
+    setEnriching(false);
+  }, []);
 
   const loadFeed = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(null);
     try {
-      // Always check cache first
       const { data: cached, recordId, fresh } = await loadFromCache();
       cacheIdRef.current = recordId;
 
+      // Fresh cache — show instantly, no API call
       if (cached?.length && !forceRefresh && fresh) {
-        // Cache is fresh — show immediately, no API call
         const sorted = [...cached].sort((a, b) =>
           (b.published_time_utc || b.published_time || '').localeCompare(
            (a.published_time_utc || a.published_time || '')
@@ -348,28 +381,30 @@ export default function IntelligenceFeed() {
         setAllItems(sorted);
         setLastUpdated(new Date());
         setLoading(false);
+        // Enrich any unenriched items that loaded from cache
+        const unenriched = sorted.filter(i => !i.enriched);
+        if (unenriched.length > 0) enrichInBackground(unenriched, sorted);
         return;
       }
 
-      // Cache stale or force refresh — generate fresh feed
-      // Show stale cache immediately while generating
-      if (cached?.length) {
+      // Show stale cache immediately while we refresh in background
+      if (cached?.length && !forceRefresh) {
         const sorted = [...cached].sort((a, b) =>
           (b.published_time_utc || b.published_time || '').localeCompare(
            (a.published_time_utc || a.published_time || '')
           )
         );
         setAllItems(sorted);
-        setLoading(false); // Remove spinner — show stale data while refreshing
+        setLoading(false);
       }
 
-      // Generate new feed in background
-      const newItems = await generateFullFeed();
+      // Generate fresh headlines
+      const newHeadlines = await generateHeadlines();
       const currentItems = cached?.length ? cached : [];
-      const merged = mergeItems(currentItems, newItems);
+      const merged = mergeItems(currentItems, newHeadlines);
 
       const existingSlugs = new Set(currentItems.map(i => i.slug));
-      const brandNew = newItems.filter(i => !existingSlugs.has(i.slug));
+      const brandNew = newHeadlines.filter(i => !existingSlugs.has(i.slug));
       if (brandNew.length > 0) {
         setNewCount(brandNew.length);
         setTimeout(() => setNewCount(0), 5000);
@@ -379,24 +414,28 @@ export default function IntelligenceFeed() {
       setLastUpdated(new Date());
       setLoading(false);
 
-      // Save to cache
-      saveToCache(merged, cacheIdRef.current).then(result => {
-        if (result) cacheIdRef.current = result;
-      });
+      // Save headlines to cache immediately
+      const { recordId: newRecordId } = await loadFromCache();
+      cacheIdRef.current = newRecordId || recordId;
+      await saveToCache(merged, cacheIdRef.current);
+
+      // Enrich new items in background — batches of 5
+      if (brandNew.length > 0) {
+        enrichInBackground(brandNew, merged);
+      }
 
     } catch (err) {
       console.error('Intelligence feed error:', err?.message || err);
       setError(err?.message || 'Failed to load feed');
       setLoading(false);
     }
-  }, []);
+  }, [enrichInBackground]);
 
   useEffect(() => {
     if (!hasFetched.current) {
       hasFetched.current = true;
       loadFeed();
     }
-    // Refresh every 2 hours — matches cache slot
     const interval = setInterval(() => loadFeed(true), 2 * 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadFeed]);
@@ -404,14 +443,11 @@ export default function IntelligenceFeed() {
   const filtered = activeBeat === 'all'
     ? allItems
     : allItems.filter(item => item.beat === activeBeat);
-
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
   const tzLabel = getLocalTzLabel();
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
-
-      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -429,13 +465,12 @@ export default function IntelligenceFeed() {
               Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {tzLabel}
             </span>
           )}
-          {loading && allItems.length > 0 && (
+          {enriching && (
             <span className="text-xs text-primary/50 flex items-center gap-1 hidden sm:flex">
-              <RefreshCw className="w-3 h-3 animate-spin" /> Refreshing...
+              <RefreshCw className="w-3 h-3 animate-spin" /> Enriching...
             </span>
           )}
         </div>
-
         <div className="flex items-center gap-3">
           {allItems.length > 0 && (
             <span className="text-xs text-muted-foreground/40 hidden sm:inline">
@@ -453,7 +488,6 @@ export default function IntelligenceFeed() {
         </div>
       </div>
 
-      {/* Beat tabs */}
       <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/30 scrollbar-hide">
         {BEATS.map(beat => (
           <button
@@ -470,21 +504,18 @@ export default function IntelligenceFeed() {
         ))}
       </div>
 
-      {/* Feed */}
       <div>
         {error && allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <p className="text-sm text-destructive">Failed to load feed</p>
             <p className="text-xs text-muted-foreground/60">{error}</p>
-            <button onClick={() => loadFeed(true)} className="text-xs text-primary hover:underline mt-1">
-              Try again
-            </button>
+            <button onClick={() => loadFeed(true)} className="text-xs text-primary hover:underline mt-1">Try again</button>
           </div>
         ) : loading && allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <RefreshCw className="w-4 h-4 text-primary animate-spin" />
             <p className="text-sm text-muted-foreground">Generating intelligence feed...</p>
-            <p className="text-xs text-muted-foreground/40">One moment — compiling global macro developments</p>
+            <p className="text-xs text-muted-foreground/40">Compiling global macro developments</p>
           </div>
         ) : (
           <AnimatePresence mode="sync">
@@ -503,7 +534,6 @@ export default function IntelligenceFeed() {
         )}
       </div>
 
-      {/* Show more */}
       {filtered.length > INITIAL_VISIBLE && (
         <div className="border-t border-border/30 px-6 py-3">
           <button
