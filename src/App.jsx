@@ -5,20 +5,27 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-
 import AppLayout from '@/components/layout/AppLayout';
+
+// Existing pages
 import Home from '@/pages/Home';
 import Research from '@/pages/Research';
-import Portfolios from '@/pages/Portfolios';
-import WealthCases from '@/pages/WealthCases';
+import ResearchArticle from '@/pages/ResearchArticle';         // NEW — individual research note
+import ResearchIntelligence from '@/pages/ResearchIntelligence'; // NEW — individual intelligence item
+import Portfolios from '@/pages/Portfolios';                   // WealthCases merged in here
 import AIPortfolioLab from '@/pages/AIPortfolioLab';
-import MarketPulse from '@/pages/MarketPulse';
+import MarketPulse from '@/pages/MarketPulse';                 // Trade Ideas tab added inside
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
-import Admin from '@/pages/Admin';
-import EconomicCalendar from '@/pages/EconomicCalendar';
+import Admin from '@/pages/Admin';                             // Extended with new tabs
+import EconomicCalendar from '@/pages/EconomicCalendar';       // Fixed for all visitors
 import Terms from '@/pages/Terms';
-import Newsletter from '@/pages/Newsletter';
+import Newsletter from '@/pages/Newsletter';                   // Upgraded to paid subscription
+import NewsletterEdition from '@/pages/NewsletterEdition';     // NEW — individual edition archive
+import KeystoneAI from '@/pages/KeystoneAI';                  // NEW — dedicated AI chat page
+
+// WealthCases still importable if needed but nav entry removed
+import WealthCases from '@/pages/WealthCases';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,19 +53,40 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
+        {/* Core */}
         <Route path="/" element={<Navigate to="/Home" replace />} />
         <Route path="/Home" element={<Home />} />
+
+        {/* Research — notes get their own URL */}
         <Route path="/Research" element={<Research />} />
+        <Route path="/Research/:slug" element={<ResearchArticle />} />
+        <Route path="/Research/Intelligence/:slug" element={<ResearchIntelligence />} />
+
+        {/* Portfolios — WealthCases merged inside as a tab */}
         <Route path="/Portfolios" element={<Portfolios />} />
-        <Route path="/WealthCases" element={<WealthCases />} />
-        <Route path="/AIPortfolioLab" element={<AIPortfolioLab />} />
+
+        {/* WealthCases legacy route — redirects to Portfolios */}
+        <Route path="/WealthCases" element={<Navigate to="/Portfolios" replace />} />
+
+        {/* Market Pulse — Trade Ideas tab inside */}
         <Route path="/MarketPulse" element={<MarketPulse />} />
+
+        {/* AI */}
+        <Route path="/AIPortfolioLab" element={<AIPortfolioLab />} />
+        <Route path="/AI" element={<KeystoneAI />} />
+
+        {/* Economic Calendar */}
+        <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
+
+        {/* Newsletter — paid subscription + edition archive */}
+        <Route path="/Newsletter" element={<Newsletter />} />
+        <Route path="/Newsletter/:slug" element={<NewsletterEdition />} />
+
+        {/* Static */}
         <Route path="/About" element={<About />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/Admin" element={<Admin />} />
-        <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
         <Route path="/Terms" element={<Terms />} />
-        <Route path="/Newsletter" element={<Newsletter />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -70,12 +98,12 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-<AuthenticatedApp />
+          <AuthenticatedApp />
         </Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
