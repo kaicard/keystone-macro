@@ -65,7 +65,7 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
 
     <!-- ── WORDMARK BAR ── -->
     <tr><td style="padding-bottom:20px;text-align:center;">
-      <span style="font-size:10px;letter-spacing:3px;color:#9ca3af;text-transform:uppercase;font-weight:600;">The Keystone Macro Letter</span>
+      <span style="font-size:10px;letter-spacing:3px;color:#9ca3af;text-transform:uppercase;font-weight:600;">The Keystone Macro Brief</span>
     </td></tr>
 
     <!-- ── HEADER ── -->
@@ -106,7 +106,7 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
         <div style="font-size:12px;color:#6b7280;line-height:1.8;margin-bottom:6px;">${footerNote}</div>
         <div style="border-top:1px solid #eeeeee;padding-top:16px;margin-top:14px;">
           <span style="font-size:11px;color:#9ca3af;line-height:1.9;">
-            The Keystone Macro Letter&nbsp;&nbsp;·&nbsp;&nbsp;Institutional Research &amp; Market Intelligence<br/>
+            The Keystone Macro Brief&nbsp;&nbsp;·&nbsp;&nbsp;Institutional Research &amp; Market Intelligence<br/>
             You are receiving this because you subscribed to Keystone Macro.<br/>
             <a href="https://keystonemacro.com/Newsletter#manage" style="color:#d97706;text-decoration:none;border-bottom:1px solid #d97706;">Manage or cancel subscription</a>
           </span>
@@ -145,9 +145,9 @@ Deno.serve(async (req) => {
 
     // ── Generate content via LLM with live internet context ─────────────────
     const generated = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are the lead analyst at Keystone Macro, a premium institutional research platform writing The Keystone Macro Letter. Today is ${dateStr}.
+      prompt: `You are the lead analyst at Keystone Macro, a premium institutional research platform writing The Keystone Macro Brief. Today is ${dateStr}.
 
-Write a comprehensive ${timeContext}. Cover EVERYTHING material: equities (US, EU, UK, Asia), FX, rates/bonds, commodities, crypto, M&A deals, earnings, macro data releases, central bank commentary, geopolitical risk, and regulatory news.
+Write a comprehensive ${timeContext} for The Keystone Macro Brief. Cover EVERYTHING material: equities (US, EU, UK, Asia), FX, rates/bonds, commodities, crypto, M&A deals, earnings, macro data releases, central bank commentary, geopolitical risk, and regulatory news.
 
 CRITICAL: Every section body must be thorough and complete — minimum 5-6 sentences per section, packed with specifics: exact tickers, exact levels, exact percentages, named policymakers, named companies, named countries. Leave nothing out. This is the complete briefing — readers rely solely on this email for their intelligence. Do not be vague. Do not say "several companies" — name them. Do not say "yields rose" — say by exactly how many basis points and to what level.
 
@@ -188,7 +188,7 @@ Return JSON with:
       }
     });
 
-    const subject = generated.subject_line || `The Keystone Macro Letter — ${editionLabel} — ${dateStr}`;
+    const subject = generated.subject_line || `The Keystone Macro Brief — ${editionLabel} — ${dateStr}`;
     const marketSnapshot = generated.market_snapshot || [];
     const sections = generated.sections || [];
     const footerNote = generated.footer_note || 'Markets close. The analysis never stops.';
@@ -200,9 +200,9 @@ Return JSON with:
     for (const subscriber of subscribers) {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: subscriber.email,
-        subject: `The Keystone Macro Letter — ${subject}`,
+        subject: `The Keystone Macro Brief — ${subject}`,
         body: htmlBody,
-        from_name: 'The Keystone Macro Letter',
+        from_name: 'The Keystone Macro Brief',
       });
       sent++;
     }
@@ -221,7 +221,7 @@ Return JSON with:
       tags: sections.map(s => s.label),
     });
 
-    return Response.json({ message: `${editionLabel} sent successfully`, sent, subject });
+    return Response.json({ message: `The Keystone Macro Brief — ${editionLabel} sent successfully`, sent, subject });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
