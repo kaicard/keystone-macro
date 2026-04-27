@@ -241,6 +241,7 @@ function IntelligenceItem({ item, index }) {
 export default function IntelligenceFeed() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeBeat, setActiveBeat] = useState('all');
   const [showAll, setShowAll] = useState(false);
@@ -250,6 +251,7 @@ export default function IntelligenceFeed() {
 
   const loadFeed = useCallback(async (forceRefresh = false) => {
     setLoading(true);
+    setError(null);
     try {
       if (!forceRefresh) {
         const { data: cached, recordId } = await loadFromCache();
@@ -269,7 +271,8 @@ export default function IntelligenceFeed() {
       setLastUpdated(new Date());
       await saveToCache(items, cacheIdRef.current);
     } catch (err) {
-      console.error('Intelligence feed error:', err);
+      console.error('Intelligence feed error:', err?.message || err);
+      setError(err?.message || 'Failed to load intelligence feed');
     } finally {
       setLoading(false);
     }
@@ -328,7 +331,13 @@ export default function IntelligenceFeed() {
       </div>
 
       <div>
-        {loading && allItems.length === 0 ? (
+        {error && allItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <p className="text-sm text-destructive">Failed to load feed</p>
+            <p className="text-xs text-muted-foreground/60">{error}</p>
+            <button onClick={() => loadFeed(true)} className="text-xs text-primary hover:underline">Try again</button>
+          </div>
+        ) : loading && allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <RefreshCw className="w-4 h-4 text-primary animate-spin" />
             <p className="text-sm text-muted-foreground">Generating intelligence feed...</p>
