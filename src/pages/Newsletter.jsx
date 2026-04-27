@@ -52,6 +52,20 @@ export default function Newsletter() {
     setIsSubscribed(results?.length > 0);
   };
 
+  React.useEffect(() => {
+    const checkOwner = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user?.email === 'kaicard05@gmail.com') {
+          setIsSubscribed(true);
+        }
+      } catch {
+        // User not authenticated
+      }
+    };
+    checkOwner();
+  }, []);
+
   const handleCancel = async (e) => {
     e.preventDefault();
     if (!cancelEmail) return;
