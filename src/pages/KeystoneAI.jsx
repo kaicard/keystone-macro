@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import PageBackground from '@/components/layout/PageBackground';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import AILabResults from '@/components/ailab/AILabResults';
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
@@ -104,7 +105,7 @@ function MessageBubble({ msg }) {
         {isUser ? (
           <p className="text-sm leading-relaxed">{msg.content}</p>
         ) : (
-          <ReactMarkdown components={markdownComponents}>
+          <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
             {msg.content}
           </ReactMarkdown>
         )}
