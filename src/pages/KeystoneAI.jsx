@@ -46,6 +46,42 @@ const STARTERS = [
   "Break down the oil supply/demand picture and geopolitical risk premium.",
 ];
 
+const markdownComponents = {
+  h1: ({ children }) => <h1 className="text-xl font-display font-semibold mt-6 mb-3 pb-2 border-b border-border/50 text-foreground">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-base font-semibold mt-5 mb-2.5 text-foreground">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-sm font-semibold mt-4 mb-2 text-primary">{children}</h3>,
+  p: ({ children }) => <p className="text-sm leading-7 text-foreground/90 mb-4 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="my-3 space-y-1.5 pl-1">{children}</ul>,
+  ol: ({ children }) => <ol className="my-3 space-y-1.5 pl-1 list-decimal list-inside">{children}</ol>,
+  li: ({ children }) => (
+    <li className="flex items-start gap-2 text-sm text-foreground/90 leading-6">
+      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+      <span>{children}</span>
+    </li>
+  ),
+  strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+  em: ({ children }) => <em className="italic text-muted-foreground">{children}</em>,
+  blockquote: ({ children }) => (
+    <blockquote className="my-4 pl-4 border-l-2 border-primary/40 text-muted-foreground italic text-sm">
+      {children}
+    </blockquote>
+  ),
+  code: ({ inline, children }) => inline
+    ? <code className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono text-primary">{children}</code>
+    : <pre className="my-4 p-4 rounded-xl bg-muted/60 overflow-x-auto text-xs font-mono leading-relaxed">{children}</pre>,
+  hr: () => <hr className="my-5 border-border/40" />,
+  table: ({ children }) => (
+    <div className="my-4 overflow-x-auto rounded-xl border border-border/50">
+      <table className="w-full text-sm border-collapse">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-muted/60">{children}</thead>,
+  tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
+  tr: ({ children }) => <tr className="hover:bg-muted/20 transition-colors">{children}</tr>,
+  th: ({ children }) => <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{children}</th>,
+  td: ({ children }) => <td className="px-4 py-2.5 text-sm text-foreground/85">{children}</td>,
+};
+
 function MessageBubble({ msg }) {
   const isUser = msg.role === 'user';
   return (
@@ -56,23 +92,25 @@ function MessageBubble({ msg }) {
       transition={{ duration: 0.25 }}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-1">
           <Sparkles className="w-4 h-4 text-primary" />
         </div>
       )}
-      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-        isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'glass rounded-tl-sm text-foreground'
+      <div className={`rounded-2xl ${
+        isUser
+          ? 'max-w-[75%] px-5 py-3.5 bg-primary text-primary-foreground rounded-tr-sm'
+          : 'w-full max-w-[92%] px-6 py-5 glass rounded-tl-sm text-foreground'
       }`}>
         {isUser ? (
-          <p>{msg.content}</p>
+          <p className="text-sm leading-relaxed">{msg.content}</p>
         ) : (
-          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_p]:my-1.5 [&_ul]:my-1.5 [&_li]:my-0.5 [&_strong]:text-foreground">
+          <ReactMarkdown components={markdownComponents}>
             {msg.content}
           </ReactMarkdown>
         )}
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-muted-foreground">
+        <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-1 text-xs font-bold text-muted-foreground">
           You
         </div>
       )}
@@ -154,7 +192,7 @@ function AnalystChat() {
             </div>
           </motion.div>
         ) : (
-          <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1" style={{ maxHeight: 'calc(100vh - 380px)' }}>
+          <div className="flex-1 overflow-y-auto space-y-6 pb-4 pr-1" style={{ maxHeight: 'calc(100vh - 380px)' }}>
             {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
             {loading && <TypingIndicator />}
             <div ref={bottomRef} />
