@@ -143,55 +143,64 @@ Deno.serve(async (req) => {
       ? 'pre-market brief covering overnight developments, Asian session, European open and what to watch today'
       : 'end-of-day wrap covering everything that moved markets today — equities, bonds, FX, commodities, M&A, macro data releases, geopolitical developments, central bank commentary, and corporate news';
 
-    // ── Generate content via LLM with live internet context ─────────────────
-    const generated = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are the lead analyst at Keystone Macro, a premium institutional research platform writing The Keystone Macro Brief. Today is ${dateStr}.
-
-Write a comprehensive ${timeContext} for The Keystone Macro Brief. Cover EVERYTHING material: equities (US, EU, UK, Asia), FX, rates/bonds, commodities, crypto, M&A deals, earnings, macro data releases, central bank commentary, geopolitical risk, and regulatory news.
-
-CRITICAL: Every section body must be thorough and complete — minimum 5-6 sentences per section, packed with specifics: exact tickers, exact levels, exact percentages, named policymakers, named companies, named countries. Leave nothing out. This is the complete briefing — readers rely solely on this email for their intelligence. Do not be vague. Do not say "several companies" — name them. Do not say "yields rose" — say by exactly how many basis points and to what level.
-
-Write like a senior sell-side analyst at Goldman Sachs or JPMorgan — sharp, authoritative, precise. No emojis anywhere.
+    // ── Generate content via two LLM calls to avoid JSON truncation ─────────
+    const [metaRes, sectionsRes] = await Promise.all([
+      base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr}. This is the ${editionLabel}.
 
 Return JSON with:
-- subject_line: A PUNCHY, ENTICING subject line (max 72 chars). Urgent, provocative, specific. No emojis.
-- market_snapshot: array of exactly 5 objects {label, value, change} — key levels right now (e.g. S&P 500, 10Y UST, DXY, Gold, Brent)
-- sections: array of 6-8 objects, each with:
-  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "M&A", "Macro Data", "Geopolitics", "Central Banks", "Earnings", "Credit")
-  - headline: punchy 1-line headline — no emojis
-  - body: 5-6 dense, specific sentences with exact data. No emojis. Newline (\\n) between paragraphs if needed.
-  - callout: 1 concise forward-looking sentence — the most actionable takeaway. No emojis.
+- subject_line: A PUNCHY subject line (max 72 chars). Urgent, specific, no emojis.
+- market_snapshot: array of exactly 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with real current levels.
 - footer_note: A sharp 1-line closing observation. No emojis.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          subject_line: { type: 'string' },
-          market_snapshot: {
-            type: 'array',
-            items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'string' }, change: { type: 'string' } } }
-          },
-          sections: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                label: { type: 'string' },
-                headline: { type: 'string' },
-                body: { type: 'string' },
-                callout: { type: 'string' }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            subject_line: { type: 'string' },
+            market_snapshot: {
+              type: 'array',
+              items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'string' }, change: { type: 'string' } } }
+            },
+            footer_note: { type: 'string' }
+          }
+        }
+      }),
+      base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr}. This is the ${editionLabel} — a ${timeContext}.
+
+Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section must be thorough: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise. No emojis anywhere.
+
+Return JSON with:
+- sections: array of exactly 6 objects, each with:
+  - label: short category tag
+  - headline: punchy 1-line headline
+  - body: 4-5 dense specific sentences with exact data
+  - callout: 1 forward-looking actionable sentence`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            sections: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  label: { type: 'string' },
+                  headline: { type: 'string' },
+                  body: { type: 'string' },
+                  callout: { type: 'string' }
+                }
               }
             }
-          },
-          footer_note: { type: 'string' }
+          }
         }
-      }
-    });
+      })
+    ]);
 
-    const subject = generated.subject_line || `The Keystone Macro Brief — ${editionLabel} — ${dateStr}`;
-    const marketSnapshot = generated.market_snapshot || [];
-    const sections = generated.sections || [];
-    const footerNote = generated.footer_note || 'Markets close. The analysis never stops.';
+    const subject = metaRes.subject_line || `The Keystone Macro Brief — ${editionLabel} — ${dateStr}`;
+    const marketSnapshot = metaRes.market_snapshot || [];
+    const sections = sectionsRes.sections || [];
+    const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
 
     const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote });
 
