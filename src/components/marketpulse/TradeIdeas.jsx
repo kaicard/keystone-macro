@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ASSET_COLORS = {
   'Equities': 'text-purple-400 bg-purple-400/10 border-purple-400/20',
@@ -73,6 +74,47 @@ const SEED_IDEAS = [
   },
 ];
 
+// Simple illustrative price path for educational context
+function SimpleTradeChart({ direction }) {
+  const data = direction === 'long'
+    ? [
+        { x: 0, price: 100 },
+        { x: 20, price: 98 },
+        { x: 40, price: 105 },
+        { x: 60, price: 110 },
+        { x: 80, price: 115 },
+        { x: 100, price: 120 },
+      ]
+    : [
+        { x: 0, price: 100 },
+        { x: 20, price: 102 },
+        { x: 40, price: 98 },
+        { x: 60, price: 92 },
+        { x: 80, price: 88 },
+        { x: 100, price: 85 },
+      ];
+
+  return (
+    <ResponsiveContainer width="100%" height={140}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 20% 16%)" vertical={false} />
+        <XAxis dataKey="x" tick={{ fontSize: 10, fill: 'hsl(215 15% 50%)' }} label={{ value: 'Time →', fontSize: 9, offset: 2 }} />
+        <YAxis tick={{ fontSize: 10, fill: 'hsl(215 15% 50%)' }} domain={['dataMin - 5', 'dataMax + 5']} label={{ value: 'Price', angle: -90, position: 'insideLeft', style: { fontSize: 9 } }} />
+        <Tooltip contentStyle={{ backgroundColor: 'hsl(222 25% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '6px', fontSize: '11px' }} />
+        <Line
+          type="monotone"
+          dataKey="price"
+          stroke={direction === 'long' ? 'hsl(160 50% 50%)' : 'hsl(0 80% 60%)'}
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive
+          animationDuration={800}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
 function TradeCard({ idea }) {
   const [expanded, setExpanded] = useState(false);
   const assetStyle = ASSET_COLORS[idea.asset_class] || 'text-muted-foreground bg-muted/40';
@@ -112,21 +154,7 @@ function TradeCard({ idea }) {
           </div>
         </div>
 
-        {/* Levels grid */}
-        {(idea.entry_level || idea.exit_level || idea.stop_level) && (
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            {[
-              { label: 'Entry', value: idea.entry_level, color: 'text-foreground' },
-              { label: 'Target', value: idea.exit_level, color: 'text-emerald-400' },
-              { label: 'Stop', value: idea.stop_level, color: 'text-red-400' },
-            ].map(l => l.value && (
-              <div key={l.label} className="bg-muted/30 rounded-lg px-3 py-2">
-                <p className="text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-0.5">{l.label}</p>
-                <p className={`text-xs font-bold font-mono ${l.color}`}>{l.value}</p>
-              </div>
-            ))}
-          </div>
-        )}
+
       </button>
 
       <AnimatePresence>
@@ -139,6 +167,12 @@ function TradeCard({ idea }) {
             className="overflow-hidden"
           >
             <div className="border-t border-border/20 px-5 pb-5 pt-4 space-y-4">
+              {/* Simple illustrative chart */}
+              <div className="bg-muted/20 rounded-lg p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-3">Illustrative Price Path — Educational Reference Only</p>
+                <SimpleTradeChart direction={idea.direction} />
+              </div>
+
               {idea.methodology && (
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-1">Methodology</p>
@@ -193,7 +227,7 @@ export default function TradeIdeas() {
       <div className="flex gap-3 items-start bg-amber-400/5 border border-amber-400/15 rounded-xl p-4">
         <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-amber-400">Historical hypothetical analysis only.</span> These are illustrative examples of trades that may have occurred historically based on publicly available information. This is not financial advice, not a signal service, and cannot be replicated. For educational and analytical purposes only.
+          <span className="font-semibold text-amber-400">Educational & historical analysis only.</span> These are illustrative historical trade examples for analytical learning purposes. No entry prices, targets, or stop levels are provided. This is NOT financial advice, NOT a trading signal service, and NOT actionable. Do your own research and consult qualified advisors before any trading decisions.
         </p>
       </div>
 
