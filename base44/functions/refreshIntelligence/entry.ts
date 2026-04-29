@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const JBLANKED_API_KEY = Deno.env.get('JBLANKED_API_KEY');
+
 function generateSlug(headline, eventTime) {
   const base = (headline || '')
     .toLowerCase()
@@ -8,55 +10,134 @@ function generateSlug(headline, eventTime) {
     .replace(/-+/g, '-')
     .slice(0, 80)
     .trim();
-  // Add time suffix to avoid same-headline collisions across days
   const suffix = (eventTime || '').replace(/[^0-9]/g, '').slice(0, 8);
   return suffix ? `${base}-${suffix}` : base;
+}
+
+// Map currency → beat/category
+function currencyToBeat(currency) {
+  if (currency === 'USD') return { beat: 'us_economy', category: 'US Economy' };
+  if (currency === 'GBP') return { beat: 'uk_economy', category: 'UK Economy' };
+  if (currency === 'EUR') return { beat: 'eu_economy', category: 'EU Economy' };
+  if (currency === 'CAD') return { beat: 'macro', category: 'Macro' };
+  if (currency === 'JPY') return { beat: 'macro', category: 'Macro' };
+  return { beat: 'macro', category: 'Macro' };
+}
+
+// Sentiment from Quality/Outcome
+function deriveSentiment(event) {
+  const quality = (event.Quality || '').toLowerCase();
+  const outcome = (event.Outcome || '').toLowerCase();
+  if (quality.includes('good')) return 'positive';
+  if (quality.includes('bad')) return 'negative';
+  if (outcome.includes('actual > forecast') || outcome.includes('actual > previous')) return 'positive';
+  if (outcome.includes('actual < forecast') || outcome.includes('actual < previous')) return 'negative';
+  return 'neutral';
+}
+
+// Parse jblanked date "YYYY.MM.DD HH:MM:SS" → ISO
+function parseJBDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    // Format: "2026.04.29 13:30:00"
+    const clean = dateStr.replace(/\./g, '-').replace(' ', 'T') + 'Z';
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) return d.toISOString();
+  } catch (_) {}
+  return null;
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     const londonDate = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
     const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
-    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); // YYYY-MM-DD in London time
     const batchId = `batch_${now.toISOString()}`;
 
-    // ── Fetch existing slugs from the last 7 days to avoid duplicates ─────────
-    const cutoffDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // ── Fetch existing items to deduplicate ───────────────────────────────────
     const existing = await base44.asServiceRole.entities.IntelligenceItem.list('-published_at', 500);
+    const cutoffDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     const recentExisting = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
     const existingSlugs = new Set(recentExisting.map(i => i.slug));
-    const existingHeadlines = new Set(recentExisting.map(i => (i.headline || '').toLowerCase().slice(0, 60)));
+    const existingHeadlines = new Set(recentExisting.map(i => (i.headline || '').toLowerCase().slice(0, 50)));
 
-    // ── Search for real, verified stories ─────────────────────────────────────
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are a financial newswire editor at Keystone Macro. The current time is ${londonTime} London time on ${londonDate}.
+    // ── STEP 1: Pull today's real economic events from jblanked (3 sources) ──
+    const headers = {
+      'Authorization': `Api-Key ${JBLANKED_API_KEY}`,
+      'Content-Type': 'application/json',
+    };
 
-YOUR ONLY JOB: Search the internet RIGHT NOW and find REAL, VERIFIED news stories that have actually been published today or in the last 6 hours. Do not fabricate, invent, or extrapolate ANY story.
+    const [mql5Res, ffRes] = await Promise.all([
+      fetch('https://www.jblanked.com/news/api/mql5/calendar/today/?impact=High', { headers }),
+      fetch('https://www.jblanked.com/news/api/forex-factory/calendar/today/?impact=High', { headers }),
+    ]);
 
-VERIFICATION REQUIREMENT: Only include a story if you can confirm it appears in real search results from Bloomberg, Reuters, FT, WSJ, CNBC, AP, BBC, Sky News, Guardian, or similar authoritative sources. If you are not confident a story is real, omit it entirely. It is MUCH better to return 5 real stories than 12 invented ones.
+    const [mql5Data, ffData] = await Promise.all([
+      mql5Res.ok ? mql5Res.json() : [],
+      ffRes.ok ? ffRes.json() : [],
+    ]);
 
-For each confirmed real story:
-- event_time: the ACTUAL time the event happened or was reported, in ISO format (e.g. "2026-04-29T14:30:00Z"). Use the article's actual publication timestamp — NOT the current time. This is critical for accurate timelines.
-- headline: sharp, specific (max 15 words), must include a specific figure, name, or level
-- category: one of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
-- beat: one of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
-- sentiment: positive / negative / neutral (from an investor perspective)
-- impact: 2 sentences — what specifically happened (with exact numbers/names) and the immediate market reaction
-- desk_view: 3 sentences — structural context, cross-asset implications, what to monitor in the next 24-48 hours
+    // Merge, deduplicate by Name+Currency, keep High impact only
+    const seen = new Set();
+    const allEvents = [...(Array.isArray(mql5Data) ? mql5Data : []), ...(Array.isArray(ffData) ? ffData : [])]
+      .filter(e => {
+        if (!e.Name || !e.Currency) return false;
+        if ((e.Impact || '').toLowerCase() !== 'high') return false;
+        const key = `${e.Name}-${e.Currency}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+    // Only include events that have actually been released (have real Actual data)
+    const releasedEvents = allEvents.filter(e => {
+      if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
+      // Skip if Outcome/Strength suggest no data loaded yet
+      const outcome = (e.Outcome || '').toLowerCase();
+      const name = (e.Name || '').toLowerCase();
+      if (outcome === '' && e.Actual === 0 && e.Forecast === 0) return false;
+      if (name.includes('press conference') || name.includes('speech') || name.includes('statement')) return false;
+      return true;
+    });
+
+    if (releasedEvents.length === 0) {
+      // No high-impact data releases today yet — skip
+      return Response.json({ ok: true, created: 0, skipped: 0, reason: 'no released high-impact events today', batch_id: batchId });
+    }
+
+    // ── STEP 2: LLM writes Keystone intelligence ONLY for these real events ───
+    const eventList = releasedEvents.slice(0, 15).map((e, i) => {
+      return `EVENT ${i + 1}:
+Name: ${e.Name}
+Currency: ${e.Currency}
+Category: ${e.Category || ''}
+Date/Time: ${e.Date || ''}
+Actual: ${e.Actual}
+Forecast: ${e.Forecast !== undefined ? e.Forecast : 'N/A'}
+Previous: ${e.Previous !== undefined ? e.Previous : 'N/A'}
+Outcome: ${e.Outcome || ''}
+Strength: ${e.Strength || ''}
+Quality: ${e.Quality || ''}`;
+    }).join('\n\n');
+
+    const rewriteResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are the senior markets editor at Keystone Macro, an institutional macro intelligence platform. Today is ${londonDate}, ${londonTime} London time.
+
+The following are REAL economic data releases from today, sourced from MQL5 and Forex Factory. These are the only events you are allowed to write about. Do NOT invent additional context, stories, or events not present in this data.
+
+${eventList}
+
+For EACH event above, write a Keystone Macro intelligence item. Use the actual numbers exactly as given. Write in a sharp, authoritative institutional voice — like Bloomberg Terminal or FT Markets Desk. No filler, no speculation beyond what the data implies.
+
+For each item return:
+- headline: punchy Keystone headline (max 15 words) including the specific figure and currency
+- sentiment: positive / negative / neutral based on the Quality/Outcome fields above (good data = positive, bad data = negative)
+- impact: 2 sentences — what the data showed (preserve exact figures vs forecast) and the immediate market implication for the relevant currency/asset
+- desk_view: 3 sentences — what this means structurally, cross-asset read-through (FX, rates, equities), what to monitor next
 - what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"
-- top_story: true for the 3 most market-moving stories, false otherwise
-
-STRICT RULES:
-- NO fabricated or hallucinated stories — only confirmed real events
-- NO URLs, links, or source domain names in any field
-- event_time must be the ACTUAL event/publication time, not the current time
-- Cover diverse topics: equities, bonds, FX, commodities, geopolitics, central banks, corporate news
-
-Return between 5 and 15 stories — quality over quantity.`,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
+- event_time: the Date field from the event in ISO format`,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -66,13 +147,10 @@ Return between 5 and 15 stories — quality over quantity.`,
               type: 'object',
               properties: {
                 headline:      { type: 'string' },
-                category:      { type: 'string' },
-                beat:          { type: 'string' },
                 sentiment:     { type: 'string' },
                 impact:        { type: 'string' },
                 desk_view:     { type: 'string' },
                 what_to_watch: { type: 'string' },
-                top_story:     { type: 'boolean' },
                 event_time:    { type: 'string' },
               }
             }
@@ -81,46 +159,48 @@ Return between 5 and 15 stories — quality over quantity.`,
       }
     });
 
-    const items = result?.items || [];
+    const items = rewriteResult?.items || [];
     let created = 0;
     let skipped = 0;
 
-    for (const item of items) {
+    for (let idx = 0; idx < items.length; idx++) {
+      const item = items[idx];
+      const sourceEvent = releasedEvents[idx];
       if (!item.headline || item.headline.length < 10) { skipped++; continue; }
 
-      const slug = generateSlug(item.headline, item.event_time);
-      if (!slug) { skipped++; continue; }
+      const slug = generateSlug(item.headline, item.event_time || sourceEvent?.Date);
+      if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
 
-      // Deduplicate by slug AND by headline similarity
-      if (existingSlugs.has(slug)) { skipped++; continue; }
-      const headlineKey = item.headline.toLowerCase().slice(0, 60);
+      const headlineKey = item.headline.toLowerCase().slice(0, 50);
       if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
 
-      // Parse actual event time — fall back to batch time only if truly unknown
-      let publishedAt = now.toISOString();
-      let publishedDate = todayStr;
-      if (item.event_time) {
-        try {
-          const parsed = new Date(item.event_time);
-          if (!isNaN(parsed.getTime()) && parsed <= now) {
-            publishedAt = parsed.toISOString();
-            publishedDate = parsed.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
-          }
-        } catch (_) {}
+      // Derive category/beat from the source event's currency
+      const { beat, category } = currencyToBeat(sourceEvent?.Currency || 'USD');
+
+      // Parse published time
+      let publishedAt = parseJBDate(sourceEvent?.Date) || now.toISOString();
+      let publishedDate = new Date(publishedAt).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+
+      // Validate date isn't in the future
+      if (new Date(publishedAt) > now) {
+        publishedAt = now.toISOString();
+        publishedDate = todayStr;
       }
+
+      const sentiment = item.sentiment || deriveSentiment(sourceEvent || {});
 
       await base44.asServiceRole.entities.IntelligenceItem.create({
         headline:      item.headline,
-        category:      item.category || 'Macro',
-        beat:          item.beat || 'macro',
-        sentiment:     item.sentiment || 'neutral',
+        category,
+        beat,
+        sentiment,
         impact:        item.impact || '',
         desk_view:     item.desk_view || '',
         what_to_watch: item.what_to_watch || '',
         slug,
         published_at:   publishedAt,
         published_date: publishedDate,
-        is_top_story:   item.top_story === true,
+        is_top_story:   false,
         batch_id:       batchId,
       });
 
@@ -130,8 +210,7 @@ Return between 5 and 15 stories — quality over quantity.`,
     }
 
     // ── Prune items older than 7 days ─────────────────────────────────────────
-    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
-    const old = (existing || []).filter(i => (i.published_date || '') < sevenDaysAgo);
+    const old = (existing || []).filter(i => (i.published_date || '') < cutoffDate);
     for (const oldItem of old) {
       await base44.asServiceRole.entities.IntelligenceItem.delete(oldItem.id);
     }
@@ -141,7 +220,7 @@ Return between 5 and 15 stories — quality over quantity.`,
       created,
       skipped,
       pruned: old.length,
-      total_in_db: recentExisting.length + created,
+      events_from_api: releasedEvents.length,
       batch_id: batchId,
     });
   } catch (error) {
