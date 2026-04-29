@@ -47,7 +47,7 @@ const YAHOO_SYMBOL_MAP = {
   'GBP/USD': 'GBPUSD%3DX', 'EUR/USD': 'EURUSD%3DX', 'USD/JPY': 'USDJPY%3DX',
   'USD/CHF': 'USDCHF%3DX', 'AUD/USD': 'AUDUSD%3DX', 'EUR/GBP': 'EURGBP%3DX',
   'USD/CAD': 'USDCAD%3DX', 'USD/CNH': 'USDCNH%3DX',
-  'Gold': 'GC%3DF', 'Silver': 'SI%3DF', 'Platinum': 'PL%3DF',
+  'Gold Spot': 'XAUUSD%3DX', 'Gold Futures': 'GC%3DF', 'Silver Spot': 'XAGUSD%3DX', 'Silver Futures': 'SI%3DF', 'Platinum': 'PL%3DF',
   'WTI Crude': 'CL%3DF', 'Brent Crude': 'BZ%3DF',
   'Natural Gas': 'NG%3DF', 'Copper': 'HG%3DF', 'Wheat': 'ZW%3DF', 'Corn': 'ZC%3DF',
 };
