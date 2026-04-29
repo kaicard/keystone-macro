@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap } from 'lucide-react';
+import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const BEATS = [
   { key: 'all',         label: 'All' },
   { key: 'macro',       label: 'Macro' },
@@ -19,6 +20,13 @@ const BEATS = [
   { key: 'geopolitics', label: 'Geopolitics' },
   { key: 'credit',      label: 'Credit' },
   { key: 'tech',        label: 'Technology' },
+];
+
+const DATE_FILTERS = [
+  { key: 'today',     label: 'Today' },
+  { key: 'yesterday', label: 'Yesterday' },
+  { key: 'week',      label: 'This Week' },
+  { key: 'all',       label: 'All' },
 ];
 
 const CATEGORY_STYLES = {
@@ -41,12 +49,27 @@ const SENTIMENT_DOT = {
   neutral:   'bg-amber-400/60',
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function londonDateStr(date = new Date()) {
+  return date.toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); // YYYY-MM-DD
+}
+
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day; // Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return londonDateStr(monday);
+}
+
 function getDateLabel(dateStr) {
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const today = londonDateStr();
+  const yesterday = londonDateStr(new Date(Date.now() - 86400000));
   if (dateStr === today) return 'Today';
   if (dateStr === yesterday) return 'Yesterday';
-  return new Date(dateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+  return new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
 }
 
 function formatTime(isoStr) {
@@ -57,18 +80,18 @@ function formatTime(isoStr) {
 }
 
 // ─── Single Intelligence Item ─────────────────────────────────────────────────
-function IntelligenceItem({ item, index, showDate = false }) {
+function IntelligenceItem({ item, index }) {
   const [expanded, setExpanded] = useState(false);
-  const navigate = useNavigate();
-  const catStyle = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
-  const sentDot  = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
-  const time     = formatTime(item.published_at);
+  const navigate  = useNavigate();
+  const catStyle  = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
+  const sentDot   = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
+  const time      = formatTime(item.published_at);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.25) }}
+      transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.2) }}
       className="border-b border-border/20 last:border-0"
     >
       <button
@@ -83,7 +106,7 @@ function IntelligenceItem({ item, index, showDate = false }) {
                 {item.category}
               </Badge>
               {item.is_top_story && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400/80 bg-amber-400/8 px-1.5 py-0.5 rounded border border-amber-400/15">
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400/80 px-1.5 py-0.5 rounded border border-amber-400/20 bg-amber-400/8">
                   <Star className="w-2.5 h-2.5" /> Top Story
                 </span>
               )}
@@ -91,9 +114,6 @@ function IntelligenceItem({ item, index, showDate = false }) {
                 <span className="text-xs text-muted-foreground/50 font-mono flex items-center gap-1">
                   <Clock className="w-3 h-3" />{time}
                 </span>
-              )}
-              {showDate && item.published_date && (
-                <span className="text-[10px] text-muted-foreground/35">{getDateLabel(item.published_date)}</span>
               )}
             </div>
             <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors">
@@ -160,24 +180,22 @@ function IntelligenceItem({ item, index, showDate = false }) {
   );
 }
 
-// ─── Day Group ─────────────────────────────────────────────────────────────────
-function DayGroup({ dateStr, items, beatFilter, defaultOpen }) {
+// ─── Day Group (collapsible) ──────────────────────────────────────────────────
+function DayGroup({ dateStr, items, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen);
-  const filtered = beatFilter === 'all' ? items : items.filter(i => i.beat === beatFilter);
-  if (filtered.length === 0) return null;
-  const label = getDateLabel(dateStr);
+  if (!items.length) return null;
 
   return (
     <div className="border-b border-border/20 last:border-0">
       <button
-        className="w-full flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3 hover:bg-muted/5 transition-colors"
         onClick={() => setOpen(o => !o)}
       >
         <div className="flex items-center gap-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50">{label}</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground/50 font-medium">{filtered.length}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">{getDateLabel(dateStr)}</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground/40 font-medium">{items.length}</span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/30 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/25 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence>
         {open && (
@@ -188,7 +206,7 @@ function DayGroup({ dateStr, items, beatFilter, defaultOpen }) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            {filtered.map((item, i) => (
+            {items.map((item, i) => (
               <IntelligenceItem key={item.id} item={item} index={i} />
             ))}
           </motion.div>
@@ -201,28 +219,59 @@ function DayGroup({ dateStr, items, beatFilter, defaultOpen }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function IntelligenceFeed() {
   const [activeBeat, setActiveBeat] = useState('all');
+  const [activeDateFilter, setActiveDateFilter] = useState('today');
 
-  // Fetch from persistent entity — fast load, pre-populated server-side
   const { data: allItems = [], isLoading } = useQuery({
     queryKey: ['intelligence-feed'],
-    queryFn: () => base44.entities.IntelligenceItem.list('-published_at', 200),
+    queryFn: () => base44.entities.IntelligenceItem.list('-published_at', 300),
     staleTime: 2 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });
 
-  // Group by date
-  const byDate = allItems.reduce((acc, item) => {
-    const d = item.published_date || item.published_at?.split('T')[0] || 'unknown';
-    if (!acc[d]) acc[d] = [];
-    acc[d].push(item);
-    return acc;
-  }, {});
+  // Apply date + beat filters
+  const filtered = useMemo(() => {
+    const today     = londonDateStr();
+    const yesterday = londonDateStr(new Date(Date.now() - 86400000));
+    const weekStart = getWeekStart();
+
+    return allItems.filter(item => {
+      const d = item.published_date || item.published_at?.split('T')[0] || '';
+
+      // Date filter
+      if (activeDateFilter === 'today'     && d !== today)                return false;
+      if (activeDateFilter === 'yesterday' && d !== yesterday)            return false;
+      if (activeDateFilter === 'week'      && (d < weekStart || d > today)) return false;
+
+      // Beat filter
+      if (activeBeat !== 'all' && item.beat !== activeBeat) return false;
+
+      return true;
+    });
+  }, [allItems, activeDateFilter, activeBeat]);
+
+  // Group filtered items by date, sorted newest-first
+  const byDate = useMemo(() => {
+    const groups = {};
+    filtered.forEach(item => {
+      const d = item.published_date || item.published_at?.split('T')[0] || 'unknown';
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(item);
+    });
+    // Within each day, sort by time descending
+    Object.values(groups).forEach(g => g.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')));
+    return groups;
+  }, [filtered]);
 
   const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayItems = byDate[todayStr] || [];
-  const topStories = todayItems.filter(i => i.is_top_story);
-  const filteredTopStories = activeBeat === 'all' ? topStories : topStories.filter(i => i.beat === activeBeat);
+
+  // Top stories = today's top_story items (shown regardless of date filter)
+  const todayStr = londonDateStr();
+  const topStories = useMemo(() =>
+    allItems
+      .filter(i => i.is_top_story && i.published_date === todayStr && (activeBeat === 'all' || i.beat === activeBeat))
+      .sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')),
+    [allItems, activeBeat, todayStr]
+  );
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -234,18 +283,36 @@ export default function IntelligenceFeed() {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
           </div>
           <span className="font-semibold text-sm">Research Intelligence</span>
-          {allItems.length > 0 && (
-            <span className="text-xs text-muted-foreground/40 hidden sm:inline">{allItems.length} items</span>
+          {filtered.length > 0 && (
+            <span className="text-xs text-muted-foreground/40 hidden sm:inline">{filtered.length} items</span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground/30 hidden sm:inline">Refreshed every 30 min</span>
+          <span className="text-[10px] text-muted-foreground/30 hidden sm:inline">Live · refreshed every 30 min</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
         </div>
       </div>
 
-      {/* Beat filter tabs */}
-      <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/30">
+      {/* Date filter */}
+      <div className="flex items-center gap-1 px-4 py-2.5 border-b border-border/20">
+        <Calendar className="w-3.5 h-3.5 text-muted-foreground/30 mr-1 shrink-0" />
+        {DATE_FILTERS.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setActiveDateFilter(f.key)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+              activeDateFilter === f.key
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/20'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Beat filter */}
+      <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/20">
         {BEATS.map(beat => (
           <button
             key={beat.key}
@@ -261,41 +328,43 @@ export default function IntelligenceFeed() {
         ))}
       </div>
 
+      {/* Content */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           <p className="text-sm text-muted-foreground">Loading intelligence feed...</p>
         </div>
-      ) : allItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground/50">
-          <Zap className="w-5 h-5" />
-          <p className="text-sm">No items yet — feed refreshes every 30 minutes</p>
-        </div>
       ) : (
         <>
-          {/* Top Stories */}
-          {filteredTopStories.length > 0 && (
-            <div className="border-b border-border/30">
-              <div className="px-5 py-3 flex items-center gap-2 bg-amber-400/3">
+          {/* Top Stories — only shown on "Today" or "All" view */}
+          {(activeDateFilter === 'today' || activeDateFilter === 'all') && topStories.length > 0 && (
+            <div className="border-b border-border/25">
+              <div className="px-5 py-2.5 flex items-center gap-2 bg-amber-400/4 border-b border-amber-400/10">
                 <Star className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">Top Stories</span>
               </div>
-              {filteredTopStories.map((item, i) => (
+              {topStories.map((item, i) => (
                 <IntelligenceItem key={item.id} item={item} index={i} />
               ))}
             </div>
           )}
 
-          {/* Grouped by date */}
-          {sortedDates.map((dateStr, di) => (
-            <DayGroup
-              key={dateStr}
-              dateStr={dateStr}
-              items={byDate[dateStr]}
-              beatFilter={activeBeat}
-              defaultOpen={di === 0}
-            />
-          ))}
+          {/* Day-grouped feed */}
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground/40">
+              <Zap className="w-5 h-5" />
+              <p className="text-sm">No items for this period</p>
+            </div>
+          ) : (
+            sortedDates.map((dateStr, di) => (
+              <DayGroup
+                key={dateStr}
+                dateStr={dateStr}
+                items={byDate[dateStr]}
+                defaultOpen={di === 0}
+              />
+            ))
+          )}
         </>
       )}
     </div>

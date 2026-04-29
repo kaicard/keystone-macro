@@ -1,13 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-function generateSlug(headline) {
-  return (headline || '')
+function generateSlug(headline, eventTime) {
+  const base = (headline || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .slice(0, 90)
+    .slice(0, 80)
     .trim();
+  // Add time suffix to avoid same-headline collisions across days
+  const suffix = (eventTime || '').replace(/[^0-9]/g, '').slice(0, 8);
+  return suffix ? `${base}-${suffix}` : base;
 }
 
 Deno.serve(async (req) => {
@@ -16,37 +19,42 @@ Deno.serve(async (req) => {
     const now = new Date();
     const londonDate = now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
     const londonTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); // YYYY-MM-DD in London time
     const batchId = `batch_${now.toISOString()}`;
 
-    // ── Fetch all existing slugs from today to avoid duplicates ──────────────
-    const existing = await base44.asServiceRole.entities.IntelligenceItem.filter({ published_date: todayStr });
-    const existingSlugs = new Set((existing || []).map(i => i.slug));
+    // ── Fetch existing slugs from the last 7 days to avoid duplicates ─────────
+    const cutoffDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const existing = await base44.asServiceRole.entities.IntelligenceItem.list('-published_at', 500);
+    const recentExisting = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
+    const existingSlugs = new Set(recentExisting.map(i => i.slug));
+    const existingHeadlines = new Set(recentExisting.map(i => (i.headline || '').toLowerCase().slice(0, 60)));
 
-    // ── Generate headlines + enrichment in one LLM call ──────────────────────
+    // ── Search for real, verified stories ─────────────────────────────────────
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are the senior editor of Keystone Macro, an institutional macro intelligence platform. Today is ${londonDate}, ${londonTime} London time.
+      prompt: `You are a financial newswire editor at Keystone Macro. The current time is ${londonTime} London time on ${londonDate}.
 
-Search the internet RIGHT NOW for the 12 most important financial market and geopolitical stories published TODAY. Cover: US equities, rates/bonds, FX, commodities, UK/EU macro, geopolitics, central banks, corporate earnings, credit. No two items should cover the same topic.
+YOUR ONLY JOB: Search the internet RIGHT NOW and find REAL, VERIFIED news stories that have actually been published today or in the last 6 hours. Do not fabricate, invent, or extrapolate ANY story.
 
-For each story, write in Keystone Macro's editorial voice — sharp, precise, analytical. Like Bloomberg or FT. Include specific levels, percentages, named companies or policymakers.
+VERIFICATION REQUIREMENT: Only include a story if you can confirm it appears in real search results from Bloomberg, Reuters, FT, WSJ, CNBC, AP, BBC, Sky News, Guardian, or similar authoritative sources. If you are not confident a story is real, omit it entirely. It is MUCH better to return 5 real stories than 12 invented ones.
 
-STRICT RULES:
-- Only include stories confirmed to exist in your search results — do NOT fabricate
-- Only include stories from the last 12 hours
-- Flag the 3 most important stories as top_story: true
-- Do NOT include any URLs, links, source domains, or citations in any field
-- Write ALL fields fresh in Keystone Macro's voice — do not copy-paste from source material
-
-For each story:
-- headline: punchy, specific headline (max 15 words) with a number or name
+For each confirmed real story:
+- event_time: the ACTUAL time the event happened or was reported, in ISO format (e.g. "2026-04-29T14:30:00Z"). Use the article's actual publication timestamp — NOT the current time. This is critical for accurate timelines.
+- headline: sharp, specific (max 15 words), must include a specific figure, name, or level
 - category: one of: Macro, Equities, Rates, Commodities, FX, Geopolitics, Credit, Technology, US Economy, UK Economy, EU Economy
 - beat: one of: macro, equities, us_economy, uk_economy, eu_economy, rates, commodities, fx, geopolitics, credit, tech
-- sentiment: positive / negative / neutral
-- impact: 2 specific sentences on what happened and the immediate market effect
-- desk_view: 3 sentences of original analysis — structural context, cross-asset implication, what to watch in the next 48 hours
-- what_to_watch: 3-4 instruments with brief reason, format: "INSTRUMENT (reason); INSTRUMENT (reason)"
-- top_story: boolean — true for the 3 most market-moving stories, false otherwise`,
+- sentiment: positive / negative / neutral (from an investor perspective)
+- impact: 2 sentences — what specifically happened (with exact numbers/names) and the immediate market reaction
+- desk_view: 3 sentences — structural context, cross-asset implications, what to monitor in the next 24-48 hours
+- what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"
+- top_story: true for the 3 most market-moving stories, false otherwise
+
+STRICT RULES:
+- NO fabricated or hallucinated stories — only confirmed real events
+- NO URLs, links, or source domain names in any field
+- event_time must be the ACTUAL event/publication time, not the current time
+- Cover diverse topics: equities, bonds, FX, commodities, geopolitics, central banks, corporate news
+
+Return between 5 and 15 stories — quality over quantity.`,
       add_context_from_internet: true,
       model: 'gemini_3_flash',
       response_json_schema: {
@@ -65,6 +73,7 @@ For each story:
                 desk_view:     { type: 'string' },
                 what_to_watch: { type: 'string' },
                 top_story:     { type: 'boolean' },
+                event_time:    { type: 'string' },
               }
             }
           }
@@ -74,10 +83,31 @@ For each story:
 
     const items = result?.items || [];
     let created = 0;
+    let skipped = 0;
 
     for (const item of items) {
-      const slug = generateSlug(item.headline);
-      if (!slug || existingSlugs.has(slug)) continue;
+      if (!item.headline || item.headline.length < 10) { skipped++; continue; }
+
+      const slug = generateSlug(item.headline, item.event_time);
+      if (!slug) { skipped++; continue; }
+
+      // Deduplicate by slug AND by headline similarity
+      if (existingSlugs.has(slug)) { skipped++; continue; }
+      const headlineKey = item.headline.toLowerCase().slice(0, 60);
+      if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
+
+      // Parse actual event time — fall back to batch time only if truly unknown
+      let publishedAt = now.toISOString();
+      let publishedDate = todayStr;
+      if (item.event_time) {
+        try {
+          const parsed = new Date(item.event_time);
+          if (!isNaN(parsed.getTime()) && parsed <= now) {
+            publishedAt = parsed.toISOString();
+            publishedDate = parsed.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+          }
+        } catch (_) {}
+      }
 
       await base44.asServiceRole.entities.IntelligenceItem.create({
         headline:      item.headline,
@@ -88,17 +118,32 @@ For each story:
         desk_view:     item.desk_view || '',
         what_to_watch: item.what_to_watch || '',
         slug,
-        published_at:   now.toISOString(),
-        published_date: todayStr,
+        published_at:   publishedAt,
+        published_date: publishedDate,
         is_top_story:   item.top_story === true,
         batch_id:       batchId,
       });
 
       existingSlugs.add(slug);
+      existingHeadlines.add(headlineKey);
       created++;
     }
 
-    return Response.json({ ok: true, created, total_today: existing.length + created, batch_id: batchId });
+    // ── Prune items older than 7 days ─────────────────────────────────────────
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+    const old = (existing || []).filter(i => (i.published_date || '') < sevenDaysAgo);
+    for (const oldItem of old) {
+      await base44.asServiceRole.entities.IntelligenceItem.delete(oldItem.id);
+    }
+
+    return Response.json({
+      ok: true,
+      created,
+      skipped,
+      pruned: old.length,
+      total_in_db: recentExisting.length + created,
+      batch_id: batchId,
+    });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
