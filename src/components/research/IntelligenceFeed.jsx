@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar } from 'lucide-react';
+import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -220,13 +219,38 @@ function DayGroup({ dateStr, items, defaultOpen }) {
 export default function IntelligenceFeed() {
   const [activeBeat, setActiveBeat] = useState('all');
   const [activeDateFilter, setActiveDateFilter] = useState('today');
+  const [allItems, setAllItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newCount, setNewCount] = useState(0);
+  const knownIds = useRef(new Set());
 
-  const { data: allItems = [], isLoading } = useQuery({
-    queryKey: ['intelligence-feed'],
-    queryFn: () => base44.entities.IntelligenceItem.list('-published_at', 300),
-    staleTime: 2 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  });
+  // Initial load
+  const loadItems = useCallback(async () => {
+    const items = await base44.entities.IntelligenceItem.list('-published_at', 300);
+    setAllItems(items);
+    knownIds.current = new Set(items.map(i => i.id));
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  // Real-time subscription — show banner when new items arrive
+  useEffect(() => {
+    const unsub = base44.entities.IntelligenceItem.subscribe((event) => {
+      if (event.type === 'create' && !knownIds.current.has(event.id)) {
+        knownIds.current.add(event.id);
+        setAllItems(prev => [event.data, ...prev]);
+        setNewCount(n => n + 1);
+      } else if (event.type === 'update') {
+        setAllItems(prev => prev.map(i => i.id === event.id ? event.data : i));
+      } else if (event.type === 'delete') {
+        setAllItems(prev => prev.filter(i => i.id !== event.id));
+      }
+    });
+    return unsub;
+  }, []);
 
   // Apply date + beat filters
   const filtered = useMemo(() => {
@@ -288,10 +312,29 @@ export default function IntelligenceFeed() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground/30 hidden sm:inline">Live · refreshed every 30 min</span>
+          <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest hidden sm:inline">Live</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
         </div>
       </div>
+
+      {/* New items banner */}
+      <AnimatePresence>
+        {newCount > 0 && (
+          <motion.button
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setNewCount(0)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-400/10 border-b border-emerald-400/20 hover:bg-emerald-400/15 transition-colors"
+          >
+            <Bell className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs font-semibold text-emerald-400">
+              {newCount} new {newCount === 1 ? 'item' : 'items'} — click to dismiss
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Date filter */}
       <div className="flex items-center gap-1 px-4 py-2.5 border-b border-border/20">
