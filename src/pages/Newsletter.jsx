@@ -191,14 +191,13 @@ export default function Newsletter() {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
               <div className="glass-strong rounded-2xl p-8 border border-border/50 sticky top-28">
                 {/* Price */}
-                <div className="text-center mb-8">
-                  <div className="flex items-end justify-center gap-1 mb-1">
-                    <span className="text-5xl font-bold">£9</span>
-                    <span className="text-2xl font-bold text-muted-foreground">.99</span>
-                    <span className="text-muted-foreground mb-1">/month</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Cancel anytime · No long-term commitment</p>
-                </div>
+                 <div className="text-center mb-8">
+                   <div className="mb-2">
+                     <span className="text-6xl font-bold">£9.99</span>
+                     <span className="text-lg text-muted-foreground ml-2">/month</span>
+                   </div>
+                   <p className="text-sm text-muted-foreground">Cancel anytime · No long-term commitment</p>
+                 </div>
 
                 <form onSubmit={handleSubscribe} className="space-y-4">
                   <div>
