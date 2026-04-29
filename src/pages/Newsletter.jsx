@@ -278,63 +278,85 @@ export default function Newsletter() {
             </div>
 
             {isSubscribed ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) => {
-                  const marketItems = ed.market_summary ? ed.market_summary.split(' · ').slice(0, 3) : [];
+                  const marketItems = ed.market_summary ? ed.market_summary.split(' · ').filter(Boolean) : [];
+                  const isMorning = ed.edition_type === 'morning';
                   return (
                     <Link key={ed.id} to={`/Newsletter/${ed.slug}`} className="group block">
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        className="border border-border/40 rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm"
+                        transition={{ delay: idx * 0.06 }}
+                        className="relative border border-border/30 rounded-2xl overflow-hidden hover:border-primary/20 transition-all duration-300 bg-card/60 backdrop-blur-sm hover:shadow-xl hover:shadow-primary/5"
                       >
-                        {/* Header section */}
-                        <div className="px-7 pt-7 pb-5 border-b border-border/20">
-                          <div className="flex items-center gap-2 mb-3">
-                            {ed.edition_type === 'morning' ? (
-                              <>
-                                <Sun className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-xs font-semibold text-primary">Morning Brief</span>
-                              </>
-                            ) : (
-                              <>
-                                <Moon className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-xs font-semibold text-primary">Evening Wrap</span>
-                              </>
-                            )}
-                            <span className="text-xs text-muted-foreground/50">·</span>
-                            <span className="text-xs text-muted-foreground/60">{ed.publish_date}</span>
+                        {/* Subtle top accent bar */}
+                        <div className={`h-[2px] w-full ${isMorning ? 'bg-gradient-to-r from-amber-400/60 via-amber-400/20 to-transparent' : 'bg-gradient-to-r from-blue-400/60 via-blue-400/20 to-transparent'}`} />
+
+                        <div className="px-7 pt-6 pb-6">
+                          {/* Meta row */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+                              isMorning
+                                ? 'bg-amber-400/8 border-amber-400/20 text-amber-400'
+                                : 'bg-blue-400/8 border-blue-400/20 text-blue-400'
+                            }`}>
+                              {isMorning ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
+                              {isMorning ? 'Morning Brief' : 'Evening Wrap'}
+                            </div>
+                            <span className="text-xs text-muted-foreground/40 font-mono">{ed.publish_date}</span>
                           </div>
-                          <h3 className="font-display text-2xl font-semibold leading-tight group-hover:text-primary transition-colors">
+
+                          {/* Title */}
+                          <h3 className="font-display text-xl sm:text-2xl font-semibold leading-snug group-hover:text-primary transition-colors duration-200 mb-5">
                             {ed.title}
                           </h3>
-                        </div>
 
-                        {/* Market snapshot */}
-                        {marketItems.length > 0 && (
-                          <div className="px-7 py-5 bg-muted/30 border-b border-border/20">
-                            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Market Snapshot</div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                              {marketItems.map((item, i) => (
-                                <div key={i} className="text-sm">
-                                  <div className="text-muted-foreground/70 text-xs mb-1">{item.split(':')[0]?.trim()}</div>
-                                  <div className="font-semibold text-foreground">{item.split(':')[1]?.trim()}</div>
-                                </div>
-                              ))}
+                          {/* Market snapshot — premium data grid */}
+                          {marketItems.length > 0 && (
+                            <div className="bg-muted/20 border border-border/20 rounded-xl p-4 mb-5">
+                              <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground/50 mb-3">Market Snapshot</p>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
+                                {marketItems.slice(0, 3).map((item, i) => {
+                                  const [label, rest] = item.split(':').map(s => s?.trim());
+                                  if (!rest) return null;
+                                  const changeMatch = rest.match(/\(([+-][^)]+)\)/);
+                                  const change = changeMatch?.[1] || '';
+                                  const value = rest.replace(/\s*\([^)]*\)/, '').trim();
+                                  const isPos = change.startsWith('+');
+                                  const isNeg = change.startsWith('-');
+                                  return (
+                                    <div key={i}>
+                                      <p className="text-[10px] text-muted-foreground/50 mb-0.5">{label}</p>
+                                      <p className="text-sm font-bold font-mono tabular-nums">{value}</p>
+                                      {change && (
+                                        <p className={`text-[11px] font-semibold font-mono ${isPos ? 'text-emerald-400' : isNeg ? 'text-red-400' : 'text-muted-foreground'}`}>
+                                          {change}
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        )}
-
-                        {/* Footer - Read more */}
-                        <div className="px-7 py-5 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm text-primary/70 group-hover:text-primary transition-colors font-medium">
-                            Read full edition
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                          {ed.tags && ed.tags.length > 0 && (
-                            <div className="text-xs text-muted-foreground/60">{ed.tags.length} sections</div>
                           )}
+
+                          {/* Footer row */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-sm text-primary/60 group-hover:text-primary transition-colors font-medium">
+                              Read full edition
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                            {ed.tags && ed.tags.length > 0 && (
+                              <div className="flex gap-1.5 flex-wrap justify-end">
+                                {ed.tags.slice(0, 3).map(t => (
+                                  <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-muted/50 text-muted-foreground/50 border border-border/20 uppercase tracking-wide font-medium">
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     </Link>
