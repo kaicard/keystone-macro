@@ -45,10 +45,16 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
         <div style="height:3px;${headerAccent}opacity:0.6;"></div>
         <div style="padding:24px 28px 28px;">
           <!-- label row -->
-          ${cleanLabel ? `<div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="width:6px;height:6px;border-radius:50%;background:${accent};"></div>
-            <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${accent};">${cleanLabel}</span>
-          </div>` : ''}
+          ${cleanLabel ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+            <tr>
+              <td width="8" style="vertical-align:middle;padding-right:8px;">
+                <div style="width:7px;height:7px;border-radius:50%;background:${accent};line-height:1;font-size:1px;">&nbsp;</div>
+              </td>
+              <td style="vertical-align:middle;">
+                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};line-height:1;">${cleanLabel}</span>
+              </td>
+            </tr>
+          </table>` : ''}
           <!-- headline -->
           <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${s.headline}</div>
           <!-- body -->
