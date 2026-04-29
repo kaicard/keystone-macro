@@ -238,10 +238,12 @@ export default function MarketPulse() {
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
                     <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
-                    <TopMovers topMovers={llm?.top_movers} loading={llmLoading} />
-                  </div>
+                  {(llm?.top_movers?.gainers?.length > 0 || llm?.top_movers?.losers?.length > 0) && (
+                    <div>
+                      <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
+                      <TopMovers topMovers={llm?.top_movers} loading={llmLoading} />
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance</h3>
                     <SectorHeatmap sectors={llm?.sectors} loading={llmLoading} />
