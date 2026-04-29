@@ -3,8 +3,8 @@ import Stripe from 'npm:stripe@14.21.0';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { email, name } = await req.json();
+    const base44 = createClientFromRequest(req);
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
