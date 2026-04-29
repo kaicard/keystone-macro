@@ -162,6 +162,7 @@ Return JSON with:
   - body: 5-6 dense, specific sentences with exact data. No emojis. Newline (\\n) between paragraphs if needed.
   - callout: 1 concise forward-looking sentence — the most actionable takeaway. No emojis.
 - footer_note: A sharp 1-line closing observation. No emojis.`,
+      model: 'gemini_3_1_pro',
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
@@ -198,7 +199,7 @@ Return JSON with:
     // ── Send to all active subscribers ──────────────────────────────────────
     let sent = 0;
     for (const subscriber of subscribers) {
-      await base44.asServiceRole.integrations.Core.SendEmail({
+      await base44.integrations.Core.SendEmail({
         to: subscriber.email,
         subject: `The Keystone Macro Brief — ${subject}`,
         body: htmlBody,
