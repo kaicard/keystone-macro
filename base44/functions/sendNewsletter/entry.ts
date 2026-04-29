@@ -1,4 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 // ─── HTML email template ───────────────────────────────────────────────────────
 function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote }) {
@@ -196,14 +199,14 @@ Return JSON with:
 
     const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote });
 
-    // ── Send to all active subscribers ──────────────────────────────────────
+    // ── Send to all active subscribers via Resend ────────────────────────────
     let sent = 0;
     for (const subscriber of subscribers) {
-      await base44.integrations.Core.SendEmail({
+      await resend.emails.send({
+        from: 'The Keystone Macro Brief <brief@keystonemacro.com>',
         to: subscriber.email,
         subject: `The Keystone Macro Brief — ${subject}`,
-        body: htmlBody,
-        from_name: 'The Keystone Macro Brief',
+        html: htmlBody,
       });
       sent++;
     }
