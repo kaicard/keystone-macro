@@ -508,20 +508,7 @@ export default function EconomicCalendar() {
                 </p>
               </div>
             </div>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-              {liveStatus === 'loading'
-                ? <Loader2 className="w-4 h-4 text-primary/60 animate-spin" />
-                : liveStatus === 'live'
-                  ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  : <RefreshCw className="w-4 h-4 text-muted-foreground/40" />
-              }
-              <div>
-                <p className="text-xs text-muted-foreground">Source</p>
-                <p className="text-sm font-semibold">
-                  {liveStatus === 'loading' ? 'Fetching...' : liveStatus === 'live' ? 'Forex Factory' : 'Unavailable'}
-                </p>
-              </div>
-            </div>
+
           </motion.div>
         )}
 
@@ -575,7 +562,6 @@ export default function EconomicCalendar() {
             <div className="text-center py-20 text-muted-foreground">
               <Loader2 className="w-8 h-8 mx-auto mb-4 opacity-40 animate-spin" />
               <p className="text-sm font-medium mb-1">Loading calendar...</p>
-              <p className="text-xs text-muted-foreground/50">Fetching live data from Forex Factory</p>
             </div>
           ) : grouped.length > 0 ? (
             grouped.map(([dateStr, evs]) => (
@@ -594,10 +580,7 @@ export default function EconomicCalendar() {
           )}
         </motion.div>
 
-        <p className="text-xs text-muted-foreground/30 text-center mt-8">
-          Data sourced directly from Forex Factory. Medium and high impact events only.
-          Times in your local timezone ({localTzLabel()}). Auto-refreshes every 3 minutes.
-        </p>
+
       </div>
     </div>
   );
