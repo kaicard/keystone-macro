@@ -176,11 +176,27 @@ For each item return:
       const sourceEvent = releasedEvents[idx];
       if (!item.headline || item.headline.length < 10) { skipped++; continue; }
 
+      // Extract normalized core headline (remove amounts, variations)
+      const normalized = item.headline
+        .toLowerCase()
+        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?)\s*/gi, ' ')
+        .replace(/\s+at\s+[\d.%\-]+.*$/i, '') // Remove price/number specifics
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Check if we already have this normalized headline
+      const isDuplicate = Array.from(existingHeadlines).some(existing => {
+        const existingNorm = existing
+          .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?)\s*/gi, ' ')
+          .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        return normalized === existingNorm;
+      });
+      if (isDuplicate) { skipped++; continue; }
+
       const slug = generateSlug(item.headline, item.event_time || sourceEvent?.Date);
       if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
-
-      const headlineKey = item.headline.toLowerCase().slice(0, 50);
-      if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
 
       // Derive category/beat from the source event's currency
       const { beat, category } = currencyToBeat(sourceEvent?.Currency || 'USD');
