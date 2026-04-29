@@ -1,33 +1,67 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const CACHE_KEY = 'liveMarketContext';
-const CACHE_TTL_MS = 35 * 60 * 1000; // 35 minutes — stale-while-revalidate handles freshness
-const STALE_THRESHOLD_MS = 18 * 60 * 1000; // start background refresh after 18 min
+const CACHE_TTL_MS = 35 * 60 * 1000;
+const STALE_THRESHOLD_MS = 18 * 60 * 1000;
+
+const YF_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'application/json',
+  'Referer': 'https://finance.yahoo.com/',
+};
 
 // Bond yield tickers on Yahoo Finance
 const BOND_TICKERS = [
-  { sym: '^IRX',  name: 'US 3M T-Bill',  cat: 'bonds' },
-  { sym: '^FVX',  name: 'US 5Y',         cat: 'bonds' },
-  { sym: '^TNX',  name: 'US 10Y',        cat: 'bonds' },
-  { sym: '^TYX',  name: 'US 30Y',        cat: 'bonds' },
-  { sym: 'GB2Y=X', name: 'UK 2Y Gilt',   cat: 'bonds' },
-  { sym: 'GB10Y=X', name: 'UK 10Y Gilt', cat: 'bonds' },
-  { sym: 'DE10Y=X', name: 'DE 10Y Bund', cat: 'bonds' },
-  { sym: 'JP10Y=X', name: 'JP 10Y JGB',  cat: 'bonds' },
+  { sym: '^IRX',   name: 'US 3M T-Bill' },
+  { sym: '^FVX',   name: 'US 5Y' },
+  { sym: '^TNX',   name: 'US 10Y' },
+  { sym: '^TYX',   name: 'US 30Y' },
+  { sym: 'GB2Y=X', name: 'UK 2Y Gilt' },
+  { sym: 'GB10Y=X',name: 'UK 10Y Gilt' },
+  { sym: 'DE10Y=X',name: 'DE 10Y Bund' },
+  { sym: 'JP10Y=X',name: 'JP 10Y JGB' },
+];
+
+// S&P 500 sector ETFs — real, tradeable tickers
+const SECTOR_ETFS = [
+  { sym: 'XLK',  name: 'Technology' },
+  { sym: 'XLF',  name: 'Financials' },
+  { sym: 'XLV',  name: 'Healthcare' },
+  { sym: 'XLE',  name: 'Energy' },
+  { sym: 'XLY',  name: 'Consumer Discretionary' },
+  { sym: 'XLP',  name: 'Consumer Staples' },
+  { sym: 'XLI',  name: 'Industrials' },
+  { sym: 'XLB',  name: 'Materials' },
+  { sym: 'XLU',  name: 'Utilities' },
+  { sym: 'XLRE', name: 'Real Estate' },
+  { sym: 'XLC',  name: 'Communication Services' },
+];
+
+// Large-cap S&P 500 components for top movers
+const SP500_COMPONENTS = [
+  'AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','BRK-B','JPM','UNH',
+  'XOM','V','LLY','AVGO','MA','JNJ','PG','HD','MRK','COST',
+  'ABBV','CVX','BAC','PEP','KO','TMO','WMT','MCD','ORCL','ACN',
+  'ADBE','NFLX','CRM','AMD','LIN','DHR','NEE','CMCSA','INTC','TXN',
+  'VZ','PM','RTX','UPS','QCOM','HON','BMY','T','CAT','AMGN',
 ];
 
 async function fetchYahooQuotes(symbols) {
-  const symsParam = symbols.join(',');
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symsParam)}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent&lang=en-US&region=US`;
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; MarketData/1.0)',
-      'Accept': 'application/json',
-    }
-  });
-  if (!res.ok) throw new Error(`Yahoo Finance HTTP ${res.status}`);
-  const json = await res.json();
-  return json?.quoteResponse?.result || [];
+  const chunks = [];
+  for (let i = 0; i < symbols.length; i += 20) chunks.push(symbols.slice(i, i + 20));
+  const results = {};
+  await Promise.all(chunks.map(async (chunk) => {
+    try {
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(chunk.join(','))}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChange,regularMarketChangePercent`;
+      const res = await fetch(url, { headers: YF_HEADERS });
+      if (!res.ok) return;
+      const json = await res.json();
+      for (const q of (json?.quoteResponse?.result || [])) {
+        if (q?.regularMarketPrice != null) results[q.symbol] = q;
+      }
+    } catch (_) {}
+  }));
+  return results;
 }
 
 function direction(change) {
@@ -36,55 +70,133 @@ function direction(change) {
   return 'flat';
 }
 
-const CONTEXT_SCHEMA = {
-  type: "object",
-  properties: {
-    sectors: { type: "array", items: { type: "object", properties: { name: { type: "string" }, change_pct: { type: "string" }, direction: { type: "string" } } } },
-    credit_spreads: { type: "array", items: { type: "object", properties: { name: { type: "string" }, value_bps: { type: "string" }, direction: { type: "string" }, trend: { type: "string" } } } },
-    yield_curve: { type: "array", items: { type: "object", properties: { name: { type: "string" }, spread_bps: { type: "string" }, direction: { type: "string" }, shape: { type: "string" } } } },
-    top_movers: { type: "object", properties: {
-      gainers: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, change_pct: { type: "string" } } } },
-      losers: { type: "array", items: { type: "object", properties: { name: { type: "string" }, ticker: { type: "string" }, change_pct: { type: "string" } } } }
-    }},
-    regime: { type: "object", properties: { label: { type: "string" }, description: { type: "string" }, growth: { type: "string" }, inflation: { type: "string" }, policy: { type: "string" }, volatility: { type: "string" }, leadership: { type: "string" } } },
-    market_summary: { type: "string" }
-  }
-};
-
 async function refreshInBackground(base44, existingId) {
-  const bondSyms = BOND_TICKERS.map(t => t.sym);
-  let bonds = [];
-  try {
-    const bondRaw = await fetchYahooQuotes(bondSyms);
-    const bondMap = {};
-    for (const q of bondRaw) bondMap[q.symbol] = q;
-    bonds = BOND_TICKERS.map(t => {
-      const q = bondMap[t.sym];
-      if (!q || q.regularMarketPrice == null) return null;
-      const chg = q.regularMarketChange ?? 0;
-      const chg_bps = (chg * 100).toFixed(1);
-      return { name: t.name, yield: `${q.regularMarketPrice.toFixed(2)}%`, change_bps: `${chg >= 0 ? '+' : ''}${chg_bps}bps`, direction: direction(chg) };
-    }).filter(Boolean);
-  } catch (e) {}
+  // Fetch bonds, sectors, and S&P components in parallel
+  const allSymbols = [
+    ...BOND_TICKERS.map(t => t.sym),
+    ...SECTOR_ETFS.map(t => t.sym),
+    ...SP500_COMPONENTS,
+  ];
+
+  const quoteMap = await fetchYahooQuotes(allSymbols);
+
+  // ── Bonds ──────────────────────────────────────────────────────────────────
+  const bonds = BOND_TICKERS.map(t => {
+    const q = quoteMap[t.sym];
+    if (!q || q.regularMarketPrice == null) return null;
+    const chg = q.regularMarketChange ?? 0;
+    const chg_bps = (chg * 100).toFixed(1);
+    return {
+      name: t.name,
+      yield: `${q.regularMarketPrice.toFixed(2)}%`,
+      change_bps: `${chg >= 0 ? '+' : ''}${chg_bps}bps`,
+      direction: direction(chg),
+    };
+  }).filter(Boolean);
+
+  // ── Sector Heatmap (real SPDR ETF data) ───────────────────────────────────
+  const sectors = SECTOR_ETFS.map(t => {
+    const q = quoteMap[t.sym];
+    if (!q || q.regularMarketChangePercent == null) return null;
+    const pct = q.regularMarketChangePercent;
+    return {
+      name: t.name,
+      change_pct: `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`,
+      direction: direction(pct),
+    };
+  }).filter(Boolean);
+
+  // ── Top Movers (real S&P 500 components) ──────────────────────────────────
+  const movers = SP500_COMPONENTS
+    .map(sym => {
+      const q = quoteMap[sym];
+      if (!q || q.regularMarketChangePercent == null) return null;
+      return { ticker: sym, name: q.shortName || sym, change_pct: q.regularMarketChangePercent };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.change_pct - a.change_pct);
+
+  const top_movers = {
+    gainers: movers.slice(0, 5).map(m => ({
+      ticker: m.ticker,
+      name: m.name,
+      change_pct: `+${m.change_pct.toFixed(2)}%`,
+    })),
+    losers: movers.slice(-5).reverse().map(m => ({
+      ticker: m.ticker,
+      name: m.name,
+      change_pct: `${m.change_pct.toFixed(2)}%`,
+    })),
+  };
+
+  // ── Yield Curve from real bond data ───────────────────────────────────────
+  const us2y  = quoteMap['^FVX']?.regularMarketPrice;  // closest available: 5Y (^FVX)
+  const us10y = quoteMap['^TNX']?.regularMarketPrice;
+  const uk2y  = quoteMap['GB2Y=X']?.regularMarketPrice;
+  const uk10y = quoteMap['GB10Y=X']?.regularMarketPrice;
+
+  const yield_curve = [];
+  if (us10y != null && us2y != null) {
+    const spread = ((us10y - us2y) * 100).toFixed(0);
+    yield_curve.push({
+      name: 'US 5s10s',
+      spread_bps: spread,
+      shape: parseFloat(spread) < 0 ? 'inverted' : parseFloat(spread) < 30 ? 'flat' : 'normal',
+      direction: parseFloat(spread) > 0 ? 'steepening' : 'inverted',
+    });
+  }
+  if (uk10y != null && uk2y != null) {
+    const spread = ((uk10y - uk2y) * 100).toFixed(0);
+    yield_curve.push({
+      name: 'UK 2s10s',
+      spread_bps: spread,
+      shape: parseFloat(spread) < 0 ? 'inverted' : parseFloat(spread) < 30 ? 'flat' : 'normal',
+      direction: parseFloat(spread) > 0 ? 'steepening' : 'inverted',
+    });
+  }
+
+  // ── Regime & Market Summary — LLM with real bond/sector data as context ───
+  const bondSummary = bonds.map(b => `${b.name}: ${b.yield} (${b.change_bps})`).join(', ');
+  const sectorSummary = sectors.map(s => `${s.name}: ${s.change_pct}`).join(', ');
+  const moverSummary = `Gainers: ${top_movers.gainers.map(m => `${m.ticker} ${m.change_pct}`).join(', ')}. Losers: ${top_movers.losers.map(m => `${m.ticker} ${m.change_pct}`).join(', ')}`;
 
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const prompt = `Today is ${today}. Using live web data, fetch REAL current values for:
-- sectors: today's % change for all 11 GICS sectors (Technology, Financials, Healthcare, Energy, Consumer Discretionary, Consumer Staples, Industrials, Materials, Utilities, Real Estate, Communication Services). Use real numbers from Yahoo Finance sector screener or equivalent.
-- credit_spreads: US IG OAS (bps), US HY OAS (bps), EUR IG spread (bps), EUR HY spread (bps). Use ICE BofA indices or similar. Include direction (tightening/widening).
-- yield_curve: US 2Y10Y spread (bps), UK 2Y10Y (bps). Calculate from real live yields.
-- top_movers: top 3 gainers and top 3 losers in the S&P 500 today with actual % changes.
-- regime: based on today's actual market conditions, describe the macro regime.
-- market_summary: 3-4 sentence professional summary of today's actual market action with real numbers.
-Only return real data. Do not fabricate. If you cannot find a real value, omit it.`;
 
-  const contextData = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt,
+  const REGIME_SCHEMA = {
+    type: 'object',
+    properties: {
+      regime: { type: 'object', properties: { label: { type: 'string' }, description: { type: 'string' }, growth: { type: 'string' }, inflation: { type: 'string' }, policy: { type: 'string' }, volatility: { type: 'string' }, leadership: { type: 'string' } } },
+      market_summary: { type: 'string' },
+      credit_spreads: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, value_bps: { type: 'string' }, direction: { type: 'string' }, trend: { type: 'string' } } } },
+    }
+  };
+
+  const llmData = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `Today is ${today}. Here are REAL market data points just fetched from Yahoo Finance:
+
+BOND YIELDS: ${bondSummary}
+SECTORS (SPDR ETFs): ${sectorSummary}
+TOP MOVERS: ${moverSummary}
+
+Based on this real data:
+1. Write a regime assessment (label must be one of: Risk-On, Risk-Off, Inflation Pressure, Growth Slowdown, Liquidity Expansion, Stagflation). Include growth, inflation, policy, volatility, and leadership signals.
+2. Write a 3-4 sentence market_summary using the real numbers above. Be specific — reference actual sector moves and bond levels.
+3. Provide credit_spreads: use add_context_from_internet to get today's real US IG OAS, US HY OAS (from ICE BofA or Bloomberg). If unavailable, omit.`,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
-    response_json_schema: CONTEXT_SCHEMA,
+    response_json_schema: REGIME_SCHEMA,
   });
 
-  const data = { ...contextData, bonds };
+  const data = {
+    bonds,
+    sectors,
+    top_movers,
+    yield_curve,
+    regime: llmData?.regime || null,
+    market_summary: llmData?.market_summary || '',
+    credit_spreads: llmData?.credit_spreads || [],
+  };
+
   const fetched_at = new Date().toISOString();
   const payload = JSON.stringify(data);
   if (existingId) {
@@ -98,14 +210,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Check cache
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     if (cached?.length > 0) {
       const entry = cached[0];
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
-        // Return stale data immediately — refresh in background if past threshold
         if (age >= STALE_THRESHOLD_MS && age < CACHE_TTL_MS) {
           refreshInBackground(base44, entry.id).catch(() => {});
         }
@@ -115,7 +225,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cache miss or fully expired — fetch fresh (blocking)
     await refreshInBackground(base44, cached?.[0]?.id || null);
     const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     const freshEntry = fresh?.[0];
