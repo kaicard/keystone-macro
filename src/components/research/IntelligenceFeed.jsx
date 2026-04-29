@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Radio, RefreshCw, ChevronDown, ChevronUp, ArrowRight, Clock, Flame, TrendingUp } from 'lucide-react';
+import { Radio, RefreshCw, ChevronDown, ChevronUp, ArrowRight, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const BEATS = [
@@ -41,7 +41,7 @@ const SENTIMENT_DOT = {
 };
 
 const MAX_ITEMS = 60;
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes — more frequent updates
+const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 function getLocalTzLabel() {
   try {
@@ -69,8 +69,8 @@ function generateSlug(headline) {
 
 function getCacheKey() {
   const d = new Date();
-  const slot = Math.floor(d.getUTCMinutes() / 30); // 30-minute slots
-  return `intelligenceFeed_${d.toISOString().split('T')[0]}_h${d.getUTCHours()}_s${slot}`;
+  const slot = Math.floor(d.getUTCHours() / 2);
+  return `intelligenceFeed_${d.toISOString().split('T')[0]}_s${slot}`;
 }
 
 function mergeItems(existing, incoming) {
@@ -111,7 +111,7 @@ async function saveToCache(items, recordId) {
   } catch (_) {}
 }
 
-// ─── STEP 1: Generate 20 real headlines using live web search ────────────────
+// ─── STEP 1: Generate 20 headlines only (fits in 1000 tokens easily) ──────────
 async function generateHeadlines() {
   const now = new Date();
   const utcHour = String(now.getUTCHours()).padStart(2, '0');
@@ -124,21 +124,14 @@ async function generateHeadlines() {
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are a senior macro analyst at Keystone Macro. Today is ${dateStr}, UTC time ${currentUtcTime}.
 
-Search the web RIGHT NOW for the 20 most important real market and macro news stories from TODAY. These must be REAL stories from real publications — FT, Bloomberg, Reuters, WSJ, CNBC, Sky News, BBC Business — that are actually happening today.
-
-Each headline must:
-- Be based on a REAL story confirmed via your web search
-- Include specific levels, percentages, or names (e.g. "S&P 500 falls 1.2% to 5,340 as GDP print shocks markets")
-- Cover diverse topics: US, EU, UK, EM, Asia, commodities, FX, geopolitics, central banks, corporate earnings
+Generate exactly 20 sharp, specific market intelligence headlines. Each headline must include a specific level, percentage, or name. Cover US, EU, UK, EM, Asia, commodities, FX, geopolitics — no two items on the same topic.
 
 For each item:
-- headline: original Keystone Macro headline (fresh, not copied verbatim) based on the real story
+- headline: specific with data points (e.g. "Brent crude rallies to $89 as OPEC+ confirms cut extension")
 - category: Macro / Equities / Rates / Commodities / FX / Geopolitics / Credit / Technology / US Economy / UK Economy / EU Economy
 - sentiment: positive / negative / neutral
 - published_time_utc: HH:MM, strictly before ${currentUtcTime}, spread from 06:00
-- beat: macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech
-- is_top: true if this is one of the 3 biggest stories of the day (major market-moving event), false otherwise`,
-    add_context_from_internet: true,
+- beat: macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech`,
     response_json_schema: {
       type: 'object',
       properties: {
@@ -152,7 +145,6 @@ For each item:
               sentiment:          { type: 'string' },
               published_time_utc: { type: 'string' },
               beat:               { type: 'string' },
-              is_top:             { type: 'boolean' },
             }
           }
         }
@@ -169,7 +161,6 @@ For each item:
       slug:                 generateSlug(item.headline),
       generated_at:         new Date().toISOString(),
       enriched:             false,
-      is_top:               item.is_top || false,
     }))
     .sort((a, b) =>
       (b.published_time_utc || '').localeCompare(a.published_time_utc || '')
@@ -445,7 +436,7 @@ export default function IntelligenceFeed() {
       hasFetched.current = true;
       loadFeed();
     }
-    const interval = setInterval(() => loadFeed(true), 30 * 60 * 1000); // refresh every 30 min
+    const interval = setInterval(() => loadFeed(true), 2 * 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadFeed]);
 
@@ -455,51 +446,7 @@ export default function IntelligenceFeed() {
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
   const tzLabel = getLocalTzLabel();
 
-  // Top stories — items marked is_top or first 3 items if none marked
-  const topStories = allItems.filter(i => i.is_top).slice(0, 3);
-  const displayTopStories = topStories.length > 0 ? topStories : allItems.slice(0, 3);
-
   return (
-    <div className="space-y-5">
-
-    {/* Top News Banner */}
-    {allItems.length > 0 && (
-      <div className="glass rounded-2xl overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/30">
-          <Flame className="w-4 h-4 text-red-400" />
-          <span className="font-semibold text-sm">Top News</span>
-          <span className="text-xs text-muted-foreground/50 ml-1">· Biggest stories right now</span>
-        </div>
-        <div className="divide-y divide-border/20">
-          {displayTopStories.map((item, i) => {
-            const catStyle = CATEGORY_STYLES[item.category] || 'bg-muted/60 text-muted-foreground border-border/40';
-            const sentDot = SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral;
-            return (
-              <div key={`top-${item.slug}`} className="px-5 py-4 flex items-start gap-3 hover:bg-muted/10 transition-colors">
-                <div className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${sentDot}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <Badge variant="outline" className={`text-[10px] py-0 px-1.5 border shrink-0 ${catStyle}`}>
-                      {item.category}
-                    </Badge>
-                    {item.published_time_local && (
-                      <span className="text-xs text-muted-foreground/50 font-mono flex items-center gap-1">
-                        <Clock className="w-3 h-3" />{item.published_time_local}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm font-semibold leading-snug">{item.headline}</p>
-                  {item.impact && <p className="text-xs text-muted-foreground/60 mt-1 line-clamp-2">{item.impact}</p>}
-                </div>
-                <TrendingUp className="w-4 h-4 text-primary/40 shrink-0 mt-1" />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* Full Feed */}
     <div className="glass rounded-2xl overflow-hidden">
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
         <div className="flex items-center gap-3">
@@ -598,7 +545,6 @@ export default function IntelligenceFeed() {
           </button>
         </div>
       )}
-    </div>
     </div>
   );
 }
