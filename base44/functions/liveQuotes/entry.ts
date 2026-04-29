@@ -172,6 +172,37 @@ function direction(change) {
   return 'flat';
 }
 
+// Sanity checks for price ranges (prevents garbage Yahoo Finance data)
+function isValidPrice(ticker, price) {
+  if (!price || typeof price !== 'number' || isNaN(price) || price <= 0) return false;
+  
+  // DXY: always 70-110
+  if (ticker === 'DX-Y.NYB') return price >= 70 && price <= 130;
+  
+  // Indices: 100+
+  if (['GSPC', 'NDX', 'DJI', 'FTSE', 'GDAXI', 'FCHI', 'STOXX50E', 'N225', 'HSI', 'AXJO'].some(t => ticker.includes(t))) return price >= 100;
+  
+  // FX: 0.5—2.5
+  if (ticker.includes('=X')) return price >= 0.5 && price <= 3;
+  
+  // Commodities: GC, SI, CL usually 100-2000
+  if (ticker === 'GC=F') return price >= 500 && price <= 3000;
+  if (ticker === 'SI=F') return price >= 5 && price <= 100;
+  if (['CL=F', 'BZ=F'].includes(ticker)) return price >= 20 && price <= 150;
+  if (ticker === 'NG=F') return price >= 0.5 && price <= 10;
+  if (ticker === 'HG=F') return price >= 1 && price <= 10;
+  
+  // Crypto: BTC usually 30k-80k, ETH 1k-5k
+  if (ticker === 'BTC-USD') return price >= 10000 && price <= 200000;
+  if (ticker === 'ETH-USD') return price >= 500 && price <= 50000;
+  
+  // VIX: 10-80
+  if (ticker === '^VIX') return price >= 5 && price <= 100;
+  
+  // Stocks: most 5-500
+  return price >= 0.1 && price <= 50000;
+}
+
 async function fetchAndCache(base44, existingCacheId) {
   const symbols = TICKERS.map(t => t.sym);
   const quoteMap = await fetchAllTickers(symbols);
@@ -183,7 +214,7 @@ async function fetchAndCache(base44, existingCacheId) {
 
   for (const t of TICKERS) {
     const q = quoteMap[t.sym];
-    if (!q) continue;
+    if (!q || !isValidPrice(t.sym, q.price)) continue;
     const item = {
       ticker: t.sym,
       name: t.name,
