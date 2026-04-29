@@ -79,18 +79,17 @@ Deno.serve(async (req) => {
       ffRes.ok ? ffRes.json() : [],
     ]);
 
-    // Merge, deduplicate by Name+Currency, keep High impact only
+    // Merge API events, deduplicate by normalized Name+Currency
     const seen = new Set();
     const allEvents = [...(Array.isArray(mql5Data) ? mql5Data : []), ...(Array.isArray(ffData) ? ffData : [])]
       .filter(e => {
         if (!e.Name || !e.Currency) return false;
         if ((e.Impact || '').toLowerCase() !== 'high') return false;
-        // Normalize event key: extract core indicator/country name only
         const normalized = (e.Name || '')
           .toLowerCase()
-          .replace(/\s+(rate|holds?|held|steady|unchanged|adjusts?|changed?|maintains?|maintained|decision|decision|expected|forecast|actual|previous)\s*/gi, ' ')
-          .replace(/\s+at\s+[\d.%]+.*$/i, '') // Remove price/number specifics
-          .replace(/[()].*$/i, '') // Remove parentheticals
+          .replace(/\s+(rate|holds?|held|steady|unchanged|adjusts?|changed?|maintains?|maintained|decision|expected|forecast|actual|previous)\s*/gi, ' ')
+          .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
+          .replace(/[()].*$/i, '')
           .replace(/\s+/g, ' ')
           .trim();
         const key = `${normalized}-${e.Currency}`;
@@ -98,15 +97,38 @@ Deno.serve(async (req) => {
         seen.add(key);
         return true;
       });
-
-    // Only include events that have actually been released (have real Actual data)
+    
+    // Build set of events already in DB (normalized)
+    const dbEventKeys = new Set();
+    for (const item of recentExisting) {
+      const normalized = (item.headline || '')
+        .toLowerCase()
+        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?|decision)\s*/gi, ' ')
+        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const beat = item.beat || 'macro';
+      const currency = beat.includes('us') ? 'USD' : beat.includes('uk') ? 'GBP' : beat.includes('eu') ? 'EUR' : 'XXX';
+      dbEventKeys.add(`${normalized}-${currency}`);
+    }
+    
+    // Filter to released events only, excluding those already in DB
     const releasedEvents = allEvents.filter(e => {
       if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
-      // Skip if Outcome/Strength suggest no data loaded yet
       const outcome = (e.Outcome || '').toLowerCase();
       const name = (e.Name || '').toLowerCase();
       if (outcome === '' && e.Actual === 0 && e.Forecast === 0) return false;
       if (name.includes('press conference') || name.includes('speech') || name.includes('statement')) return false;
+      
+      const normalized = (e.Name || '')
+        .toLowerCase()
+        .replace(/\s+(rate|holds?|held|steady|unchanged|adjusts?|changed?|maintains?|maintained|decision)\s*/gi, ' ')
+        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const key = `${normalized}-${e.Currency}`;
+      if (dbEventKeys.has(key)) return false;
+      
       return true;
     });
 
