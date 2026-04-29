@@ -106,39 +106,28 @@ Deno.serve(async (req) => {
       })
     );
 
-    // Build aligned dataset: find common timestamps
+    // Build aligned dataset: union of all timestamps
     const seriesMap = {};
-    let allTimestamps = null;
+    const tsUnion = new Set();
 
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value.series.length > 0) {
         const { key, series } = r.value;
-        seriesMap[key] = series;
-        const tsSet = series.map(p => p.ts);
-        if (!allTimestamps) {
-          allTimestamps = tsSet;
-        } else {
-          // intersect
-          const set = new Set(tsSet);
-          allTimestamps = allTimestamps.filter(t => set.has(t));
-        }
+        seriesMap[key] = new Map(series.map(p => [p.ts, p.v]));
+        series.forEach(p => tsUnion.add(p.ts));
       }
     }
 
-    if (!allTimestamps || allTimestamps.length === 0) {
-      // Fallback: use all timestamps from first available series
-      const first = Object.values(seriesMap)[0];
-      allTimestamps = first ? first.map(p => p.ts) : [];
-    }
+    const allTimestamps = Array.from(tsUnion).sort((a, b) => a - b);
 
-    // Build chart data array
+    // Build chart data array — nulls allowed (connectNulls handles gaps)
     const data = allTimestamps.map(ts => {
       const row = { ts, label: new Date(ts * 1000).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) };
       for (const key of keys) {
-        const series = seriesMap[key];
-        if (!series) continue;
-        const point = series.find(p => p.ts === ts);
-        if (point) row[key] = point.v;
+        const seriesData = seriesMap[key];
+        if (!seriesData) continue;
+        const v = seriesData.get(ts);
+        if (v != null) row[key] = v;
       }
       return row;
     });

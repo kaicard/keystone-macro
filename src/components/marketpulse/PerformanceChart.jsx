@@ -175,7 +175,7 @@ export default function PerformanceChart() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="font-semibold text-sm">Indexed Performance</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Base 100 — real data via Yahoo Finance.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Base 100</p>
         </div>
         <div className="flex items-center gap-2">
           {loading && <RefreshCw className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
