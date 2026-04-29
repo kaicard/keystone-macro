@@ -167,36 +167,38 @@ For each item return:
       }
     });
 
-    const items = rewriteResult?.items || [];
-    let created = 0;
-    let skipped = 0;
-
-    for (let idx = 0; idx < items.length; idx++) {
-      const item = items[idx];
-      const sourceEvent = releasedEvents[idx];
-      if (!item.headline || item.headline.length < 10) { skipped++; continue; }
-
-      // Extract normalized core headline (remove amounts, variations)
+    // Deduplicate LLM output by normalized headline
+    const seenLLMOutput = new Set();
+    const deduplicatedItems = [];
+    
+    for (const item of (rewriteResult?.items || [])) {
+      if (!item.headline || item.headline.length < 10) continue;
+      
       const normalized = item.headline
         .toLowerCase()
-        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?)\s*/gi, ' ')
-        .replace(/\s+at\s+[\d.%\-]+.*$/i, '') // Remove price/number specifics
+        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?|decision)\s*/gi, ' ')
+        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
         .replace(/\s+/g, ' ')
         .trim();
       
-      // Check if we already have this normalized headline
-      const isDuplicate = Array.from(existingHeadlines).some(existing => {
-        const existingNorm = existing
-          .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?)\s*/gi, ' ')
-          .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        return normalized === existingNorm;
-      });
-      if (isDuplicate) { skipped++; continue; }
+      if (!seenLLMOutput.has(normalized)) {
+        seenLLMOutput.add(normalized);
+        deduplicatedItems.push(item);
+      }
+    }
+
+    let created = 0;
+    let skipped = 0;
+
+    for (let idx = 0; idx < deduplicatedItems.length; idx++) {
+      const item = deduplicatedItems[idx];
+      const sourceEvent = releasedEvents[idx];
 
       const slug = generateSlug(item.headline, item.event_time || sourceEvent?.Date);
       if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
+
+      const headlineKey = item.headline.toLowerCase().slice(0, 50);
+      if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
 
       // Derive category/beat from the source event's currency
       const { beat, category } = currencyToBeat(sourceEvent?.Currency || 'USD');
