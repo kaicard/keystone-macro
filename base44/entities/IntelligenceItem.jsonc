@@ -1,0 +1,80 @@
+{
+  "name": "IntelligenceItem",
+  "type": "object",
+  "properties": {
+    "headline": {
+      "type": "string",
+      "description": "The intelligence headline"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Macro",
+        "Equities",
+        "Rates",
+        "Commodities",
+        "FX",
+        "Geopolitics",
+        "Credit",
+        "Technology",
+        "US Economy",
+        "UK Economy",
+        "EU Economy"
+      ],
+      "description": "Category"
+    },
+    "beat": {
+      "type": "string",
+      "description": "Beat key for filtering"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "negative",
+        "neutral"
+      ],
+      "description": "Sentiment"
+    },
+    "impact": {
+      "type": "string",
+      "description": "2-sentence market impact"
+    },
+    "desk_view": {
+      "type": "string",
+      "description": "3-sentence desk analysis"
+    },
+    "what_to_watch": {
+      "type": "string",
+      "description": "Instruments/events to watch"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL slug for permanent linking"
+    },
+    "published_at": {
+      "type": "string",
+      "description": "ISO timestamp of when the story was published"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of publication YYYY-MM-DD"
+    },
+    "is_top_story": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flagged as a top story"
+    },
+    "batch_id": {
+      "type": "string",
+      "description": "ID of the refresh batch that created this item"
+    }
+  },
+  "required": [
+    "headline",
+    "category",
+    "sentiment",
+    "slug"
+  ]
+}
