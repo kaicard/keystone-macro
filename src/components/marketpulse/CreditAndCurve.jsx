@@ -27,14 +27,14 @@ export default function CreditAndCurve({ creditSpreads, yieldCurve, dxy, loading
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Credit Spreads */}
       <div className="glass rounded-xl p-5 min-h-[140px] flex flex-col">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Credit Spreads</h3>
-        <div className="space-y-3 flex-1">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Credit Spreads</h3>
+        <div className="space-y-2.5 flex-1">
           {(creditSpreads || []).length > 0 ? (
             creditSpreads.map((c, i) => (
-              <div key={i} className="flex items-start justify-between gap-2">
-                <span className="text-xs text-muted-foreground">{c.name}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-sm font-bold">{c.value_bps}<span className="text-xs font-normal text-muted-foreground ml-0.5">bps</span></span>
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-medium">{c.name}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-sm font-bold">{c.value_bps}</span>
                   <span className={`text-xs font-medium ${trendColor(c.direction)}`}>{c.trend || c.direction}</span>
                 </div>
               </div>
