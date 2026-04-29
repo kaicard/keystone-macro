@@ -7,30 +7,30 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   Mail, CheckCircle, ArrowRight, Sun, Moon, BarChart2, Globe, Zap,
-  BookOpen, Calendar, TrendingUp, Shield, Star, ChevronRight, Lock
-} from 'lucide-react';
+  BookOpen, Calendar, TrendingUp, Shield, Star, ChevronRight, Lock } from
+'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
 import EditionCard from '@/components/newsletter/EditionCard';
 
 const TOPICS = [
-  { id: 'macro', label: 'Global Macro', icon: Globe },
-  { id: 'rates', label: 'Rates & Fixed Income', icon: BarChart2 },
-  { id: 'equities', label: 'Equities', icon: TrendingUp },
-  { id: 'commodities', label: 'Commodities', icon: Zap },
-  { id: 'fx', label: 'FX & EM', icon: Globe },
-  { id: 'geopolitics', label: 'Geopolitics', icon: Shield },
-  { id: 'ma', label: 'M&A & Corporate', icon: Star },
-  { id: 'forecasts', label: 'Forecasts & Views', icon: BarChart2 },
-];
+{ id: 'macro', label: 'Global Macro', icon: Globe },
+{ id: 'rates', label: 'Rates & Fixed Income', icon: BarChart2 },
+{ id: 'equities', label: 'Equities', icon: TrendingUp },
+{ id: 'commodities', label: 'Commodities', icon: Zap },
+{ id: 'fx', label: 'FX & EM', icon: Globe },
+{ id: 'geopolitics', label: 'Geopolitics', icon: Shield },
+{ id: 'ma', label: 'M&A & Corporate', icon: Star },
+{ id: 'forecasts', label: 'Forecasts & Views', icon: BarChart2 }];
+
 
 const INCLUDES = [
-  { icon: Sun, label: '7am Morning Brief', desc: 'Markets, macro headlines, and what to watch for the day ahead' },
-  { icon: Moon, label: '10pm Evening Wrap', desc: 'Full day review, desk views, trade ideas, and positioning insights' },
-  { icon: Calendar, label: '10 Editions Per Week', desc: 'Monday through Friday, every trading week of the year' },
-  { icon: BarChart2, label: 'Trade Ideas', desc: 'Historical and illustrative trade ideas with full thesis and levels' },
-  { icon: BookOpen, label: 'Full Archive Access', desc: 'Every edition ever published, searchable and categorised' },
-  { icon: Globe, label: 'Cross-Asset Coverage', desc: 'Macro, equities, rates, FX, commodities, credit, and geopolitics' },
-];
+{ icon: Sun, label: '7am Morning Brief', desc: 'Markets, macro headlines, and what to watch for the day ahead' },
+{ icon: Moon, label: '10pm Evening Wrap', desc: 'Full day review, desk views, trade ideas, and positioning insights' },
+{ icon: Calendar, label: '10 Editions Per Week', desc: 'Monday through Friday, every trading week of the year' },
+{ icon: BarChart2, label: 'Trade Ideas', desc: 'Historical and illustrative trade ideas with full thesis and levels' },
+{ icon: BookOpen, label: 'Full Archive Access', desc: 'Every edition ever published, searchable and categorised' },
+{ icon: Globe, label: 'Cross-Asset Coverage', desc: 'Macro, equities, rates, FX, commodities, credit, and geopolitics' }];
+
 
 export default function Newsletter() {
   const [form, setForm] = useState({ name: '', email: '' });
@@ -45,7 +45,7 @@ export default function Newsletter() {
 
   const { data: editions = [] } = useQuery({
     queryKey: ['newsletter-editions-public'],
-    queryFn: () => base44.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 6),
+    queryFn: () => base44.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 6)
   });
 
   const checkSubscription = async (email) => {
@@ -62,9 +62,9 @@ export default function Newsletter() {
           setIsSubscribed(true);
         }
       } catch {
+
         // User not authenticated
-      }
-    };
+      }};
     checkOwner();
   }, []);
 
@@ -72,7 +72,7 @@ export default function Newsletter() {
     e.preventDefault();
     if (!cancelEmail) return;
     const results = await base44.entities.NewsletterSubscription.filter({ email: cancelEmail });
-    if (!results?.length) { setCancelStatus('not_found'); return; }
+    if (!results?.length) {setCancelStatus('not_found');return;}
     await base44.entities.NewsletterSubscription.update(results[0].id, { status: 'unsubscribed' });
     await base44.integrations.Core.SendEmail({
       to: cancelEmail,
@@ -84,13 +84,13 @@ export default function Newsletter() {
         <p style="font-size:14px;color:#4b5563;line-height:1.7;margin:0 0 24px;">If you cancelled by mistake, you can resubscribe at any time at <a href="https://keystonemacro.com/Newsletter" style="color:#d97706;">keystonemacro.com/Newsletter</a>.</p>
         <div style="border-top:1px solid #e5e7eb;padding-top:16px;font-size:11px;color:#9ca3af;">Keystone Macro &nbsp;·&nbsp; Institutional Research &amp; Market Intelligence</div>
       </div>`,
-      from_name: 'Keystone Macro',
+      from_name: 'Keystone Macro'
     });
     setCancelStatus('cancelled');
   };
 
   const toggleTopic = (id) => {
-    setSelectedTopics(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]);
+    setSelectedTopics((prev) => prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]);
   };
 
   const handleSubscribe = async (e) => {
@@ -103,13 +103,13 @@ export default function Newsletter() {
       email: form.email,
       name: form.name,
       preferences: selectedTopics,
-      status: 'pending',
+      status: 'pending'
     });
 
     // Attempt Stripe checkout redirect
     const res = await base44.functions.invoke('createNewsletterCheckout', {
       email: form.email,
-      name: form.name,
+      name: form.name
     });
 
     if (res?.data?.url) {
@@ -135,8 +135,8 @@ export default function Newsletter() {
             </p>
           </motion.div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -158,7 +158,7 @@ export default function Newsletter() {
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto mb-3">
               Institutional-grade macro research, markets analysis, trade ideas, and geopolitical intelligence — delivered twice daily.
             </p>
-            <p className="text-muted-foreground/60 text-sm">Morning brief at 7am · Evening wrap at 9pm · Every trading day</p>
+            <p className="text-muted-foreground/60 text-sm">Morning brief at 7am · Evening wrap at 10pm · Every trading day</p>
           </motion.div>
         </div>
 
@@ -173,8 +173,8 @@ export default function Newsletter() {
                 <p className="text-muted-foreground text-sm">Every edition is written with the same rigour as institutional research desks.</p>
               </div>
               <div className="space-y-3">
-                {INCLUDES.map(item => (
-                  <div key={item.label} className="flex items-start gap-4 glass rounded-xl p-4">
+                {INCLUDES.map((item) =>
+                <div key={item.label} className="flex items-start gap-4 glass rounded-xl p-4">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <item.icon className="w-4 h-4 text-primary" />
                     </div>
@@ -183,7 +183,7 @@ export default function Newsletter() {
                       <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </motion.div>
 
@@ -206,9 +206,9 @@ export default function Newsletter() {
                     <Input
                       placeholder="Full name"
                       value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                      className="h-11"
-                    />
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      className="h-11" />
+                    
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email address</label>
@@ -216,30 +216,30 @@ export default function Newsletter() {
                       type="email"
                       placeholder="your@email.com"
                       value={form.email}
-                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                       required
-                      className="h-11"
-                    />
+                      className="h-11" />
+                    
                   </div>
 
                   {/* Topic preferences */}
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-2 block">Your interests (optional)</label>
                     <div className="flex flex-wrap gap-2">
-                      {TOPICS.map(t => (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => toggleTopic(t.id)}
-                          className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                            selectedTopics.includes(t.id)
-                              ? 'bg-primary/10 border-primary/30 text-primary'
-                              : 'border-border text-muted-foreground hover:border-primary/20 hover:text-foreground'
-                          }`}
-                        >
+                      {TOPICS.map((t) =>
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => toggleTopic(t.id)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                        selectedTopics.includes(t.id) ?
+                        'bg-primary/10 border-primary/30 text-primary' :
+                        'border-border text-muted-foreground hover:border-primary/20 hover:text-foreground'}`
+                        }>
+                        
                           {t.label}
                         </button>
-                      ))}
+                      )}
                     </div>
                   </div>
 
@@ -247,21 +247,21 @@ export default function Newsletter() {
                     type="submit"
                     disabled={loading || !form.email}
                     className="w-full h-12 text-base gap-2"
-                    onClick={() => checkSubscription(form.email)}
-                  >
-                    {loading ? 'Redirecting to checkout…' : (
-                      <>Subscribe — £9.99/month <ArrowRight className="w-4 h-4" /></>
-                    )}
+                    onClick={() => checkSubscription(form.email)}>
+                    
+                    {loading ? 'Redirecting to checkout…' :
+                    <>Subscribe — £9.99/month <ArrowRight className="w-4 h-4" /></>
+                    }
                   </Button>
                 </form>
 
                 <div className="mt-4 space-y-2">
-                  {['Secure payment via Stripe', 'Cancel anytime from your account', 'No setup fees or hidden charges'].map(t => (
-                    <div key={t} className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                  {['Secure payment via Stripe', 'Cancel anytime from your account', 'No setup fees or hidden charges'].map((t) =>
+                  <div key={t} className="flex items-center gap-2 text-xs text-muted-foreground/70">
                       <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       {t}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -269,8 +269,8 @@ export default function Newsletter() {
         </div>
 
         {/* Recent editions — subscribers only */}
-        {editions.length > 0 && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        {editions.length > 0 &&
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
             <div className="mb-10">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-display text-3xl font-semibold">Recent Editions</h2>
@@ -278,24 +278,24 @@ export default function Newsletter() {
               <p className="text-muted-foreground text-sm">Latest market analysis and research insights</p>
             </div>
 
-            {isSubscribed ? (
-              <div className="space-y-4">
-                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) => (
-                  <EditionCard key={ed.id} edition={ed} index={idx} />
-                ))}
-                {!showAllEditions && editions.length > 4 && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => setShowAllEditions(true)}
-                    className="w-full py-4 mt-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/40 rounded-xl hover:border-primary/20 hover:bg-primary/5"
-                  >
+            {isSubscribed ?
+          <div className="space-y-4">
+                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) =>
+            <EditionCard key={ed.id} edition={ed} index={idx} />
+            )}
+                {!showAllEditions && editions.length > 4 &&
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={() => setShowAllEditions(true)}
+              className="w-full py-4 mt-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/40 rounded-xl hover:border-primary/20 hover:bg-primary/5">
+              
                     View {editions.length - 4} more editions
                   </motion.button>
-                )}
-              </div>
-            ) : (
-              <div className="glass rounded-2xl p-12 text-center border border-border/50">
+            }
+              </div> :
+
+          <div className="glass rounded-2xl p-12 text-center border border-border/50">
                 <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-6">
                   <Lock className="w-6 h-6 text-muted-foreground" />
                 </div>
@@ -305,40 +305,40 @@ export default function Newsletter() {
                   View Subscription Plans
                 </Button>
               </div>
-            )}
+          }
           </div>
-        )}
+        }
 
         {/* Manage subscription */}
         <div id="manage" className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
           <div className="glass rounded-2xl p-8 border border-border/50">
             <h2 className="font-display text-lg font-semibold mb-1">Already subscribed?</h2>
             <p className="text-sm text-muted-foreground mb-6">Need to cancel your subscription? Enter your email below and we'll unsubscribe you immediately.</p>
-            {cancelStatus === 'cancelled' ? (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-muted/40 rounded-xl px-4 py-3">
+            {cancelStatus === 'cancelled' ?
+            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-muted/40 rounded-xl px-4 py-3">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                 You have been unsubscribed. No further editions will be sent to this address.
-              </div>
-            ) : (
-              <form onSubmit={handleCancel} className="flex gap-3 flex-col sm:flex-row">
+              </div> :
+
+            <form onSubmit={handleCancel} className="flex gap-3 flex-col sm:flex-row">
                 <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={cancelEmail}
-                  onChange={e => { setCancelEmail(e.target.value); setCancelStatus(null); }}
-                  className="h-10 flex-1"
-                  required
-                />
+                type="email"
+                placeholder="your@email.com"
+                value={cancelEmail}
+                onChange={(e) => {setCancelEmail(e.target.value);setCancelStatus(null);}}
+                className="h-10 flex-1"
+                required />
+              
                 <Button type="submit" variant="outline" className="h-10 shrink-0">Cancel Subscription</Button>
               </form>
-            )}
-            {cancelStatus === 'not_found' && (
-              <p className="text-xs text-destructive mt-2">No active subscription found for that email address.</p>
-            )}
+            }
+            {cancelStatus === 'not_found' &&
+            <p className="text-xs text-destructive mt-2">No active subscription found for that email address.</p>
+            }
           </div>
         </div>
 
       </div>
-    </div>
-  );
+    </div>);
+
 }
