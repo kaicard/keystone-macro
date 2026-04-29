@@ -39,18 +39,46 @@ const ALL_INSTRUMENTS = [
 
 const DEFAULT_KEYS = ['sp500', 'nasdaq', 'ftse', 'dax'];
 
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, label, allInstruments, activeSeries, chartData }) => {
   if (!active || !payload?.length) return null;
+
+  // Build a map of dataKey -> value from whatever recharts provides
+  const provided = {};
+  payload.forEach(p => { if (p.value != null) provided[p.dataKey] = { value: p.value, stroke: p.stroke, name: p.name }; });
+
+  // For instruments not in this tooltip payload, find nearest value from chartData
+  const currentTs = payload[0]?.payload?.ts;
+  const visibleKeys = allInstruments.filter(s => activeSeries.includes(s.key));
+
+  const rows = visibleKeys.map(s => {
+    if (provided[s.key]) return { ...s, value: provided[s.key].value };
+    // Find nearest non-null value in chartData
+    if (!chartData?.length || !currentTs) return { ...s, value: null };
+    let nearest = null;
+    let minDist = Infinity;
+    for (const d of chartData) {
+      if (d[s.key] != null) {
+        const dist = Math.abs(d.ts - currentTs);
+        if (dist < minDist) { minDist = dist; nearest = d[s.key]; }
+      }
+    }
+    return { ...s, value: nearest };
+  });
+
+  const dateLabel = payload[0]?.payload?.label;
+
   return (
-    <div className="glass rounded-lg px-3 py-2 text-xs space-y-1 shadow-xl">
-      {payload[0]?.payload?.label && (
-        <p className="text-muted-foreground/60 border-b border-border/30 pb-1 mb-1">{payload[0].payload.label}</p>
+    <div className="glass rounded-lg px-3 py-2 text-xs space-y-1 shadow-xl min-w-[160px]">
+      {dateLabel && (
+        <p className="text-muted-foreground/60 border-b border-border/30 pb-1 mb-1">{dateLabel}</p>
       )}
-      {payload.map(p => (
-        <div key={p.dataKey} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: p.stroke }} />
-          <span className="text-muted-foreground">{p.name}</span>
-          <span className="font-semibold ml-auto pl-4">{p.value?.toFixed(2)}</span>
+      {rows.map(s => (
+        <div key={s.key} className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
+          <span className="text-muted-foreground">{s.label}</span>
+          <span className="font-semibold ml-auto pl-4">
+            {s.value != null ? s.value.toFixed(2) : '—'}
+          </span>
         </div>
       ))}
     </div>
@@ -278,7 +306,7 @@ export default function PerformanceChart() {
                   axisLine={false}
                   tickFormatter={v => v.toFixed(0)}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip allInstruments={visibleInstruments} activeSeries={activeSeries} chartData={labelledData} />} />
                 {visibleInstruments.filter(s => activeSeries.includes(s.key)).map(s => (
                   <Area
                     key={s.key}
