@@ -1,42 +1,67 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// ─── HTML email template ───────────────────────────────────────────────────────
-function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote }) {
+// ─── Prettify label — strip underscores, title-case ───────────────────────────
+function prettyLabel(raw) {
+  return raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+}
 
-  // Market snapshot — stacked rows for mobile friendliness
-  const snapshotRows = marketSnapshot.map(m => {
-    const isPos = m.change.startsWith('+');
-    const isNeg = m.change.startsWith('-');
-    const changeColor = isPos ? '#15803d' : isNeg ? '#dc2626' : '#6b7280';
-    return `
-      <tr>
-        <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-size:13px;color:#374151;font-weight:500;">${m.label}</td>
-        <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;text-align:right;font-size:13px;font-weight:700;color:#111827;">${m.value}</td>
-        <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;text-align:right;font-size:12px;font-weight:600;color:${changeColor};padding-left:16px;">${m.change}</td>
-      </tr>`;
+// ─── Section accent colours (cycling) ────────────────────────────────────────
+const SECTION_ACCENTS = ['#d97706','#3b82f6','#8b5cf6','#10b981','#f43f5e','#06b6d4'];
+
+// ─── HTML email template ───────────────────────────────────────────────────────
+function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote, isMorning }) {
+
+  const headerAccent = isMorning
+    ? 'background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);'
+    : 'background:linear-gradient(90deg,#3b82f6,#6366f1,#60a5fa);';
+
+  const editionColor = isMorning ? '#d97706' : '#3b82f6';
+
+  // Market snapshot — card grid (3 cols)
+  const snapshotCards = marketSnapshot.map(m => {
+    const isPos = String(m.change).startsWith('+');
+    const isNeg = String(m.change).startsWith('-');
+    const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#9ca3af';
+    const changeBg = isPos ? '#f0fdf4' : isNeg ? '#fef2f2' : '#f9fafb';
+    const arrow = isPos ? '▲' : isNeg ? '▼' : '–';
+    return `<td width="33%" style="padding:4px;">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 12px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;">${m.label}</div>
+        <div style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:5px;font-variant-numeric:tabular-nums;">${m.value}</div>
+        <div style="display:inline-block;background:${changeBg};color:${changeColor};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${arrow} ${m.change}</div>
+      </div>
+    </td>`;
   }).join('');
 
-  const sectionBlocks = sections.map(s => `
-    <tr><td style="padding:0 0 40px 0;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr><td style="padding-bottom:10px;">
-          <span style="font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#d97706;">${s.label}</span>
-        </td></tr>
-        <tr><td style="font-size:19px;font-weight:700;color:#111827;line-height:1.35;padding-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${s.headline}</td></tr>
-        <tr><td style="font-size:14px;color:#4b5563;line-height:1.85;padding-bottom:${s.callout ? '16px' : '0'};">${s.body.replace(/\n/g, '<br/><br/>')}</td></tr>
-        ${s.callout ? `
-        <tr><td>
-          <table width="100%" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td width="3" style="background:#d97706;border-radius:2px;">&nbsp;</td>
-              <td style="padding:12px 0 12px 16px;font-size:13px;color:#374151;line-height:1.65;font-style:italic;">${s.callout}</td>
-            </tr>
-          </table>
-        </td></tr>` : ''}
-      </table>
-    </td></tr>
-    <tr><td style="border-top:1px solid #f3f4f6;padding-bottom:40px;"></td></tr>
-  `).join('');
+  // Sections — each a styled card
+  const sectionBlocks = sections.map((s, i) => {
+    const accent = SECTION_ACCENTS[i % SECTION_ACCENTS.length];
+    const cleanLabel = prettyLabel(s.label || '');
+    const bodyHtml = (s.body || '').replace(/\n/g, '<br/>');
+    return `
+    <tr><td style="padding-bottom:16px;">
+      <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;">
+        <!-- card top accent line -->
+        <div style="height:3px;${headerAccent}opacity:0.6;"></div>
+        <div style="padding:24px 28px 28px;">
+          <!-- label row -->
+          ${cleanLabel ? `<div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:${accent};"></div>
+            <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${accent};">${cleanLabel}</span>
+          </div>` : ''}
+          <!-- headline -->
+          <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${s.headline}</div>
+          <!-- body -->
+          <div style="font-size:14px;color:#475569;line-height:1.85;margin-bottom:${s.callout ? '18px' : '0'};">${bodyHtml}</div>
+          <!-- callout block -->
+          ${s.callout ? `
+          <div style="border-radius:8px;background:#f8fafc;border-left:3px solid ${accent};padding:14px 18px;">
+            <div style="font-size:13px;color:#374151;line-height:1.7;font-style:italic;">${s.callout}</div>
+          </div>` : ''}
+        </div>
+      </div>
+    </td></tr>`;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -47,77 +72,73 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
   <title>${subject}</title>
   <style>
     @media only screen and (max-width:600px) {
-      .outer-table { padding: 0 !important; }
-      .main-card { border-radius: 0 !important; border-left: none !important; border-right: none !important; }
-      .content-pad { padding: 28px 20px !important; }
-      .header-pad { padding: 28px 20px 20px !important; }
-      .snap-pad { padding: 16px 20px !important; }
-      .footer-pad { padding: 20px !important; }
+      .wrap { padding: 0 !important; }
+      .card { border-radius: 0 !important; }
+      .pad { padding: 24px 18px !important; }
+      .snap-cell { display: block !important; width: 100% !important; margin-bottom: 8px; }
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f3f4f6;-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;" class="outer-table">
-<tr><td align="center" style="padding:32px 16px;" class="outer-table">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;" class="wrap">
+<tr><td align="center" style="padding:32px 16px;" class="wrap">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
-  <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+  <!-- ── WORDMARK ── -->
+  <tr><td style="padding-bottom:18px;text-align:center;">
+    <span style="font-size:10px;letter-spacing:4px;color:#94a3b8;text-transform:uppercase;font-weight:700;">The Keystone Macro Brief</span>
+  </td></tr>
 
-    <!-- ── WORDMARK BAR ── -->
-    <tr><td style="padding-bottom:20px;text-align:center;">
-      <span style="font-size:10px;letter-spacing:3px;color:#9ca3af;text-transform:uppercase;font-weight:600;">The Keystone Macro Brief</span>
-    </td></tr>
+  <!-- ── HERO HEADER ── -->
+  <tr><td class="card" style="background:#0f172a;border-radius:16px 16px 0 0;overflow:hidden;">
+    <!-- accent bar -->
+    <div style="height:4px;${headerAccent}"></div>
+    <div class="pad" style="padding:36px 40px 32px;">
+      <div style="font-size:10px;letter-spacing:2.5px;color:${editionColor};text-transform:uppercase;font-weight:800;margin-bottom:12px;">${editionLabel}&nbsp;&nbsp;·&nbsp;&nbsp;${dateStr}</div>
+      <div style="font-size:28px;font-weight:800;color:#f8fafc;line-height:1.25;font-family:Georgia,'Times New Roman',serif;">${subject}</div>
+    </div>
+  </td></tr>
 
-    <!-- ── HEADER ── -->
-    <tr><td class="main-card" style="background:#ffffff;border-radius:12px 12px 0 0;border:1px solid #e5e7eb;border-bottom:none;">
-      <div class="header-pad" style="padding:36px 40px 28px;">
-        <div style="font-size:10px;letter-spacing:2px;color:#d97706;text-transform:uppercase;font-weight:700;margin-bottom:10px;">${editionLabel}&nbsp;&nbsp;·&nbsp;&nbsp;${dateStr}</div>
-        <div style="font-size:26px;font-weight:800;color:#0f172a;line-height:1.25;font-family:Georgia,'Times New Roman',serif;">${subject}</div>
-      </div>
-    </td></tr>
+  <!-- ── MARKET SNAPSHOT ── -->
+  <tr><td style="background:#1e293b;padding:0 40px 28px;" class="pad">
+    <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;padding-top:4px;margin-bottom:12px;">Market Snapshot</div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>${snapshotCards}</tr>
+    </table>
+  </td></tr>
 
-    <!-- ── MARKET SNAPSHOT ── -->
-    <tr><td class="main-card" style="background:#fafafa;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #eeeeee;">
-      <div class="snap-pad" style="padding:20px 40px;">
-        <div style="font-size:9px;letter-spacing:1.8px;color:#9ca3af;text-transform:uppercase;font-weight:700;margin-bottom:4px;">Market Snapshot</div>
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          ${snapshotRows}
-        </table>
-      </div>
-    </td></tr>
+  <!-- ── DIVIDER ── -->
+  <tr><td style="height:8px;background:#f1f5f9;"></td></tr>
 
-    <!-- ── BODY ── -->
-    <tr><td class="main-card" style="background:#ffffff;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
-      <div class="content-pad" style="padding:40px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          ${sectionBlocks}
+  <!-- ── SECTIONS ── -->
+  <tr><td style="background:#f1f5f9;padding:0 0 4px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${sectionBlocks}
+    </table>
+  </td></tr>
 
-          <!-- LinkedIn -->
-          <tr><td style="padding-top:8px;padding-bottom:4px;text-align:center;">
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fkeystonemacro.com%2FNewsletter" style="display:inline-block;background:#0a66c2;color:#ffffff;font-size:12px;font-weight:600;padding:10px 24px;border-radius:6px;text-decoration:none;letter-spacing:0.2px;">Share on LinkedIn</a>
-          </td></tr>
-        </table>
-      </div>
-    </td></tr>
+  <!-- ── CTA ── -->
+  <tr><td style="background:#ffffff;border:1px solid #e2e8f0;padding:24px 40px;text-align:center;" class="pad">
+    <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;margin-right:12px;">Read Full Edition Online</a>
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fkeystonemacro.com%2FNewsletter" style="display:inline-block;background:#0a66c2;color:#ffffff;font-size:12px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Share on LinkedIn</a>
+  </td></tr>
 
-    <!-- ── FOOTER ── -->
-    <tr><td class="main-card" style="background:#fafafa;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
-      <div class="footer-pad" style="padding:24px 40px;text-align:center;">
-        <div style="font-size:12px;color:#6b7280;line-height:1.8;margin-bottom:6px;">${footerNote}</div>
-        <div style="border-top:1px solid #eeeeee;padding-top:16px;margin-top:14px;">
-          <span style="font-size:11px;color:#9ca3af;line-height:1.9;">
-            The Keystone Macro Brief&nbsp;&nbsp;·&nbsp;&nbsp;Institutional Research &amp; Market Intelligence<br/>
-            You are receiving this because you subscribed to Keystone Macro.<br/>
-            <a href="https://keystonemacro.com/Newsletter#manage" style="color:#d97706;text-decoration:none;border-bottom:1px solid #d97706;">Manage or cancel subscription</a>
-          </span>
-        </div>
-      </div>
-    </td></tr>
+  <!-- ── FOOTER ── -->
+  <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;" class="pad">
+    <div style="font-size:12px;color:#64748b;line-height:1.8;margin-bottom:12px;font-style:italic;">${footerNote}</div>
+    <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:4px;">
+      <span style="font-size:11px;color:#94a3b8;line-height:2;">
+        The Keystone Macro Brief &nbsp;·&nbsp; Institutional Research &amp; Market Intelligence<br/>
+        You are receiving this because you subscribed to Keystone Macro.<br/>
+        <a href="https://keystonemacro.com/Newsletter#manage" style="color:${editionColor};text-decoration:none;font-weight:600;">Manage or cancel subscription</a>
+      </span>
+    </div>
+  </td></tr>
 
-    <!-- ── BOTTOM SPACER ── -->
-    <tr><td style="height:32px;"></td></tr>
+  <tr><td style="height:32px;"></td></tr>
 
-  </table>
+</table>
 </td></tr>
 </table>
 </body>
@@ -202,7 +223,7 @@ Return JSON with:
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
 
-    const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote });
+    const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote, isMorning: editionType === 'morning' });
 
     // ── Send to all active subscribers ──────────────────────────────────────
     let sent = 0;
