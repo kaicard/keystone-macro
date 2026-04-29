@@ -125,15 +125,22 @@ async function fetchAllTickers(symbols) {
   }
 
   const results = {};
-  await Promise.all(chunks.map(async (chunk) => {
+  
+  // Promise.all with timeout per chunk (15 seconds max per chunk)
+  await Promise.allSettled(chunks.map(async (chunk) => {
     const syms = chunk.join(',');
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(syms)}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChange,regularMarketChangePercent`;
-      const res = await fetch(url, { headers: YF_HEADERS });
+      const res = await fetch(url, { headers: YF_HEADERS, signal: controller.signal });
+      clearTimeout(timeoutId);
+      
       if (res.ok) {
         const json = await res.json();
         for (const q of (json?.quoteResponse?.result || [])) {
-          if (q?.regularMarketPrice && q?.regularMarketPreviousClose) {
+          if (q?.regularMarketPrice !== null && q?.regularMarketPrice !== undefined && q?.regularMarketPreviousClose !== null && q?.regularMarketPreviousClose !== undefined) {
             results[q.symbol] = {
               price: q.regularMarketPrice,
               change_pct: q.regularMarketChangePercent ?? ((q.regularMarketPrice - q.regularMarketPreviousClose) / q.regularMarketPreviousClose) * 100,
@@ -144,21 +151,26 @@ async function fetchAllTickers(symbols) {
     } catch (_) {}
   }));
 
-  // Fallback: individual v8 chart for any symbols that still failed (especially commodities like XAUUSD)
+  // Fallback: individual v8 chart for any symbols that still failed
   const missing = symbols.filter(sym => !results[sym]);
   if (missing.length > 0) {
     for (const sym of missing) {
       for (const host of ['query1', 'query2']) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          
           const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d&includePrePost=false`;
-          const res = await fetch(url, { headers: YF_HEADERS });
+          const res = await fetch(url, { headers: YF_HEADERS, signal: controller.signal });
+          clearTimeout(timeoutId);
+          
           if (!res.ok) continue;
           const json = await res.json();
           const meta = json?.chart?.result?.[0]?.meta;
           if (!meta) continue;
           const price = meta.regularMarketPrice;
           const prev = meta.regularMarketPreviousClose ?? meta.previousClose ?? meta.chartPreviousClose;
-          if (price && prev) {
+          if (price !== null && price !== undefined && prev !== null && prev !== undefined && price > 0 && prev > 0) {
             results[sym] = { price, change_pct: ((price - prev) / prev) * 100 };
             break;
           }

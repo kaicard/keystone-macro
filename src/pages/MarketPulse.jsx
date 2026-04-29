@@ -88,18 +88,19 @@ function LiveTile({ item, onSelect, watchlist }) {
   );
 }
 
-function LiveGrid({ items, cols = 4, onSelect, watchlist }) {
+function LiveGrid({ items, cols = 4, onSelect, watchlist, loading = false }) {
   const gridClass = {
     2: 'grid-cols-2',
     4: 'grid-cols-2 md:grid-cols-4',
     6: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6',
   }[cols] || 'grid-cols-2 md:grid-cols-4';
 
-  if (!items?.length) {
+  if (loading || !items?.length) {
+    const skeletonCount = items?.length > 0 ? items.length : cols;
     return (
       <div className={`grid ${gridClass} gap-4`}>
-        {[...Array(cols)].map((_, i) => (
-          <div key={i} className="glass rounded-xl p-4 animate-pulse h-20" />
+        {[...Array(skeletonCount)].map((_, i) => (
+          <div key={i} className="glass rounded-xl p-4 h-24 bg-muted/30 animate-pulse" />
         ))}
       </div>
     );
@@ -161,29 +162,34 @@ export default function MarketPulse() {
             </div>
           </motion.div>
 
-          {/* Refresh bar */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
-            <span className="flex items-center gap-2">
-              {lastFetched ? (
+          {/* Refresh bar + error state */}
+          <div className="flex items-center justify-between text-xs mb-6 p-3 rounded-lg bg-muted/20 border border-border/30">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              {liveLoading ? (
+                <>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-spin" />
+                  <span>Fetching market data...</span>
+                </>
+              ) : lastFetched ? (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
                   <span>
-                    Updated {lastFetched.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    Updated {lastFetched.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     {secondsUntilRefresh != null && (
-                      <span className="text-muted-foreground/50">
-                        &nbsp;&middot;&nbsp;Next refresh in {secondsUntilRefresh}s
+                      <span className="text-muted-foreground/60">
+                        &nbsp;·&nbsp;Next in {secondsUntilRefresh}s
                       </span>
                     )}
                   </span>
                 </>
               ) : (
-                <span className="opacity-60">Fetching market data...</span>
+                <span className="text-amber-400">Initializing...</span>
               )}
             </span>
             <button
               onClick={refresh}
               disabled={liveLoading}
-              className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50 font-medium"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all disabled:opacity-40 font-medium text-xs"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${liveLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -230,7 +236,7 @@ export default function MarketPulse() {
                   <PerformanceChart />
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
@@ -247,24 +253,24 @@ export default function MarketPulse() {
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {(llm?.bonds || []).map(b => (
+                      {llmLoading ? [...Array(4)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (llm?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
                       ))}
                     </div>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
-                    <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                    <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
-                    <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                    <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   {live?.vix && (
                     <div>
                       <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <LiveTile item={live.vix} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                        {liveLoading ? <div className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse col-span-1" /> : <LiveTile item={live.vix} onSelect={setSelectedInstrument} watchlist={watchlistHook} />}
                       </div>
                     </div>
                   )}
@@ -275,17 +281,17 @@ export default function MarketPulse() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
-                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                    <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Single Names</h3>
-                    <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                    <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="etfs">
-                <LiveGrid items={live?.etfs} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                <LiveGrid items={live?.etfs} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
               </TabsContent>
 
               <TabsContent value="sectors">
@@ -300,11 +306,8 @@ export default function MarketPulse() {
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Government Yields</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {(llm?.bonds || []).map(b => (
+                      {llmLoading ? [...Array(8)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (llm?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
-                      ))}
-                      {!llm?.bonds?.length && [...Array(8)].map((_, i) => (
-                        <div key={i} className="glass rounded-xl p-4 animate-pulse h-20" />
                       ))}
                     </div>
                   </div>
@@ -316,15 +319,15 @@ export default function MarketPulse() {
               </TabsContent>
 
               <TabsContent value="commodities">
-                <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
               </TabsContent>
 
               <TabsContent value="fx">
-                <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
               </TabsContent>
 
               <TabsContent value="crypto">
-                <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} />
+                <LiveGrid items={live?.crypto} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
               </TabsContent>
 
               <TabsContent value="tradeideas">

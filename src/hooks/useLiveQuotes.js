@@ -37,15 +37,23 @@ export function useLiveQuotes() {
   const fetchReal = useCallback(async () => {
     try {
       setLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+      
       const res = await base44.functions.invoke('liveQuotes', {});
+      clearTimeout(timeoutId);
+      
       const payload = res?.data;
       if (payload?.ok && payload?.data) {
         setData(payload.data);
         setLastFetched(new Date());
         setError(null);
+      } else if (!payload?.ok) {
+        setError('Failed to fetch market data');
       }
     } catch (e) {
-      setError(e.message);
+      // Keep last data if offline/timeout
+      setError(e.message === 'Aborted' ? 'Request timeout' : e.message);
     } finally {
       setLoading(false);
     }
