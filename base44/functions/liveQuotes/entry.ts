@@ -86,9 +86,9 @@ const TICKERS = [
   { sym: 'USDCAD=X', name: 'USD/CAD',        cat: 'fx' },
   { sym: 'USDCNH=X', name: 'USD/CNH',        cat: 'fx' },
   // Commodities
-  { sym: 'XAUUSD=X', name: 'Gold Spot',      cat: 'commodities' },
+  { sym: 'GLD',      name: 'Gold',           cat: 'commodities' },
   { sym: 'GC=F',     name: 'Gold Futures',   cat: 'commodities' },
-  { sym: 'XAGUSD=X', name: 'Silver Spot',    cat: 'commodities' },
+  { sym: 'SLV',      name: 'Silver',         cat: 'commodities' },
   { sym: 'SI=F',     name: 'Silver Futures', cat: 'commodities' },
   { sym: 'PL=F',     name: 'Platinum',       cat: 'commodities' },
   { sym: 'CL=F',     name: 'WTI Crude',      cat: 'commodities' },
@@ -142,10 +142,12 @@ async function fetchAllTickers(symbols) {
         }
       }
     } catch (_) {}
+  }));
 
-    // Fallback: individual v8 chart for any symbols that failed
-    for (const sym of chunk) {
-      if (results[sym]) continue;
+  // Fallback: individual v8 chart for any symbols that still failed (especially commodities like XAUUSD)
+  const missing = symbols.filter(sym => !results[sym]);
+  if (missing.length > 0) {
+    for (const sym of missing) {
       for (const host of ['query1', 'query2']) {
         try {
           const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d&includePrePost=false`;
@@ -163,7 +165,7 @@ async function fetchAllTickers(symbols) {
         } catch (_) {}
       }
     }
-  }));
+  }
 
   return results;
 }
@@ -184,27 +186,31 @@ function isValidPrice(ticker, price) {
   // Indices: 100+
   if (['GSPC', 'NDX', 'DJI', 'FTSE', 'GDAXI', 'FCHI', 'STOXX50E', 'N225', 'HSI', 'AXJO'].some(t => ticker.includes(t))) return price >= 100;
   
-  // FX: 0.5—2.5
-  if (ticker.includes('=X')) return price >= 0.5 && price <= 3;
+  // FX pairs
+  if (ticker.includes('=X')) {
+    return price >= 0.5 && price <= 3;
+  }
   
-  // Commodities
-  if (ticker === 'XAUUSD=X') return price >= 1200 && price <= 3000; // Gold spot
-  if (ticker === 'GC=F') return price >= 1200 && price <= 3000;     // Gold futures
-  if (ticker === 'XAGUSD=X') return price >= 15 && price <= 50;     // Silver spot
-  if (ticker === 'SI=F') return price >= 15 && price <= 50;         // Silver futures
+  // Commodity futures
+  if (ticker === 'GC=F') return price >= 1000 && price <= 3500;     // Gold futures
+  if (ticker === 'SI=F') return price >= 10 && price <= 60;         // Silver futures
   if (ticker === 'PL=F') return price >= 600 && price <= 1500;      // Platinum
   if (['CL=F', 'BZ=F'].includes(ticker)) return price >= 20 && price <= 150;
   if (ticker === 'NG=F') return price >= 0.5 && price <= 10;
   if (ticker === 'HG=F') return price >= 1 && price <= 10;
+  if (ticker === 'ZW=F') return price >= 5 && price <= 15;          // Wheat
+  if (ticker === 'ZC=F') return price >= 3 && price <= 10;          // Corn
   
   // Crypto: BTC usually 30k-80k, ETH 1k-5k
   if (ticker === 'BTC-USD') return price >= 10000 && price <= 200000;
   if (ticker === 'ETH-USD') return price >= 500 && price <= 50000;
+  if (ticker === 'SOL-USD') return price >= 50 && price <= 500;
+  if (ticker === 'XRP-USD') return price >= 0.1 && price <= 10;
   
-  // VIX: 10-80
+  // VIX: 5-100
   if (ticker === '^VIX') return price >= 5 && price <= 100;
   
-  // Stocks: most 5-500
+  // Stocks: most 0.1-50000
   return price >= 0.1 && price <= 50000;
 }
 
