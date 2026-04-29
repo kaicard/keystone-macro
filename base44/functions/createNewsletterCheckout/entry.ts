@@ -13,6 +13,10 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
 
+    // Get the origin from request headers (where the request came from)
+    const referer = req.headers.get('referer') || req.headers.get('origin') || '';
+    const origin = referer ? new URL(referer).origin : 'https://keystonemacro.com';
+
     // Create or retrieve Stripe customer
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customer;
@@ -21,9 +25,6 @@ Deno.serve(async (req) => {
     } else {
       customer = await stripe.customers.create({ email, name: name || undefined });
     }
-
-    // Get the origin from the request to handle redirects correctly
-    const origin = new URL(req.url).origin;
 
     // Create checkout session with £9.99/month recurring
     const session = await stripe.checkout.sessions.create({
