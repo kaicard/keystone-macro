@@ -22,9 +22,10 @@ Deno.serve(async (req) => {
       customer = await stripe.customers.create({ email, name: name || undefined });
     }
 
-    const appUrl = Deno.env.get('BASE44_APP_URL') || 'https://app.base44.com';
+    // Get the origin from the request to handle redirects correctly
+    const origin = new URL(req.url).origin;
 
-    // Create checkout session with $19.99/month recurring
+    // Create checkout session with £9.99/month recurring
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       mode: 'subscription',
@@ -43,8 +44,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${appUrl}/Newsletter?subscribed=true`,
-      cancel_url: `${appUrl}/Newsletter`,
+      success_url: `${origin}/Newsletter?subscribed=true`,
+      cancel_url: `${origin}/Newsletter`,
       customer_update: { address: 'auto' },
       metadata: { email, name: name || '' },
     });
