@@ -80,7 +80,7 @@ export default function EditionCard({ edition, index }) {
           </div>
 
           {/* Title */}
-          <h3 className="font-display text-xl sm:text-2xl font-semibold leading-snug mb-6 group-hover:text-primary transition-colors duration-300 text-foreground">
+          <h3 className="font-inter text-xl sm:text-2xl font-semibold leading-snug mb-6 group-hover:text-primary transition-colors duration-300 text-foreground">
             {edition.title}
           </h3>
 
@@ -101,7 +101,7 @@ export default function EditionCard({ edition, index }) {
             <div className="flex items-center gap-2 mt-5 flex-wrap">
               {edition.tags.slice(0, 5).map(tag => (
                 <span key={tag} className="text-[10px] px-2.5 py-1 rounded-full border border-border/30 text-muted-foreground/60 font-medium uppercase tracking-wide">
-                  {tag}
+                  {tag.replace(/_/g, ' ')}
                 </span>
               ))}
             </div>

@@ -294,7 +294,7 @@ export default function NewsletterEdition() {
                 </span>
               </div>
 
-              <h1 className="font-display text-3xl sm:text-4xl font-semibold leading-tight text-foreground mb-6">
+              <h1 className="font-inter text-3xl sm:text-4xl font-semibold leading-tight text-foreground mb-6">
                 {edition.title}
               </h1>
 
