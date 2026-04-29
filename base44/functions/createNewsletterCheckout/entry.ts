@@ -35,9 +35,9 @@ Deno.serve(async (req) => {
             currency: 'usd',
             product_data: {
               name: 'Keystone Macro Brief',
-              description: 'Morning brief at 7am + Evening wrap at 5pm, Monday to Friday. Full archive access. Trade ideas and macro research.',
+              description: 'Morning brief at 7am + Evening wrap at 10pm, Monday to Friday. Full archive access. Trade ideas and macro research.',
             },
-            unit_amount: 1999, // $19.99
+            unit_amount: 999, // $9.99
             recurring: { interval: 'month' },
           },
           quantity: 1,
