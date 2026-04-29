@@ -17,19 +17,20 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
 
   const editionColor = isMorning ? '#d97706' : '#3b82f6';
 
-  // Market snapshot — card grid (3 cols)
+  // Market snapshot — equal fixed-width cells, consistent height
   const snapshotCards = marketSnapshot.map(m => {
     const isPos = String(m.change).startsWith('+');
     const isNeg = String(m.change).startsWith('-');
     const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#9ca3af';
-    const changeBg = isPos ? '#f0fdf4' : isNeg ? '#fef2f2' : '#f9fafb';
     const arrow = isPos ? '▲' : isNeg ? '▼' : '–';
-    return `<td width="33%" style="padding:4px;">
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 12px;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;">${m.label}</div>
-        <div style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:5px;font-variant-numeric:tabular-nums;">${m.value}</div>
-        <div style="display:inline-block;background:${changeBg};color:${changeColor};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${arrow} ${m.change}</div>
-      </div>
+    return `<td width="20%" style="padding:4px;vertical-align:top;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;height:90px;">
+        <tr><td style="padding:12px 10px;vertical-align:top;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</div>
+          <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:7px;font-variant-numeric:tabular-nums;white-space:nowrap;">${m.value}</div>
+          <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow} ${m.change}</div>
+        </td></tr>
+      </table>
     </td>`;
   }).join('');
 
@@ -47,11 +48,11 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
           <!-- label row -->
           ${cleanLabel ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
             <tr>
-              <td width="8" style="vertical-align:middle;padding-right:8px;">
-                <div style="width:7px;height:7px;border-radius:50%;background:${accent};line-height:1;font-size:1px;">&nbsp;</div>
+              <td width="14" style="vertical-align:middle;padding-right:6px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="7" height="7"><tr><td width="7" height="7" style="width:7px;height:7px;background:${accent};border-radius:50%;font-size:0;line-height:0;">&nbsp;</td></tr></table>
               </td>
               <td style="vertical-align:middle;">
-                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};line-height:1;">${cleanLabel}</span>
+                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};">${cleanLabel}</span>
               </td>
             </tr>
           </table>` : ''}
