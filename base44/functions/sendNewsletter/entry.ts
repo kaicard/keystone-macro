@@ -50,7 +50,12 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
   const sectionBlocks = sections.map((s, i) => {
     const accent = SECTION_ACCENTS[i % SECTION_ACCENTS.length];
     const cleanLabel = prettyLabel(s.label || '');
-    const bodyHtml = (s.body || '').replace(/\n/g, '<br/>');
+    // Strip any URLs/citations the LLM may have included
+    const cleanBody = (s.body || '')
+      .replace(/\s*\(https?:\/\/[^\)]+\)/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/\s*\[[^\]]*\]\s*\(https?:\/\/[^\)]+\)/g, '');
+    const bodyHtml = cleanBody.replace(/\n/g, '<br/>');
     return `
     <tr><td style="padding-bottom:16px;">
       <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;">
@@ -210,11 +215,13 @@ Return JSON with:
 
 Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section must be thorough: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise. No emojis anywhere.
 
+CRITICAL: Do NOT include any URLs, hyperlinks, source citations, footnotes, or references to external websites anywhere in any field. No brackets with URLs. No "(source.com)" style references. Pure prose only.
+
 Return JSON with:
 - sections: array of exactly 6 objects, each with:
   - label: short category tag
   - headline: punchy 1-line headline
-  - body: 4-5 dense specific sentences with exact data
+  - body: 4-5 dense specific sentences with exact data. NO URLs or citations whatsoever.
   - callout: 1 forward-looking actionable sentence`,
         add_context_from_internet: true,
         response_json_schema: {
