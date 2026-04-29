@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Yahoo Finance symbol map for the PerformanceChart instruments
 const INSTRUMENT_MAP = {
   sp500:      '^GSPC',
   nasdaq:     '^NDX',
@@ -46,7 +45,18 @@ const TF_INTERVAL = {
   '6M': '1wk',
   'YTD': '1d',
   '1Y': '1wk',
-  '5Y': '1wk',
+  '5Y': '1mo', // monthly for 5Y keeps data small
+};
+
+// Max data points per series to keep payload manageable
+const MAX_POINTS = {
+  '1W': 7,
+  '1M': 31,
+  '3M': 65,
+  '6M': 54,
+  'YTD': 120,
+  '1Y': 54,
+  '5Y': 60,
 };
 
 const YF_HEADERS = {
@@ -69,44 +79,43 @@ async function fetchHistory(symbol, range, interval) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    createClientFromRequest(req); // auth check
     const body = await req.json();
     const { keys = ['sp500', 'nasdaq', 'ftse', 'dax'], tf = '1M' } = body;
 
     const range = TF_RANGE[tf] || '1mo';
     const interval = TF_INTERVAL[tf] || '1d';
+    const maxPts = MAX_POINTS[tf] || 60;
 
-    // Check cache
-    const cacheKey = `historicalPrices_${tf}_${keys.sort().join('_')}`;
-    const CACHE_TTL = 60 * 60 * 1000; // 1 hour cache for historical data
-    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: cacheKey });
-    if (cached?.length > 0) {
-      const entry = cached[0];
-      const age = Date.now() - new Date(entry.fetched_at).getTime();
-      if (age < CACHE_TTL && entry.payload) {
-        return Response.json({ ok: true, data: JSON.parse(entry.payload), cached: true });
-      }
-    }
-
-    // Fetch all instruments in parallel
+    // Fetch all instruments in parallel — no caching (avoids payload size limit)
     const results = await Promise.allSettled(
       keys.map(async (key) => {
         const symbol = INSTRUMENT_MAP[key];
         if (!symbol) return { key, series: [] };
         const { timestamps, closes } = await fetchHistory(symbol, range, interval);
-        // Normalise to base 100
         const validCloses = closes.filter(c => c != null);
         if (!validCloses.length) return { key, series: [] };
         const base = validCloses[0];
-        const series = closes.map((c, i) => ({
-          ts: timestamps[i],
-          v: c != null ? +((c / base) * 100).toFixed(3) : null,
-        })).filter(p => p.v != null);
+
+        // Thin out to maxPts evenly
+        const step = Math.max(1, Math.floor(timestamps.length / maxPts));
+        const series = [];
+        for (let i = 0; i < timestamps.length; i += step) {
+          const c = closes[i];
+          if (c != null) {
+            series.push({ ts: timestamps[i], v: +((c / base) * 100).toFixed(3) });
+          }
+        }
+        // Always include last point
+        const last = timestamps.length - 1;
+        if (closes[last] != null && (series.length === 0 || series[series.length - 1].ts !== timestamps[last])) {
+          series.push({ ts: timestamps[last], v: +((closes[last] / base) * 100).toFixed(3) });
+        }
         return { key, series };
       })
     );
 
-    // Build aligned dataset: union of all timestamps
+    // Build union of timestamps
     const seriesMap = {};
     const tsUnion = new Set();
 
@@ -120,25 +129,16 @@ Deno.serve(async (req) => {
 
     const allTimestamps = Array.from(tsUnion).sort((a, b) => a - b);
 
-    // Build chart data array — nulls allowed (connectNulls handles gaps)
     const data = allTimestamps.map(ts => {
       const row = { ts, label: new Date(ts * 1000).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) };
       for (const key of keys) {
-        const seriesData = seriesMap[key];
-        if (!seriesData) continue;
-        const v = seriesData.get(ts);
+        const sd = seriesMap[key];
+        if (!sd) continue;
+        const v = sd.get(ts);
         if (v != null) row[key] = v;
       }
       return row;
     });
-
-    const payload = JSON.stringify(data);
-    const fetched_at = new Date().toISOString();
-    if (cached?.length > 0) {
-      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
-    } else {
-      await base44.asServiceRole.entities.MarketCache.create({ key: cacheKey, payload, fetched_at });
-    }
 
     return Response.json({ ok: true, data, cached: false });
   } catch (error) {
