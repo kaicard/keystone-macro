@@ -86,8 +86,10 @@ const TICKERS = [
   { sym: 'USDCAD=X', name: 'USD/CAD',        cat: 'fx' },
   { sym: 'USDCNH=X', name: 'USD/CNH',        cat: 'fx' },
   // Commodities
-  { sym: 'GC=F',     name: 'Gold',           cat: 'commodities' },
-  { sym: 'SI=F',     name: 'Silver',         cat: 'commodities' },
+  { sym: 'XAUUSD=X', name: 'Gold Spot',      cat: 'commodities' },
+  { sym: 'GC=F',     name: 'Gold Futures',   cat: 'commodities' },
+  { sym: 'XAGUSD=X', name: 'Silver Spot',    cat: 'commodities' },
+  { sym: 'SI=F',     name: 'Silver Futures', cat: 'commodities' },
   { sym: 'PL=F',     name: 'Platinum',       cat: 'commodities' },
   { sym: 'CL=F',     name: 'WTI Crude',      cat: 'commodities' },
   { sym: 'BZ=F',     name: 'Brent Crude',    cat: 'commodities' },
@@ -185,9 +187,12 @@ function isValidPrice(ticker, price) {
   // FX: 0.5—2.5
   if (ticker.includes('=X')) return price >= 0.5 && price <= 3;
   
-  // Commodities: GC, SI, CL usually 100-2000
-  if (ticker === 'GC=F') return price >= 500 && price <= 3000;
-  if (ticker === 'SI=F') return price >= 5 && price <= 100;
+  // Commodities
+  if (ticker === 'XAUUSD=X') return price >= 1200 && price <= 3000; // Gold spot
+  if (ticker === 'GC=F') return price >= 1200 && price <= 3000;     // Gold futures
+  if (ticker === 'XAGUSD=X') return price >= 15 && price <= 50;     // Silver spot
+  if (ticker === 'SI=F') return price >= 15 && price <= 50;         // Silver futures
+  if (ticker === 'PL=F') return price >= 600 && price <= 1500;      // Platinum
   if (['CL=F', 'BZ=F'].includes(ticker)) return price >= 20 && price <= 150;
   if (ticker === 'NG=F') return price >= 0.5 && price <= 10;
   if (ticker === 'HG=F') return price >= 1 && price <= 10;
