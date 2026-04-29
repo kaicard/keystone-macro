@@ -30,29 +30,16 @@ const SENTIMENT_STYLES = {
   neutral:  { badge: 'bg-muted text-muted-foreground border-border/40' },
 };
 
-// ─── FIND ITEM ACROSS ALL POSSIBLE CACHE KEYS ─────────────────────────────────
+// ─── FIND ITEM BY SLUG FROM ENTITY ────────────────────────────────────────────
 async function findItemBySlug(slug) {
   try {
-    // Try all cache keys for today — slot 0-11 (every 2 hours)
-    const today = new Date().toISOString().split('T')[0];
-    const keys = [];
-    for (let s = 0; s < 12; s++) keys.push(`intelligenceFeed_${today}_s${s}`);
-    // Also try legacy key format
-    keys.push(`intelligenceFeed_${today}`);
-
-    const allResults = await Promise.all(
-      keys.map(key =>
-        base44.entities.MarketCache.filter({ key }).catch(() => [])
-      )
-    );
-
-    for (const results of allResults) {
-      if (!results?.length) continue;
-      try {
-        const items = JSON.parse(results[0].payload);
-        const found = items.find(i => i.slug === slug);
-        if (found) return { item: found, allItems: items };
-      } catch (_) {}
+    const results = await base44.entities.IntelligenceItem.filter({ slug });
+    if (results?.length) {
+      const item = results[0];
+      // Fetch related items of the same category
+      const related = await base44.entities.IntelligenceItem.filter({ category: item.category });
+      const allItems = related || [];
+      return { item, allItems };
     }
   } catch (_) {}
   return { item: null, allItems: [] };
@@ -157,7 +144,7 @@ export default function ResearchIntelligence() {
       setItem(found);
       setRelated(
         allItems
-          .filter(i => i.slug !== slug && i.category === found.category)
+          .filter(i => i.id !== found.id)
           .slice(0, 3)
       );
 
@@ -255,10 +242,10 @@ export default function ResearchIntelligence() {
           <div className="flex items-center gap-2 flex-wrap mb-4">
             <Badge variant="outline" className={`text-xs border ${catStyle}`}>{item.category}</Badge>
             <Badge variant="outline" className={`text-xs border ${sentStyle.badge}`}>{item.sentiment}</Badge>
-            {(item.published_time_local || item.published_time) && (
+            {item.published_at && (
               <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
                 <Clock className="w-3 h-3" />
-                {item.published_time_local || item.published_time} {tzLabel}
+                {new Date(item.published_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })} {tzLabel}
               </span>
             )}
           </div>
@@ -463,9 +450,9 @@ export default function ResearchIntelligence() {
                     <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors truncate">
                       {r.headline}
                     </p>
-                    {(r.published_time_local || r.published_time) && (
+                    {r.published_at && (
                       <p className="text-xs text-muted-foreground/50 mt-1 font-mono">
-                        {r.published_time_local || r.published_time}
+                        {new Date(r.published_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}
                       </p>
                     )}
                   </div>
