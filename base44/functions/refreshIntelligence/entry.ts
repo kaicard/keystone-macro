@@ -85,7 +85,13 @@ Deno.serve(async (req) => {
       .filter(e => {
         if (!e.Name || !e.Currency) return false;
         if ((e.Impact || '').toLowerCase() !== 'high') return false;
-        const key = `${e.Name}-${e.Currency}`;
+        // Normalize event key: remove noise, extract core event name
+        const normalized = (e.Name || '')
+          .toLowerCase()
+          .replace(/\s+(rate|holds?|held|steady|unchanged|adjusts?|changed?)\s*/gi, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const key = `${normalized}-${e.Currency}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
