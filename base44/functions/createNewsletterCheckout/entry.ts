@@ -32,12 +32,12 @@ Deno.serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'gbp',
             product_data: {
               name: 'The Keystone Macro Brief',
-              description: 'Morning brief at 7am + Evening wrap at 10pm, Monday to Friday. Full archive access. Trade ideas and macro research.',
+              description: '10 editions per week (Mon-Fri). Morning brief at 7am + Evening wrap at 10pm. Institutional-grade macro research, market analysis, trade ideas, and geopolitical intelligence. Full archive access included.',
             },
-            unit_amount: 999, // $9.99
+            unit_amount: 999, // £9.99
             recurring: { interval: 'month' },
           },
           quantity: 1,
