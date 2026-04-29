@@ -1,7 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { Resend } from 'npm:resend@4.0.0';
-
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 // ─── HTML email template ───────────────────────────────────────────────────────
 function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote }) {
@@ -165,7 +162,6 @@ Return JSON with:
   - body: 5-6 dense, specific sentences with exact data. No emojis. Newline (\\n) between paragraphs if needed.
   - callout: 1 concise forward-looking sentence — the most actionable takeaway. No emojis.
 - footer_note: A sharp 1-line closing observation. No emojis.`,
-      model: 'gemini_3_1_pro',
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
@@ -199,14 +195,14 @@ Return JSON with:
 
     const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sections, footerNote });
 
-    // ── Send to all active subscribers via Resend ────────────────────────────
+    // ── Send to all active subscribers ──────────────────────────────────────
     let sent = 0;
     for (const subscriber of subscribers) {
-      await resend.emails.send({
-        from: 'The Keystone Macro Brief <brief@keystonemacro.com>',
+      await base44.asServiceRole.integrations.Core.SendEmail({
         to: subscriber.email,
         subject: `The Keystone Macro Brief — ${subject}`,
-        html: htmlBody,
+        body: htmlBody,
+        from_name: 'The Keystone Macro Brief',
       });
       sent++;
     }
