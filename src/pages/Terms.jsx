@@ -18,7 +18,7 @@ export default function Terms() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Terms &amp; Conditions</h1>
-          <p className="text-muted-foreground">Last updated: March 2026</p>
+          <p className="text-muted-foreground">Last updated: April 2026</p>
         </motion.div>
 
         <motion.div
@@ -30,7 +30,12 @@ export default function Terms() {
           <Section title="1. Acceptance of Terms">
             <p>
               By accessing or using Keystone Macro (the "Platform"), you agree to be bound by these Terms and
-              Conditions. If you do not agree with any part of these terms, you must not use the Platform.
+              Conditions and our Privacy Policy. If you do not agree with any part of these terms, you must not
+              use the Platform.
+            </p>
+            <p>
+              By subscribing to any paid service or newsletter offered on this Platform, you further agree to
+              these Terms and Conditions, including the Subscription Terms outlined in Section 14 below.
             </p>
           </Section>
 
@@ -146,7 +151,30 @@ export default function Terms() {
             </p>
           </Section>
 
-          <Section title="13. Contact">
+          <Section title="13. Subscription Terms">
+            <p>
+              Certain features and services on this Platform are available through paid subscription only.
+              By subscribing, you agree to pay the subscription fees specified at the point of purchase in
+              your local currency.
+            </p>
+            <p>
+              <strong>Billing:</strong> Subscriptions are billed automatically on a recurring basis (monthly or
+              annually, as selected). You authorize us to charge your payment method for each billing cycle.
+            </p>
+            <p>
+              <strong>Cancellation:</strong> You may cancel your subscription at any time through your account
+              settings or by contacting us. Cancellation will take effect at the end of your current billing
+              period. No refunds will be issued for partial months or unused portions of your subscription.
+            </p>
+            <p>
+              <strong>Payment Method:</strong> We accept payment via credit card and other methods as indicated
+              during checkout. By providing payment information, you authorise us to process payments in accordance
+              with these terms. Payment is processed by our third-party payment provider, and your payment data
+              is subject to their terms and privacy policy.
+            </p>
+          </Section>
+
+          <Section title="14. Contact">
             <p>
               If you have any questions regarding these Terms and Conditions, please contact us at{' '}
               <a href="mailto:hello@keystonemacro.com" className="text-primary hover:underline">
