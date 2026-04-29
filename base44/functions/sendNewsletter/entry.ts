@@ -17,22 +17,34 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
 
   const editionColor = isMorning ? '#d97706' : '#3b82f6';
 
-  // Market snapshot — equal fixed-width cells, consistent height
-  const snapshotCards = marketSnapshot.map(m => {
+  // Market snapshot — 2-row grid: row1 = 3 cards, row2 = 2 cards, fixed pixel widths
+  function snapCard(m) {
     const isPos = String(m.change).startsWith('+');
     const isNeg = String(m.change).startsWith('-');
     const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#9ca3af';
     const arrow = isPos ? '▲' : isNeg ? '▼' : '–';
-    return `<td width="20%" style="padding:4px;vertical-align:top;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;height:90px;">
-        <tr><td style="padding:12px 10px;vertical-align:top;">
-          <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</div>
-          <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:7px;font-variant-numeric:tabular-nums;white-space:nowrap;">${m.value}</div>
-          <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow} ${m.change}</div>
-        </td></tr>
-      </table>
-    </td>`;
-  }).join('');
+    return `<table width="152" cellpadding="0" cellspacing="0" border="0" style="width:152px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+      <tr><td width="152" style="padding:14px 12px;vertical-align:top;height:88px;">
+        <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">${m.label}</div>
+        <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:8px;font-variant-numeric:tabular-nums;">${m.value}</div>
+        <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow}&nbsp;${m.change}</div>
+      </td></tr>
+    </table>`;
+  }
+  const snap = (marketSnapshot || []).slice(0, 5);
+  const snapshotHtml = `
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+      <tr>
+        <td style="padding:0 4px 8px 0;">${snapCard(snap[0] || {label:'–',value:'–',change:'–'})}</td>
+        <td style="padding:0 4px 8px 4px;">${snapCard(snap[1] || {label:'–',value:'–',change:'–'})}</td>
+        <td style="padding:0 0 8px 4px;">${snapCard(snap[2] || {label:'–',value:'–',change:'–'})}</td>
+      </tr>
+      <tr>
+        <td style="padding:0 4px 0 0;">${snapCard(snap[3] || {label:'–',value:'–',change:'–'})}</td>
+        <td style="padding:0 4px 0 4px;">${snapCard(snap[4] || {label:'–',value:'–',change:'–'})}</td>
+        <td style="padding:0;"></td>
+      </tr>
+    </table>`;
 
   // Sections — each a styled card
   const sectionBlocks = sections.map((s, i) => {
@@ -46,13 +58,15 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
         <div style="height:3px;${headerAccent}opacity:0.6;"></div>
         <div style="padding:24px 28px 28px;">
           <!-- label row -->
-          ${cleanLabel ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+          ${cleanLabel ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;border-collapse:collapse;">
             <tr>
-              <td width="14" style="vertical-align:middle;padding-right:6px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="7" height="7"><tr><td width="7" height="7" style="width:7px;height:7px;background:${accent};border-radius:50%;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+              <td width="8" height="9" style="padding:0 8px 0 0;vertical-align:middle;line-height:9px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="8" height="8" style="border-radius:50%;overflow:hidden;">
+                  <tr><td width="8" height="8" bgcolor="${accent}" style="width:8px;height:8px;min-width:8px;min-height:8px;border-radius:50%;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
+                </table>
               </td>
-              <td style="vertical-align:middle;">
-                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};">${cleanLabel}</span>
+              <td style="vertical-align:middle;line-height:9px;">
+                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};line-height:9px;display:inline-block;">${cleanLabel}</span>
               </td>
             </tr>
           </table>` : ''}
@@ -110,9 +124,7 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
   <!-- ── MARKET SNAPSHOT ── -->
   <tr><td style="background:#1e293b;padding:0 40px 28px;" class="pad">
     <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;padding-top:4px;margin-bottom:12px;">Market Snapshot</div>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-      <tr>${snapshotCards}</tr>
-    </table>
+    ${snapshotHtml}
   </td></tr>
 
   <!-- ── DIVIDER ── -->
