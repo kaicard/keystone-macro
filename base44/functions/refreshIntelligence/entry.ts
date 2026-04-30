@@ -143,7 +143,10 @@ Deno.serve(async (req) => {
       (i.batch_id || '').startsWith('batch_') &&
       !i.slug.match(/^(usd|gbp|eur|cad|jpy|aud|chf|nzd)-/) // not a data release slug
     );
-    const shouldRunBroadNews = todayBroadItems.length < 3; // only run if fewer than 3 broad items today
+    const shouldRunBroadNews = todayBroadItems.length < 3;
+
+    // Cut-off: only items published within the last 24 hours are considered "recent" for the feed
+    const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
 
     // Run both tracks — Track 2 conditional
     const [dataReleasesResult, broadNewsResult] = await Promise.all([
@@ -208,13 +211,17 @@ For EACH event write one item:
             add_context_from_internet: true,
             prompt: `You are a senior correspondent at Keystone Macro. Today is ${londonDate}, ${londonTime} London time.
 
-Search the internet RIGHT NOW and find the 2 most significant breaking macro or geopolitical stories from the past 6 hours that are NEW and NOT widely recycled. You must only write about stories that:
-- Are real and verifiable (you can cite specific names, figures, governments, companies)
-- Have occurred in the past 6 hours or are actively developing right now
-- Have direct financial market implications (FX, rates, equities, commodities)
-- Are NOT generic economic data releases (CPI, GDP, PMI etc — those are covered separately)
+Search the internet RIGHT NOW and find the 2 most significant breaking macro or geopolitical stories from the PAST 24 HOURS that are NEW and verifiable. You must only write about stories that:
+- Are CONFIRMED real events — you can cite specific named parties, figures, governments, companies, exact percentages
+- Have occurred within the last 24 hours (between ${new Date(now - 24 * 60 * 60 * 1000).toLocaleString('en-GB', { timeZone: 'Europe/London' })} and ${londonTime} London time today, ${londonDate})
+- Have direct, material financial market implications (FX, rates, equities, commodities)
+- Are NOT generic economic data releases (CPI, GDP, PMI, NFP etc — those are covered by a separate data feed)
 
-DO NOT write about a story if you are not certain it happened today. If you cannot find 2 genuinely new stories, return fewer items rather than fabricating or recycling old news.
+STRICT RULES:
+- If a story occurred more than 24 hours ago, DO NOT include it — even if it is still in the news
+- If you cannot verify a story happened within the last 24 hours, DO NOT include it
+- Return ZERO items rather than fabricating, recycling, or using stale news
+- Each headline must include a specific date/time cue, name, country, or figure that anchors it to today
 
 For each item:
 - headline: max 15 words — must include specific names, countries, figures — NO vague language
@@ -288,6 +295,9 @@ For each item:
 
     for (const item of (broadNewsResult?.items || [])) {
       if (!item.headline || item.headline.length < 10) continue;
+      // Reject items that don't feel anchored to today — require meaningful content in impact/desk_view
+      if (!item.impact || item.impact.length < 40) { skipped++; continue; }
+      if (!item.desk_view || item.desk_view.length < 40) { skipped++; continue; }
 
       // Similarity check — the key defence against duplicates
       if (isTooSimilar(item.headline, existingHeadlinesFull)) { skipped++; continue; }
