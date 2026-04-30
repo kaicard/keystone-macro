@@ -99,37 +99,16 @@ Deno.serve(async (req) => {
         return true;
       });
     
-    // Build set of events already in DB (normalized)
-    const dbEventKeys = new Set();
-    for (const item of recentExisting) {
-      const normalized = (item.headline || '')
-        .toLowerCase()
-        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?|decision)\s*/gi, ' ')
-        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      const beat = item.beat || 'macro';
-      const currency = beat.includes('us') ? 'USD' : beat.includes('uk') ? 'GBP' : beat.includes('eu') ? 'EUR' : 'XXX';
-      dbEventKeys.add(`${normalized}-${currency}`);
-    }
-    
-    // Filter to released events only, excluding those already in DB
+    // Filter to released events only — slug-based dedup happens later when saving
     const releasedEvents = allEvents.filter(e => {
       if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
       const outcome = (e.Outcome || '').toLowerCase();
       const name = (e.Name || '').toLowerCase();
       if (outcome === '' && e.Actual === 0 && e.Forecast === 0) return false;
       if (name.includes('press conference') || name.includes('speech') || name.includes('statement')) return false;
-      
-      const normalized = (e.Name || '')
-        .toLowerCase()
-        .replace(/\s+(rate|holds?|held|steady|unchanged|adjusts?|changed?|maintains?|maintained|decision)\s*/gi, ' ')
-        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      const key = `${normalized}-${e.Currency}`;
-      if (dbEventKeys.has(key)) return false;
-      
+      // Pre-filter: skip if the stable slug already exists in DB
+      const slug = generateEventSlug(e);
+      if (existingSlugs.has(slug)) return false;
       return true;
     });
 
@@ -139,7 +118,7 @@ Deno.serve(async (req) => {
     }
 
     // ── STEP 2: LLM writes Keystone intelligence ONLY for these real events ───
-    const eventList = releasedEvents.slice(0, 15).map((e, i) => {
+    const eventList = releasedEvents.slice(0, 6).map((e, i) => {
       return `EVENT ${i + 1}:
 Name: ${e.Name}
 Currency: ${e.Currency}
