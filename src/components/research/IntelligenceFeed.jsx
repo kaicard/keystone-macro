@@ -47,8 +47,11 @@ const SENTIMENT_DOT = {
   neutral:  'bg-amber-400/60',
 };
 
-function londonDateStr(date = new Date()) {
-  return date.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+// Use the visitor's local timezone for all date/time display
+const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+function localDateStr(date = new Date()) {
+  return date.toLocaleDateString('en-CA', { timeZone: userTZ });
 }
 
 function getWeekStart() {
@@ -58,24 +61,24 @@ function getWeekStart() {
   const monday = new Date(now);
   monday.setDate(now.getDate() + diff);
   monday.setHours(0, 0, 0, 0);
-  return londonDateStr(monday);
+  return localDateStr(monday);
 }
 
 function getDateLabel(dateStr) {
-  const today = londonDateStr();
-  const yesterday = londonDateStr(new Date(Date.now() - 86400000));
+  const today = localDateStr();
+  const yesterday = localDateStr(new Date(Date.now() - 86400000));
   if (dateStr === today) return 'Today';
   if (dateStr === yesterday) return 'Yesterday';
-  return new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'short',
+  return new Date(dateStr + 'T12:00:00Z').toLocaleDateString(undefined, {
+    weekday: 'long', day: 'numeric', month: 'short', timeZone: userTZ,
   });
 }
 
 function formatTime(isoStr) {
   if (!isoStr) return null;
   try {
-    return new Date(isoStr).toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+    return new Date(isoStr).toLocaleTimeString(undefined, {
+      hour: '2-digit', minute: '2-digit', timeZone: userTZ,
     });
   } catch { return null; }
 }
@@ -272,8 +275,8 @@ export default function IntelligenceFeed() {
   }, []);
 
   const filtered = useMemo(() => {
-    const today     = londonDateStr();
-    const yesterday = londonDateStr(new Date(Date.now() - 86400000));
+    const today     = localDateStr();
+    const yesterday = localDateStr(new Date(Date.now() - 86400000));
     const weekStart = getWeekStart();
     return allItems.filter(item => {
       const d = item.published_date || item.published_at?.split('T')[0] || '';
@@ -300,7 +303,7 @@ export default function IntelligenceFeed() {
 
   const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
 
-  const todayStr = londonDateStr();
+  const todayStr = localDateStr();
   const topStories = useMemo(() =>
     allItems.filter(i =>
       i.is_top_story &&
