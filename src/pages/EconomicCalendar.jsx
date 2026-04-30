@@ -148,10 +148,9 @@ function parseFFEvent(ev, idx) {
 // ─── FETCH FF FEED ────────────────────────────────────────────────────────────
 async function fetchFFWeek() {
   const url   = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res   = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-  const json  = await res.json();
-  const raw   = JSON.parse(json.contents);
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+  const raw = await res.json();
 
   return raw
     .filter(ev => ev.impact === 'High' || ev.impact === 'Medium' || ev.impact === 'Holiday')
