@@ -7,7 +7,6 @@ import {
   Activity, Filter, CheckCircle2, Loader2, RefreshCw
 } from 'lucide-react';
 
-// ─── CATEGORY COLOURS ─────────────────────────────────────────────────────────
 const CATEGORY_COLORS = {
   'Central Bank': 'text-amber-400 bg-amber-400/10',
   'Inflation':    'text-red-400 bg-red-400/10',
@@ -74,41 +73,38 @@ const CATEGORY_IMPLICATIONS = {
   },
 };
 
-// ─── CONFIRMED PREVIOUS EVENTS (accurate actuals, never changes) ──────────────
+// Confirmed seed data for previous tab — always accurate
 const SEED_PREVIOUS = [
-  { id: 's1',  date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',      importance: 'high', previous: '3.75–4.00%', forecast: '3.50–3.75%', actual: '3.50–3.75%', category: 'Central Bank', outcome: 'Fed cut 25bp to 3.50–3.75% as expected. Dot plot showed one more cut in 2026. GDP forecasts trimmed; PCE inflation upgraded. Powell flagged tariff and geopolitical uncertainty. Equities dipped; 10-year yields rose 4bp.' },
-  { id: 's2',  date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision',       importance: 'high', previous: '4.00%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.75% as expected, 7-2 vote. MPC cited energy price spike as upside inflation risk but flagged progress on services CPI. GBP fell 0.3%; gilts rallied.' },
-  { id: 's3',  date: '2026-03-31', utcTime: '09:00', country: 'EU', event: 'Eurozone Core CPI Flash (YoY)',    importance: 'high', previous: '2.6%',        forecast: '2.5%',        actual: '2.4%',        category: 'Inflation',    outcome: 'Eurozone core CPI fell to 2.4%, below the 2.5% consensus. Services inflation dropped to 3.4%. ECB April cut expectations firmed to ~95%. EUR/USD slipped 0.3%.' },
-  { id: 's4',  date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing PMI',            importance: 'high', previous: '50.3',        forecast: '49.5',        actual: '49.0',        category: 'PMI',          outcome: 'ISM Manufacturing fell to 49.0, below the 49.5 consensus. Prices paid surged to 69.4 on tariff pass-through — a stagflationary signal. New orders fell sharply. USD weakened; equities sold off.' },
-  { id: 's5',  date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Nonfarm Payrolls',                 importance: 'high', previous: '151K',        forecast: '138K',        actual: '177K',        category: 'Labour',       outcome: 'NFP beat at 177K versus 138K forecast. Unemployment held at 4.2%. Average hourly earnings +0.3% MoM. Resilient but softening labour market. USD firmed before fading on tariff concerns.' },
-  { id: 's6',  date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Unemployment Rate',                importance: 'high', previous: '4.1%',        forecast: '4.1%',        actual: '4.2%',        category: 'Labour',       outcome: 'Unemployment edged up to 4.2%, above the 4.1% prior and forecast. Labour market softening gradually at the margins.' },
-  { id: 's7',  date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',       importance: 'high', previous: '3.75%',       forecast: '3.50%',       actual: '3.50%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.50% as expected, 7-2 vote. Bailey flagged tariff uncertainty as a growth headwind. GBP fell 0.4%; gilts rallied.' },
-  { id: 's8',  date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)',                     importance: 'high', previous: '3.0%',        forecast: '2.6%',        actual: '2.4%',        category: 'Inflation',    outcome: 'US CPI surprised to the downside at 2.4%, below the 2.6% consensus. Core CPI fell to 2.8%. USD weakened sharply; June Fed cut expectations surged to 85%. 10-year yields dropped 12bp.' },
-  { id: 's9',  date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US Core CPI (MoM)',                importance: 'high', previous: '0.4%',        forecast: '0.3%',        actual: '0.1%',        category: 'Inflation',    outcome: 'Core CPI MoM at just 0.1%, the softest since 2021. Services inflation fell sharply. Markets moved to price two Fed cuts by year-end.' },
-  { id: 's10', date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',       importance: 'high', previous: '2.65%',       forecast: '2.40%',       actual: '2.40%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.40% as expected. Lagarde flagged tariff risks as a downside growth concern. EUR/USD fell 0.2%; peripheral spreads tightened.' },
-  { id: 's11', date: '2026-04-29', utcTime: '12:30', country: 'US', event: 'GDP Advance Q1 (QoQ Ann.)',        importance: 'high', previous: '2.4%',        forecast: '0.4%',        actual: '-0.3%',       category: 'GDP',          outcome: 'US GDP contracted 0.3% annualised in Q1, a significant miss. Tariff-related import surge distorted the trade component. Consumer spending held at 1.8%. Recession fears spiked; USD fell sharply.' },
-  { id: 's12', date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',      importance: 'high', previous: '3.50–3.75%',  forecast: '3.50–3.75%',  actual: '3.50–3.75%',  category: 'Central Bank', outcome: 'Fed held at 3.50–3.75% as expected. Statement flagged elevated uncertainty on both inflation and growth. Powell noted the Fed was monitoring tariff pass-through carefully.' },
+  { id: 's1',  date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.75–4.00%', forecast: '3.50–3.75%', actual: '3.50–3.75%', category: 'Central Bank', outcome: 'Fed cut 25bp to 3.50–3.75% as expected. Dot plot showed one more cut in 2026. GDP forecasts trimmed; PCE inflation upgraded. Powell flagged tariff and geopolitical uncertainty. Equities dipped; 10-year yields rose 4bp.' },
+  { id: 's2',  date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '4.00%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.75% as expected, 7-2 vote. MPC cited energy price spike as upside inflation risk. GBP fell 0.3%; gilts rallied.' },
+  { id: 's3',  date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing PMI',          importance: 'high', previous: '50.3',        forecast: '49.5',        actual: '49.0',        category: 'PMI',          outcome: 'ISM Manufacturing fell to 49.0, below the 49.5 consensus. Prices paid surged to 69.4 on tariff pass-through. New orders fell sharply. USD weakened; equities sold off.' },
+  { id: 's4',  date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Nonfarm Payrolls',               importance: 'high', previous: '151K',        forecast: '138K',        actual: '177K',        category: 'Labour',       outcome: 'NFP beat at 177K versus 138K forecast. Unemployment held at 4.2%. Resilient but softening labour market.' },
+  { id: 's5',  date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '3.75%',       forecast: '3.50%',       actual: '3.50%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.50% as expected, 7-2 vote. Bailey flagged tariff uncertainty as a growth headwind. GBP fell 0.4%; gilts rallied.' },
+  { id: 's6',  date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)',                   importance: 'high', previous: '3.0%',        forecast: '2.6%',        actual: '2.4%',        category: 'Inflation',    outcome: 'US CPI surprised to the downside at 2.4%. Core CPI fell to 2.8%. USD weakened sharply; 10-year yields dropped 12bp.' },
+  { id: 's7',  date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.65%',       forecast: '2.40%',       actual: '2.40%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.40% as expected. Lagarde flagged tariff risks as a downside growth concern. EUR/USD fell 0.2%.' },
+  { id: 's8',  date: '2026-04-29', utcTime: '12:30', country: 'US', event: 'GDP Advance Q1 (QoQ Ann.)',      importance: 'high', previous: '2.4%',        forecast: '0.4%',        actual: '-0.3%',       category: 'GDP',          outcome: 'US GDP contracted 0.3% annualised in Q1. Tariff-related import surge distorted the trade component. Recession fears spiked; USD fell sharply.' },
+  { id: 's9',  date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.50–3.75%',  forecast: '3.50–3.75%',  actual: '3.50–3.75%',  category: 'Central Bank', outcome: 'Fed held at 3.50–3.75% as expected. Powell flagged two-sided risks from tariff inflation and growth slowdown.' },
+  { id: 's10', date: '2026-04-30', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '3.75%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE held at 3.75% with an 8-1 vote. MPC cited tariff uncertainty as a near-term inflation risk, pausing the cutting cycle. GBP firmed 0.3%.' },
+  { id: 's11', date: '2026-04-30', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.40%',       forecast: '2.15%',       actual: '2.15%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.15% as expected. Lagarde described tariffs as a significant headwind. EUR/USD fell 0.25% on the dovish press conference.' },
 ];
 
-// ─── CURRENCY → COUNTRY ───────────────────────────────────────────────────────
 const CURRENCY_TO_COUNTRY = {
   USD: 'US', GBP: 'UK', EUR: 'EU', JPY: 'JP', CNY: 'CN',
   CAD: 'CA', AUD: 'AU', CHF: 'CH', NZD: 'NZ', SEK: 'SE',
   NOK: 'NO', BRL: 'BR', INR: 'IN', MXN: 'MX', KRW: 'KR', ZAR: 'ZA',
 };
 
-// ─── CATEGORY DETECTION ───────────────────────────────────────────────────────
 function getCategory(title) {
   const t = (title || '').toLowerCase();
   if (/official bank rate|policy rate|overnight rate|federal funds|refinancing rate|cash rate|bank rate|rate decision|monetary policy statement|mpc.*votes|boe monetary|fomc statement/.test(t)) return 'Central Bank';
   if (/press conference|gov .* speaks|speaks|inflation letter|outlook report|monetary policy summary|rate statement/.test(t)) return 'Speeches';
   if (/cpi|ppi|inflation|price index|pce|hicp|trimmed mean/.test(t)) return 'Inflation';
   if (/nonfarm|employment change|unemployment claims|jobless|payroll|wages|earning|employment cost/.test(t)) return 'Labour';
-  if (/\bpmi\b|purchasing|manufacturing pmi|services pmi|composite pmi|chicago pmi|business activity/.test(t)) return 'PMI';
-  if (/retail sales|consumer confidence|consumer sentiment|gfk|ifo|zew|michigan|business confidence|cb consumer/.test(t)) return 'Consumer';
+  if (/\bpmi\b|purchasing|manufacturing pmi|services pmi|composite pmi|chicago pmi/.test(t)) return 'PMI';
+  if (/retail sales|consumer confidence|consumer sentiment|gfk|ifo|zew|michigan|cb consumer/.test(t)) return 'Consumer';
   if (/housing|home sales|building permits|hpi|house price|construction/.test(t)) return 'Housing';
   if (/trade balance|current account|goods trade/.test(t)) return 'Trade';
-  if (/\bgdp\b|gross domestic|industrial production|output|productivity|advance gdp|prelim gdp|flash gdp/.test(t)) return 'GDP';
+  if (/\bgdp\b|gross domestic|industrial production|output|advance gdp|prelim gdp|flash gdp/.test(t)) return 'GDP';
   if (/bank holiday|holiday/.test(t)) return 'Holiday';
   return 'GDP';
 }
@@ -120,15 +116,12 @@ function getImportance(ffImpact) {
   return 'low';
 }
 
-// ─── PARSE FF EVENT ───────────────────────────────────────────────────────────
-// FF dates come as ISO strings with EDT offset: "2026-04-30T07:00:00-04:00"
 function parseFFEvent(ev, idx) {
   const dt      = new Date(ev.date);
   const dateStr = dt.toISOString().split('T')[0];
   const utcTime = ev.impact === 'Holiday'
     ? 'All Day'
     : `${String(dt.getUTCHours()).padStart(2,'0')}:${String(dt.getUTCMinutes()).padStart(2,'0')}`;
-
   return {
     id:         `ff_${idx}_${dateStr}_${utcTime}`,
     date:       dateStr,
@@ -145,19 +138,38 @@ function parseFFEvent(ev, idx) {
   };
 }
 
-// ─── FETCH FF FEED ────────────────────────────────────────────────────────────
+// Try multiple proxies in sequence
 async function fetchFFWeek() {
-  const url   = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-  const raw = await res.json();
+  const FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(FF_URL)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(FF_URL)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(FF_URL)}`,
+  ];
 
-  return raw
-    .filter(ev => ev.impact === 'High' || ev.impact === 'Medium' || ev.impact === 'Holiday')
-    .map(parseFFEvent);
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const text = await res.text();
+
+      // allorigins wraps in {contents: "..."}
+      let raw;
+      try {
+        const parsed = JSON.parse(text);
+        raw = parsed.contents ? JSON.parse(parsed.contents) : parsed;
+      } catch { continue; }
+
+      if (!Array.isArray(raw) || raw.length === 0) continue;
+
+      return raw
+        .filter(ev => ev.impact === 'High' || ev.impact === 'Medium' || ev.impact === 'Holiday')
+        .map(parseFFEvent);
+    } catch (_) { continue; }
+  }
+  throw new Error('All proxies failed');
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
 function toLocalTime(dateStr, utcTime) {
   if (!utcTime || utcTime === 'All Day' || utcTime === '—') return utcTime || '—';
   try {
@@ -196,7 +208,6 @@ function isReleased(dateStr, utcTime) {
   return Date.now() >= new Date(`${dateStr}T${utcTime}:00Z`).getTime();
 }
 
-// ─── ACTUAL BADGE ─────────────────────────────────────────────────────────────
 function ActualBadge({ actual, forecast, dateStr, utcTime }) {
   if (!actual || !isReleased(dateStr, utcTime)) {
     return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">—</span>;
@@ -218,7 +229,6 @@ function ActualBadge({ actual, forecast, dateStr, utcTime }) {
   );
 }
 
-// ─── EXPANDED PANEL ───────────────────────────────────────────────────────────
 function ExpandedPanel({ event }) {
   const impl      = CATEGORY_IMPLICATIONS[event.category] || null;
   const released  = isReleased(event.date, event.utcTime);
@@ -227,14 +237,10 @@ function ExpandedPanel({ event }) {
 
   const preview = event.outcome || (
     `${event.event} is scheduled at ${localTime} ${tz}.` +
-    (event.forecast && event.forecast !== '—'
-      ? ` Market consensus: ${event.forecast}. Prior reading: ${event.previous}.`
-      : '') +
-    (event.category === 'Central Bank'
-      ? ' Any guidance on the policy path will be the primary market driver.'
-      : event.category === 'Speeches'
-        ? ' Watch for any shift in tone on the inflation or growth outlook.'
-        : ' Any surprise versus consensus will drive the initial market reaction.')
+    (event.forecast && event.forecast !== '—' ? ` Market consensus: ${event.forecast}. Prior reading: ${event.previous}.` : '') +
+    (event.category === 'Central Bank' ? ' Any guidance on the policy path will be the primary market driver.' :
+     event.category === 'Speeches' ? ' Watch for any shift in tone on the inflation or growth outlook.' :
+     ' Any surprise versus consensus will drive the initial market reaction.')
   );
 
   return (
@@ -253,9 +259,7 @@ function ExpandedPanel({ event }) {
           <div className="flex gap-2.5">
             <BarChart2 className="w-3.5 h-3.5 text-accent/80 shrink-0 mt-0.5" />
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1.5">
-                Instruments to Watch
-              </p>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1.5">Instruments to Watch</p>
               <div className="flex flex-wrap gap-1.5">
                 {impl.instruments.map(inst => (
                   <span key={inst} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent/90 border border-accent/20 font-medium">
@@ -269,9 +273,7 @@ function ExpandedPanel({ event }) {
             <div className="flex gap-2.5">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80 shrink-0 mt-0.5" />
               <div className="space-y-1.5 w-full">
-                <p className="text-[10px] uppercase tracking-widests text-muted-foreground/50 font-semibold">
-                  Market Implications
-                </p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Market Implications</p>
                 {impl.bullish && (
                   <div className="flex gap-2">
                     <span className="text-[10px] font-bold text-emerald-400 shrink-0 uppercase tracking-wide w-7 leading-5">Beat</span>
@@ -295,7 +297,6 @@ function ExpandedPanel({ event }) {
   );
 }
 
-// ─── EVENT ROW ────────────────────────────────────────────────────────────────
 function EventRow({ event, today }) {
   const [open, setOpen] = useState(false);
   const isToday  = event.date === today;
@@ -310,16 +311,10 @@ function EventRow({ event, today }) {
             {toLocalTime(event.date, event.utcTime)}
           </span>
           <span className="text-[10px] font-bold text-muted-foreground/60 tracking-wide">{event.country}</span>
-          <span className={`w-2 h-2 rounded-full inline-block ${
-            isHigh ? 'bg-amber-400' : event.importance === 'medium' ? 'bg-blue-400/70' : 'bg-border'
-          }`} />
+          <span className={`w-2 h-2 rounded-full inline-block ${isHigh ? 'bg-amber-400' : event.importance === 'medium' ? 'bg-blue-400/70' : 'bg-border'}`} />
           <div className="flex items-center gap-2 min-w-0 pr-3">
-            <span className={`text-sm font-medium truncate ${isToday ? 'text-foreground' : 'text-foreground/80'}`}>
-              {event.event}
-            </span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 hidden sm:inline ${catStyle}`}>
-              {event.category}
-            </span>
+            <span className={`text-sm font-medium truncate ${isToday ? 'text-foreground' : 'text-foreground/80'}`}>{event.event}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 hidden sm:inline ${catStyle}`}>{event.category}</span>
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
@@ -340,13 +335,7 @@ function EventRow({ event, today }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} className="overflow-hidden">
             <ExpandedPanel event={event} />
           </motion.div>
         )}
@@ -355,12 +344,10 @@ function EventRow({ event, today }) {
   );
 }
 
-// ─── DATE GROUP ───────────────────────────────────────────────────────────────
 function DateGroup({ dateStr, events, today }) {
   const isToday   = dateStr === today;
   const highCount = events.filter(e => e.importance === 'high').length;
   const tz        = localTzLabel();
-
   return (
     <div className="mb-5">
       <div className="flex items-center gap-3 mb-2 px-1">
@@ -375,14 +362,13 @@ function DateGroup({ dateStr, events, today }) {
         )}
       </div>
       <div className="glass rounded-xl overflow-hidden">
-        <div className="grid items-center px-4 py-2 border-b border-border/20 bg-muted/5"
-          style={{ gridTemplateColumns: '72px 40px 14px 1fr 72px 72px 88px 24px' }}>
+        <div className="grid items-center px-4 py-2 border-b border-border/20 bg-muted/5" style={{ gridTemplateColumns: '72px 40px 14px 1fr 72px 72px 88px 24px' }}>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">TIME ({tz})</span>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">CTRY</span>
           <span />
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold">EVENT</span>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right hidden md:block">PREVIOUS</span>
-          <span className="text-[9px] uppercase tracking-widests text-muted-foreground/40 font-semibold text-right hidden md:block">FORECAST</span>
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right hidden md:block">FORECAST</span>
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right">ACTUAL</span>
           <span />
         </div>
@@ -392,7 +378,6 @@ function DateGroup({ dateStr, events, today }) {
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function EconomicCalendar() {
   const [tab, setTab]             = useState('today');
   const [impactFilter, setImpact] = useState('all');
@@ -401,7 +386,6 @@ export default function EconomicCalendar() {
   const [loading, setLoading]     = useState(false);
   const [liveStatus, setLiveStatus] = useState('idle');
 
-  // Midnight rollover
   useEffect(() => {
     const now = new Date();
     const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
@@ -424,7 +408,6 @@ export default function EconomicCalendar() {
     }
   }, []);
 
-  // Load FF on mount, refresh every 3 minutes
   useEffect(() => {
     loadFF();
     const interval = setInterval(loadFF, 3 * 60 * 1000);
@@ -433,10 +416,8 @@ export default function EconomicCalendar() {
 
   const weekEnd = useMemo(() => getWeekEnd(today), [today]);
 
-  // For today/week: use FF feed. For previous: use seed data.
   const allEvents = useMemo(() => {
     const ffKeys = new Set(ffEvents.map(e => `${e.date}|${e.event.toLowerCase()}`));
-    // Merge seed previous events that aren't in FF
     const seedPrev = SEED_PREVIOUS.filter(e => !ffKeys.has(`${e.date}|${e.event.toLowerCase()}`));
     return [...ffEvents, ...seedPrev];
   }, [ffEvents]);
@@ -484,9 +465,7 @@ export default function EconomicCalendar() {
             <span className="text-xs font-medium text-primary">Macro Events</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Economic Calendar</h1>
-          <p className="text-muted-foreground">
-            Central bank decisions, macro releases, and market-moving data. Medium and high impact only.
-          </p>
+          <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data. Medium and high impact only.</p>
         </motion.div>
 
         {tab === 'today' && (
@@ -502,53 +481,36 @@ export default function EconomicCalendar() {
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               <div>
                 <p className="text-xs text-muted-foreground">Released</p>
-                <p className="text-lg font-semibold">
-                  {todayReleased} <span className="text-sm font-normal text-muted-foreground">/ {todayEvents.length}</span>
-                </p>
+                <p className="text-lg font-semibold">{todayReleased} <span className="text-sm font-normal text-muted-foreground">/ {todayEvents.length}</span></p>
               </div>
             </div>
-
+            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+              {liveStatus === 'loading' ? <Loader2 className="w-4 h-4 text-primary/60 animate-spin" /> : liveStatus === 'live' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <RefreshCw className="w-4 h-4 text-muted-foreground/40" />}
+              <div>
+                <p className="text-xs text-muted-foreground">Source</p>
+                <p className="text-sm font-semibold">{liveStatus === 'loading' ? 'Fetching...' : liveStatus === 'live' ? 'Forex Factory' : 'Unavailable'}</p>
+              </div>
+            </div>
           </motion.div>
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex gap-1 p-1 glass rounded-xl w-fit">
-            {[
-              { key: 'today',    label: 'Today' },
-              { key: 'week',     label: 'This Week' },
-              { key: 'previous', label: 'Previous' },
-            ].map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  tab === t.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
+            {[{ key: 'today', label: 'Today' }, { key: 'week', label: 'This Week' }, { key: 'previous', label: 'Previous' }].map(t => (
+              <button key={t.key} onClick={() => setTab(t.key)} className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>
                 {t.label}
               </button>
             ))}
           </div>
-
           <div className="flex items-center gap-2 ml-auto">
-            <button
-              onClick={loadFF}
-              disabled={loading}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-            >
+            <button onClick={loadFF} disabled={loading} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <div className="flex items-center gap-1 p-1 glass rounded-lg">
               <Filter className="w-3 h-3 text-muted-foreground/50 ml-1 mr-0.5" />
               {[{ key: 'all', label: 'All' }, { key: 'high', label: 'High Only' }].map(f => (
-                <button
-                  key={f.key}
-                  onClick={() => setImpact(f.key)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                    impactFilter === f.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
+                <button key={f.key} onClick={() => setImpact(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>
                   {f.label}
                 </button>
               ))}
@@ -561,25 +523,24 @@ export default function EconomicCalendar() {
             <div className="text-center py-20 text-muted-foreground">
               <Loader2 className="w-8 h-8 mx-auto mb-4 opacity-40 animate-spin" />
               <p className="text-sm font-medium mb-1">Loading calendar...</p>
+              <p className="text-xs text-muted-foreground/50">Fetching live data from Forex Factory</p>
             </div>
           ) : grouped.length > 0 ? (
-            grouped.map(([dateStr, evs]) => (
-              <DateGroup key={dateStr} dateStr={dateStr} events={evs} today={today} />
-            ))
+            grouped.map(([dateStr, evs]) => <DateGroup key={dateStr} dateStr={dateStr} events={evs} today={today} />)
           ) : (
             <div className="text-center py-20 text-muted-foreground">
               <Calendar className="w-10 h-10 mx-auto mb-4 opacity-20" />
               <p className="text-sm font-medium mb-1">No events for this period</p>
               <p className="text-xs text-muted-foreground/50">
-                {liveStatus === 'error'
-                  ? 'Could not reach Forex Factory. Try refreshing.'
-                  : 'FF feed covers the current week. Use Today, This Week, or Previous.'}
+                {liveStatus === 'error' ? 'Could not reach Forex Factory. Try refreshing.' : 'Use Today, This Week, or Previous.'}
               </p>
             </div>
           )}
         </motion.div>
 
-
+        <p className="text-xs text-muted-foreground/30 text-center mt-8">
+          Data sourced from Forex Factory. Times in your local timezone ({localTzLabel()}). Auto-refreshes every 3 minutes.
+        </p>
       </div>
     </div>
   );
