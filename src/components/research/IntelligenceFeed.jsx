@@ -359,4 +359,182 @@ export default function IntelligenceFeed() {
   const [newCount, setNewCount]               = useState(0);
   const knownIds = useRef(new Set());
 
-  const loadItems = useCallback(async () =
+  const loadItems = useCallback(async () => {
+    const items = await base44.entities.IntelligenceItem.list('-published_at', 300);
+    setAllItems(items);
+    knownIds.current = new Set(items.map(i => i.id));
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  // Real-time subscription
+  useEffect(() => {
+    const unsub = base44.entities.IntelligenceItem.subscribe((event) => {
+      if (event.type === 'create' && !knownIds.current.has(event.id)) {
+        knownIds.current.add(event.id);
+        setAllItems(prev => [event.data, ...prev]);
+        setNewCount(n => n + 1);
+      } else if (event.type === 'update') {
+        setAllItems(prev => prev.map(i => i.id === event.id ? event.data : i));
+      } else if (event.type === 'delete') {
+        setAllItems(prev => prev.filter(i => i.id !== event.id));
+      }
+    });
+    return unsub;
+  }, []);
+
+  const filtered = useMemo(() => {
+    const today     = londonDateStr();
+    const yesterday = londonDateStr(new Date(Date.now() - 86400000));
+    const weekStart = getWeekStart();
+
+    return allItems.filter(item => {
+      const d = item.published_date || item.published_at?.split('T')[0] || '';
+      if (activeDateFilter === 'today'     && d !== today)                  return false;
+      if (activeDateFilter === 'yesterday' && d !== yesterday)              return false;
+      if (activeDateFilter === 'week'      && (d < weekStart || d > today)) return false;
+      if (activeBeat !== 'all' && item.beat !== activeBeat)                 return false;
+      return true;
+    });
+  }, [allItems, activeDateFilter, activeBeat]);
+
+  const byDate = useMemo(() => {
+    const groups = {};
+    filtered.forEach(item => {
+      const d = item.published_date || item.published_at?.split('T')[0] || 'unknown';
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(item);
+    });
+    Object.values(groups).forEach(g => g.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')));
+    return groups;
+  }, [filtered]);
+
+  const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+  const todayStr = londonDateStr();
+  const topStories = useMemo(() =>
+    allItems
+      .filter(i => i.is_top_story && i.published_date === todayStr && (activeBeat === 'all' || i.beat === activeBeat))
+      .sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')),
+    [allItems, activeBeat, todayStr]
+  );
+
+  return (
+    <div className="glass rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Radio className="w-4 h-4 text-red-400" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+          </div>
+          <span className="font-semibold text-sm">Research Intelligence</span>
+          {filtered.length > 0 && (
+            <span className="text-xs text-muted-foreground/40 hidden sm:inline">{filtered.length} items</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest hidden sm:inline">Live</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        </div>
+      </div>
+
+      {/* New items banner */}
+      <AnimatePresence>
+        {newCount > 0 && (
+          <motion.button
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setNewCount(0)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-400/10 border-b border-emerald-400/20 hover:bg-emerald-400/15 transition-colors"
+          >
+            <Bell className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs font-semibold text-emerald-400">
+              {newCount} new {newCount === 1 ? 'item' : 'items'} — click to dismiss
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Date filter */}
+      <div className="flex items-center gap-1 px-4 py-2.5 border-b border-border/20">
+        <Calendar className="w-3.5 h-3.5 text-muted-foreground/30 mr-1 shrink-0" />
+        {DATE_FILTERS.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setActiveDateFilter(f.key)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+              activeDateFilter === f.key
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/20'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Beat filter */}
+      <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/20">
+        {BEATS.map(beat => (
+          <button
+            key={beat.key}
+            onClick={() => setActiveBeat(beat.key)}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+              activeBeat === beat.key
+                ? 'bg-primary text-primary-foreground shadow'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+            }`}
+          >
+            {beat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading intelligence feed...</p>
+        </div>
+      ) : (
+        <>
+          {/* Top Stories */}
+          {(activeDateFilter === 'today' || activeDateFilter === 'all') && topStories.length > 0 && (
+            <div className="border-b border-border/25">
+              <div className="px-5 py-2.5 flex items-center gap-2 bg-amber-400/4 border-b border-amber-400/10">
+                <Star className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">Top Stories</span>
+              </div>
+              {topStories.map((item, i) => (
+                <IntelligenceItem key={item.id} item={item} index={i} />
+              ))}
+            </div>
+          )}
+
+          {/* Day-grouped feed */}
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground/40">
+              <Zap className="w-5 h-5" />
+              <p className="text-sm">No items for this period</p>
+            </div>
+          ) : (
+            sortedDates.map((dateStr, di) => (
+              <DayGroup
+                key={dateStr}
+                dateStr={dateStr}
+                items={byDate[dateStr]}
+                defaultOpen={di === 0}
+              />
+            ))
+          )}
+        </>
+      )}
+    </div>
+  );
+}
