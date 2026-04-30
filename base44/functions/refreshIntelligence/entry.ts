@@ -2,16 +2,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const JBLANKED_API_KEY = Deno.env.get('JBLANKED_API_KEY');
 
-function generateSlug(headline, eventTime) {
-  const base = (headline || '')
+// Generate a stable slug from the SOURCE event (not LLM headline) — prevents duplicates across runs
+function generateEventSlug(event) {
+  const name = (event.Name || '')
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 80)
+    .slice(0, 60)
     .trim();
-  const suffix = (eventTime || '').replace(/[^0-9]/g, '').slice(0, 8);
-  return suffix ? `${base}-${suffix}` : base;
+  const currency = (event.Currency || '').toLowerCase();
+  const datePart = (event.Date || '').replace(/[^0-9]/g, '').slice(0, 8);
+  return `${currency}-${name}-${datePart}`;
 }
 
 // Map currency → beat/category
@@ -162,12 +163,12 @@ ${eventList}
 For EACH event above, write a Keystone Macro intelligence item. Use the actual numbers exactly as given. Write in a sharp, authoritative institutional voice — like Bloomberg Terminal or FT Markets Desk. No filler, no speculation beyond what the data implies.
 
 For each item return:
+- event_index: the EVENT number from above (1-based integer), so we can match it back to the source event
 - headline: punchy Keystone headline (max 15 words) including the specific figure and currency
 - sentiment: positive / negative / neutral based on the Quality/Outcome fields above (good data = positive, bad data = negative)
 - impact: 2 sentences — what the data showed (preserve exact figures vs forecast) and the immediate market implication for the relevant currency/asset
 - desk_view: 3 sentences — what this means structurally, cross-asset read-through (FX, rates, equities), what to monitor next
-- what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"
-- event_time: the Date field from the event in ISO format`,
+- what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -176,12 +177,12 @@ For each item return:
             items: {
               type: 'object',
               properties: {
+                event_index:   { type: 'number' },
                 headline:      { type: 'string' },
                 sentiment:     { type: 'string' },
                 impact:        { type: 'string' },
                 desk_view:     { type: 'string' },
                 what_to_watch: { type: 'string' },
-                event_time:    { type: 'string' },
               }
             }
           }
@@ -189,53 +190,34 @@ For each item return:
       }
     });
 
-    // Deduplicate LLM output by normalized headline
-    const seenLLMOutput = new Set();
-    const deduplicatedItems = [];
-    
-    for (const item of (rewriteResult?.items || [])) {
-      if (!item.headline || item.headline.length < 10) continue;
-      
-      const normalized = item.headline
-        .toLowerCase()
-        .replace(/\s+(held?|holds?|steady|unchanged|adjusts?|changed?|maintains?|decision)\s*/gi, ' ')
-        .replace(/\s+at\s+[\d.%\-]+.*$/i, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      if (!seenLLMOutput.has(normalized)) {
-        seenLLMOutput.add(normalized);
-        deduplicatedItems.push(item);
-      }
-    }
-
     let created = 0;
     let skipped = 0;
 
-    for (let idx = 0; idx < deduplicatedItems.length; idx++) {
-      const item = deduplicatedItems[idx];
-      const sourceEvent = releasedEvents[idx];
+    for (const item of (rewriteResult?.items || [])) {
+      if (!item.headline || item.headline.length < 10) continue;
 
-      const slug = generateSlug(item.headline, item.event_time || sourceEvent?.Date);
+      // Match back to source event by index (1-based), fall back to sequential
+      const sourceIdx = (item.event_index != null ? item.event_index - 1 : null);
+      const sourceEvent = (sourceIdx != null && releasedEvents[sourceIdx]) ? releasedEvents[sourceIdx] : null;
+      if (!sourceEvent) { skipped++; continue; }
+
+      // Use stable source-event slug — this is the primary dedup key
+      const slug = generateEventSlug(sourceEvent);
       if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
 
       const headlineKey = item.headline.toLowerCase().slice(0, 50);
       if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
 
-      // Derive category/beat from the source event's currency
-      const { beat, category } = currencyToBeat(sourceEvent?.Currency || 'USD');
+      const { beat, category } = currencyToBeat(sourceEvent.Currency || 'USD');
 
-      // Parse published time
-      let publishedAt = parseJBDate(sourceEvent?.Date) || now.toISOString();
+      let publishedAt = parseJBDate(sourceEvent.Date) || now.toISOString();
       let publishedDate = new Date(publishedAt).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
-
-      // Validate date isn't in the future
       if (new Date(publishedAt) > now) {
         publishedAt = now.toISOString();
         publishedDate = todayStr;
       }
 
-      const sentiment = item.sentiment || deriveSentiment(sourceEvent || {});
+      const sentiment = item.sentiment || deriveSentiment(sourceEvent);
 
       await base44.asServiceRole.entities.IntelligenceItem.create({
         headline:      item.headline,
