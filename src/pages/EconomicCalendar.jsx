@@ -484,13 +484,7 @@ export default function EconomicCalendar() {
                 <p className="text-lg font-semibold">{todayReleased} <span className="text-sm font-normal text-muted-foreground">/ {todayEvents.length}</span></p>
               </div>
             </div>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
-              {liveStatus === 'loading' ? <Loader2 className="w-4 h-4 text-primary/60 animate-spin" /> : liveStatus === 'live' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <RefreshCw className="w-4 h-4 text-muted-foreground/40" />}
-              <div>
-                <p className="text-xs text-muted-foreground">Source</p>
-                <p className="text-sm font-semibold">{liveStatus === 'loading' ? 'Fetching...' : liveStatus === 'live' ? 'Forex Factory' : 'Unavailable'}</p>
-              </div>
-            </div>
+
           </motion.div>
         )}
 
@@ -538,9 +532,7 @@ export default function EconomicCalendar() {
           )}
         </motion.div>
 
-        <p className="text-xs text-muted-foreground/30 text-center mt-8">
-          Data sourced from Forex Factory. Times in your local timezone ({localTzLabel()}). Auto-refreshes every 3 minutes.
-        </p>
+
       </div>
     </div>
   );
