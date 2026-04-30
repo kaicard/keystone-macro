@@ -67,7 +67,7 @@ function getDateLabel(dateStr) {
   if (dateStr === today) return 'Today';
   if (dateStr === yesterday) return 'Yesterday';
   return new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'short'
+    weekday: 'long', day: 'numeric', month: 'short',
   });
 }
 
@@ -75,19 +75,19 @@ function formatTime(isoStr) {
   if (!isoStr) return null;
   try {
     return new Date(isoStr).toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
     });
   } catch { return null; }
 }
 
 function isValidItem(item) {
+  if (!item) return false;
   if (!item.headline) return false;
-  if (item.slug === 'DELETED' || item.headline === 'DELETED') return false;
+  if (item.headline === 'DELETED') return false;
+  if (item.slug === 'DELETED') return false;
   if (item.headline.includes('Data Not Loaded')) return false;
   if (item.headline.includes('data not loaded')) return false;
-  if (/at 0\.?0?%?\s*$/.test(item.headline)) return false;
-  if (/Steady at 0[^.]/.test(item.headline)) return false;
-  if (/at 0 -/.test(item.headline)) return false;
+  if (/at 0\.?0?%?\s*[-.]?\s*/.test(item.headline) && item.headline.length < 40) return false;
   return true;
 }
 
@@ -255,16 +255,14 @@ export default function IntelligenceFeed() {
   useEffect(() => {
     const unsub = base44.entities.IntelligenceItem.subscribe((event) => {
       if (event.type === 'create' && !knownIds.current.has(event.id)) {
-        if (isValidItem(event.data || {})) {
+        if (isValidItem(event.data)) {
           knownIds.current.add(event.id);
           setAllItems(prev => [event.data, ...prev]);
           setNewCount(n => n + 1);
         }
       } else if (event.type === 'update') {
         setAllItems(prev =>
-          prev
-            .map(i => i.id === event.id ? event.data : i)
-            .filter(isValidItem)
+          prev.map(i => i.id === event.id ? event.data : i).filter(isValidItem)
         );
       } else if (event.type === 'delete') {
         setAllItems(prev => prev.filter(i => i.id !== event.id));
@@ -279,10 +277,10 @@ export default function IntelligenceFeed() {
     const weekStart = getWeekStart();
     return allItems.filter(item => {
       const d = item.published_date || item.published_at?.split('T')[0] || '';
-      if (activeDateFilter === 'today'     && d !== today)                   return false;
-      if (activeDateFilter === 'yesterday' && d !== yesterday)               return false;
-      if (activeDateFilter === 'week'      && (d < weekStart || d > today))  return false;
-      if (activeBeat !== 'all' && item.beat !== activeBeat)                  return false;
+      if (activeDateFilter === 'today'     && d !== today)                  return false;
+      if (activeDateFilter === 'yesterday' && d !== yesterday)              return false;
+      if (activeDateFilter === 'week'      && (d < weekStart || d > today)) return false;
+      if (activeBeat !== 'all' && item.beat !== activeBeat)                 return false;
       return true;
     });
   }, [allItems, activeDateFilter, activeBeat]);
@@ -400,21 +398,15 @@ export default function IntelligenceFeed() {
               ))}
             </div>
           )}
-
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground/40">
               <Zap className="w-5 h-5" />
               <p className="text-sm">No items for this period</p>
-              <p className="text-xs">Check back as new data releases throughout the day</p>
+              <p className="text-xs">Items appear as economic data releases throughout the day</p>
             </div>
           ) : (
             sortedDates.map((dateStr, di) => (
-              <DayGroup
-                key={dateStr}
-                dateStr={dateStr}
-                items={byDate[dateStr]}
-                defaultOpen={di === 0}
-              />
+              <DayGroup key={dateStr} dateStr={dateStr} items={byDate[dateStr]} defaultOpen={di === 0} />
             ))
           )}
         </>
