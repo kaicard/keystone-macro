@@ -156,18 +156,23 @@ Quality: ${e.Quality || ''}`;
     const rewriteResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are the senior markets editor at Keystone Macro, an institutional macro intelligence platform. Today is ${londonDate}, ${londonTime} London time.
 
-The following are REAL economic data releases from today, sourced from MQL5 and Forex Factory. These are the only events you are allowed to write about. Do NOT invent additional context, stories, or events not present in this data.
+The following are REAL economic data releases from today, sourced from MQL5 and Forex Factory. These are the ONLY events you are allowed to write about.
+
+CRITICAL RULES — failure to follow these means the output is rejected:
+1. ONLY use the Actual, Forecast, and Previous figures provided below — do NOT invent, estimate, or reference any price levels, rates, or data points not in the source data (e.g. do NOT say "Brent at $63" or "S&P at 5,200" unless that number is in the data below)
+2. Do NOT reference current asset prices, equity levels, commodity prices, or FX rates — you do not have live market data
+3. Headlines must be grounded ONLY in the data event itself (e.g. "US Core CPI prints 2.8% YoY, below 3.0% forecast" — not a commentary on markets)
+4. No duplication — each item must cover a distinct event; do not write two items about the same release
+5. Write in the style of Bloomberg terminal alerts or FT Markets Desk — factual, concise, zero filler
 
 ${eventList}
 
-For EACH event above, write a Keystone Macro intelligence item. Use the actual numbers exactly as given. Write in a sharp, authoritative institutional voice — like Bloomberg Terminal or FT Markets Desk. No filler, no speculation beyond what the data implies.
-
-For each item return:
-- event_index: the EVENT number from above (1-based integer), so we can match it back to the source event
-- headline: punchy Keystone headline (max 15 words) including the specific figure and currency
-- sentiment: positive / negative / neutral based on the Quality/Outcome fields above (good data = positive, bad data = negative)
-- impact: 2 sentences — what the data showed (preserve exact figures vs forecast) and the immediate market implication for the relevant currency/asset
-- desk_view: 3 sentences — what this means structurally, cross-asset read-through (FX, rates, equities), what to monitor next
+For EACH event above, write one Keystone Macro intelligence item:
+- event_index: the EVENT number (1-based integer) so we can match it to the source
+- headline: max 15 words, must include the actual figure and beat/miss vs forecast where relevant
+- sentiment: positive / negative / neutral (use Quality/Outcome fields — good = positive, bad = negative)
+- impact: 2 sentences — state exactly what the data showed (actual vs forecast vs previous) and the direct market implication for the relevant currency/rates/asset class
+- desk_view: 3 sentences — structural context, cross-asset read-through (FX, rates, equities), what to monitor in the next 48h
 - what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
       response_json_schema: {
         type: 'object',
