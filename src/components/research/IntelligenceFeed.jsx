@@ -2,10 +2,9 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar, Bell } from 'lucide-react';
+import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar, Bell, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const BEATS = [
   { key: 'all',         label: 'All' },
   { key: 'macro',       label: 'Macro' },
@@ -44,19 +43,18 @@ const CATEGORY_STYLES = {
 
 const SENTIMENT_DOT = {
   positive: 'bg-emerald-400',
-  negative:  'bg-red-400',
-  neutral:   'bg-amber-400/60',
+  negative: 'bg-red-400',
+  neutral:  'bg-amber-400/60',
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function londonDateStr(date = new Date()) {
-  return date.toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); // YYYY-MM-DD
+  return date.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 }
 
 function getWeekStart() {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun
-  const diff = day === 0 ? -6 : 1 - day; // Monday
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
   const monday = new Date(now);
   monday.setDate(now.getDate() + diff);
   monday.setHours(0, 0, 0, 0);
@@ -76,6 +74,143 @@ function formatTime(isoStr) {
   try {
     return new Date(isoStr).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
   } catch { return null; }
+}
+
+function generateSlug(headline) {
+  return (headline || '').toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 80).trim();
+}
+
+// ─── Generate fresh intelligence items and save to DB ─────────────────────────
+async function generateAndSaveItems() {
+  const now = new Date();
+  const utcHour = String(now.getUTCHours()).padStart(2, '0');
+  const utcMin  = String(now.getUTCMinutes()).padStart(2, '0');
+  const currentUtcTime = `${utcHour}:${utcMin}`;
+  const dateStr = now.toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+  const batchId = `batch_${now.toISOString()}`;
+  const todayStr = londonDateStr();
+
+  // Step 1: Generate headlines
+  const headlineResult = await base44.integrations.Core.InvokeLLM({
+    prompt: `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}, UTC time ${currentUtcTime}.
+
+Generate exactly 20 distinct, specific market intelligence headlines. Each must cover a completely DIFFERENT topic. Write like a Bloomberg or FT breaking news desk — sharp, specific, data-driven with real levels and percentages.
+
+Rules:
+- Every headline must include specific data: a level, %, basis points, or name
+- No two headlines on the same topic or asset class
+- Cover: US macro, UK macro, EU macro, Asia, EM, commodities, FX, rates, geopolitics, credit, tech
+- published_time_utc must be strictly before ${currentUtcTime}, spread from 06:00
+- Mark 2-3 as is_top_story: true (the biggest market-moving stories)
+
+For each item:
+- headline: specific with data (e.g. "Brent crude surges 3.2% to $91.40 as OPEC+ reaffirms output cuts")
+- category: Macro / Equities / Rates / Commodities / FX / Geopolitics / Credit / Technology / US Economy / UK Economy / EU Economy
+- sentiment: positive / negative / neutral
+- published_time_utc: HH:MM strictly before ${currentUtcTime}
+- beat: macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech
+- is_top_story: true or false`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              headline:           { type: 'string' },
+              category:           { type: 'string' },
+              sentiment:          { type: 'string' },
+              published_time_utc: { type: 'string' },
+              beat:               { type: 'string' },
+              is_top_story:       { type: 'boolean' },
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const headlines = (headlineResult?.items || [])
+    .filter(item => (item.published_time_utc || '00:00') <= currentUtcTime)
+    .slice(0, 20);
+
+  if (!headlines.length) return [];
+
+  // Step 2: Enrich in batches of 5
+  const BATCH = 5;
+  const enriched = [];
+
+  for (let i = 0; i < headlines.length; i += BATCH) {
+    const batch = headlines.slice(i, i + BATCH);
+    const list = batch.map((item, j) => `${j + 1}. [${item.category}] ${item.headline}`).join('\n');
+
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a senior macro analyst at Keystone Macro. Enrich these ${batch.length} headlines with concise analysis.
+
+${list}
+
+For each (numbered 1-${batch.length}):
+- impact: 2 sentences. What happened, specific market moves with levels, what it signals.
+- desk_view: 3 sentences. Structural context, cross-asset implications, what to watch next 48h.
+- what_to_watch: 3-4 instruments with reason. Format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  impact:        { type: 'string' },
+                  desk_view:     { type: 'string' },
+                  what_to_watch: { type: 'string' },
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const enrichedBatch = result?.items || [];
+      batch.forEach((item, j) => {
+        enriched.push({ ...item, ...(enrichedBatch[j] || {}) });
+      });
+    } catch (_) {
+      batch.forEach(item => enriched.push(item));
+    }
+  }
+
+  // Step 3: Save to database
+  const records = enriched.map(item => ({
+    headline:      item.headline,
+    category:      item.category,
+    beat:          item.beat,
+    sentiment:     item.sentiment,
+    impact:        item.impact || '',
+    desk_view:     item.desk_view || '',
+    what_to_watch: item.what_to_watch || '',
+    slug:          generateSlug(item.headline) + '-' + todayStr,
+    published_at:  (() => {
+      const [h, m] = (item.published_time_utc || '09:00').split(':');
+      const d = new Date();
+      d.setUTCHours(parseInt(h), parseInt(m), 0, 0);
+      return d.toISOString();
+    })(),
+    published_date: todayStr,
+    is_top_story:   item.is_top_story || false,
+    batch_id:       batchId,
+  }));
+
+  await base44.entities.IntelligenceItem.create(records);
+  return records;
 }
 
 // ─── Single Intelligence Item ─────────────────────────────────────────────────
@@ -179,11 +314,10 @@ function IntelligenceItem({ item, index }) {
   );
 }
 
-// ─── Day Group (collapsible) ──────────────────────────────────────────────────
+// ─── Day Group ────────────────────────────────────────────────────────────────
 function DayGroup({ dateStr, items, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen);
   if (!items.length) return null;
-
   return (
     <div className="border-b border-border/20 last:border-0">
       <button
@@ -217,199 +351,12 @@ function DayGroup({ dateStr, items, defaultOpen }) {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function IntelligenceFeed() {
-  const [activeBeat, setActiveBeat] = useState('all');
+  const [activeBeat, setActiveBeat]           = useState('all');
   const [activeDateFilter, setActiveDateFilter] = useState('today');
-  const [allItems, setAllItems] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [newCount, setNewCount] = useState(0);
+  const [allItems, setAllItems]               = useState([]);
+  const [isLoading, setIsLoading]             = useState(true);
+  const [isGenerating, setIsGenerating]       = useState(false);
+  const [newCount, setNewCount]               = useState(0);
   const knownIds = useRef(new Set());
 
-  // Initial load
-  const loadItems = useCallback(async () => {
-    const items = await base44.entities.IntelligenceItem.list('-published_at', 300);
-    setAllItems(items);
-    knownIds.current = new Set(items.map(i => i.id));
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    loadItems();
-  }, [loadItems]);
-
-  // Real-time subscription — show banner when new items arrive
-  useEffect(() => {
-    const unsub = base44.entities.IntelligenceItem.subscribe((event) => {
-      if (event.type === 'create' && !knownIds.current.has(event.id)) {
-        knownIds.current.add(event.id);
-        setAllItems(prev => [event.data, ...prev]);
-        setNewCount(n => n + 1);
-      } else if (event.type === 'update') {
-        setAllItems(prev => prev.map(i => i.id === event.id ? event.data : i));
-      } else if (event.type === 'delete') {
-        setAllItems(prev => prev.filter(i => i.id !== event.id));
-      }
-    });
-    return unsub;
-  }, []);
-
-  // Apply date + beat filters
-  const filtered = useMemo(() => {
-    const today     = londonDateStr();
-    const yesterday = londonDateStr(new Date(Date.now() - 86400000));
-    const weekStart = getWeekStart();
-
-    return allItems.filter(item => {
-      const d = item.published_date || item.published_at?.split('T')[0] || '';
-
-      // Date filter
-      if (activeDateFilter === 'today'     && d !== today)                return false;
-      if (activeDateFilter === 'yesterday' && d !== yesterday)            return false;
-      if (activeDateFilter === 'week'      && (d < weekStart || d > today)) return false;
-
-      // Beat filter
-      if (activeBeat !== 'all' && item.beat !== activeBeat) return false;
-
-      return true;
-    });
-  }, [allItems, activeDateFilter, activeBeat]);
-
-  // Group filtered items by date, sorted newest-first
-  const byDate = useMemo(() => {
-    const groups = {};
-    filtered.forEach(item => {
-      const d = item.published_date || item.published_at?.split('T')[0] || 'unknown';
-      if (!groups[d]) groups[d] = [];
-      groups[d].push(item);
-    });
-    // Within each day, sort by time descending
-    Object.values(groups).forEach(g => g.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')));
-    return groups;
-  }, [filtered]);
-
-  const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
-
-  // Top stories = today's top_story items (shown regardless of date filter)
-  const todayStr = londonDateStr();
-  const topStories = useMemo(() =>
-    allItems
-      .filter(i => i.is_top_story && i.published_date === todayStr && (activeBeat === 'all' || i.beat === activeBeat))
-      .sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '')),
-    [allItems, activeBeat, todayStr]
-  );
-
-  return (
-    <div className="glass rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Radio className="w-4 h-4 text-red-400" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-          </div>
-          <span className="font-semibold text-sm">Research Intelligence</span>
-          {filtered.length > 0 && (
-            <span className="text-xs text-muted-foreground/40 hidden sm:inline">{filtered.length} items</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest hidden sm:inline">Live</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        </div>
-      </div>
-
-      {/* New items banner */}
-      <AnimatePresence>
-        {newCount > 0 && (
-          <motion.button
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setNewCount(0)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-400/10 border-b border-emerald-400/20 hover:bg-emerald-400/15 transition-colors"
-          >
-            <Bell className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs font-semibold text-emerald-400">
-              {newCount} new {newCount === 1 ? 'item' : 'items'} — click to dismiss
-            </span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Date filter */}
-      <div className="flex items-center gap-1 px-4 py-2.5 border-b border-border/20">
-        <Calendar className="w-3.5 h-3.5 text-muted-foreground/30 mr-1 shrink-0" />
-        {DATE_FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setActiveDateFilter(f.key)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
-              activeDateFilter === f.key
-                ? 'bg-foreground/10 text-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/20'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Beat filter */}
-      <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/20">
-        {BEATS.map(beat => (
-          <button
-            key={beat.key}
-            onClick={() => setActiveBeat(beat.key)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
-              activeBeat === beat.key
-                ? 'bg-primary text-primary-foreground shadow'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
-            }`}
-          >
-            {beat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading intelligence feed...</p>
-        </div>
-      ) : (
-        <>
-          {/* Top Stories — only shown on "Today" or "All" view */}
-          {(activeDateFilter === 'today' || activeDateFilter === 'all') && topStories.length > 0 && (
-            <div className="border-b border-border/25">
-              <div className="px-5 py-2.5 flex items-center gap-2 bg-amber-400/4 border-b border-amber-400/10">
-                <Star className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">Top Stories</span>
-              </div>
-              {topStories.map((item, i) => (
-                <IntelligenceItem key={item.id} item={item} index={i} />
-              ))}
-            </div>
-          )}
-
-          {/* Day-grouped feed */}
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground/40">
-              <Zap className="w-5 h-5" />
-              <p className="text-sm">No items for this period</p>
-            </div>
-          ) : (
-            sortedDates.map((dateStr, di) => (
-              <DayGroup
-                key={dateStr}
-                dateStr={dateStr}
-                items={byDate[dateStr]}
-                defaultOpen={di === 0}
-              />
-            ))
-          )}
-        </>
-      )}
-    </div>
-  );
-}
+  const loadItems = useCallback(async () =
