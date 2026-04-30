@@ -52,6 +52,31 @@ function slugify(str) {
     .trim();
 }
 
+// Normalise a headline into a set of meaningful words for similarity checking
+function headlineWords(headline) {
+  const stopwords = new Set(['a','an','the','is','are','was','were','in','on','at','to','of','for','and','or','but','with','as','by','from','its','it','this','that','has','have','had','be','been','will','would','could','should','may','might','more','than','up','down','per','cent','vs']);
+  return new Set(
+    headline.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopwords.has(w))
+  );
+}
+
+// Returns true if two headlines share enough key words to be considered duplicates
+function isTooSimilar(headlineA, existingHeadlines) {
+  const wordsA = headlineWords(headlineA);
+  if (wordsA.size === 0) return false;
+  for (const existing of existingHeadlines) {
+    const wordsB = headlineWords(existing);
+    let overlap = 0;
+    for (const w of wordsA) { if (wordsB.has(w)) overlap++; }
+    // If >50% of the new headline's key words match an existing one → duplicate
+    if (overlap / wordsA.size > 0.5) return true;
+  }
+  return false;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -66,7 +91,9 @@ Deno.serve(async (req) => {
     const cutoffDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     const recentExisting = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
     const existingSlugs = new Set(recentExisting.map(i => i.slug));
-    const existingHeadlines = new Set(recentExisting.map(i => (i.headline || '').toLowerCase().slice(0, 60)));
+    // Store full headlines for similarity checking (not just 60-char prefix)
+    const existingHeadlinesFull = recentExisting.map(i => i.headline || '');
+    const existingHeadlineKeys = new Set(existingHeadlinesFull.map(h => h.toLowerCase().slice(0, 60)));
 
     // ── TRACK 1: Real economic data releases from jblanked ────────────────────
     const jbHeaders = {
@@ -96,32 +123,44 @@ Deno.serve(async (req) => {
       });
 
     const releasedEvents = allEvents.filter(e => {
+      // Must have an actual reading
       if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
+      // Skip speeches/conferences — no hard data
       const name = (e.Name || '').toLowerCase();
-      if (name.includes('press conference') || name.includes('speech') || name.includes('statement')) return false;
+      if (name.includes('press conference') || name.includes('speech') || name.includes('statement') || name.includes('testimony')) return false;
+      // Skip zero/empty non-events
       if (e.Actual === 0 && e.Forecast === 0 && (e.Outcome || '') === '') return false;
+      // Skip already-saved slugs
       const slug = generateEventSlug(e);
       if (existingSlugs.has(slug)) return false;
       return true;
     });
 
-    // ── TRACK 2: Geopolitics / macro / markets news via LLM web search ────────
-    // Run both tracks in parallel
+    // ── TRACK 2: Broad geopolitics / macro news — only once per day ───────────
+    // Check if we already have broad news items from today to avoid re-running every 15 min
+    const todayBroadItems = recentExisting.filter(i =>
+      i.published_date === todayStr &&
+      (i.batch_id || '').startsWith('batch_') &&
+      !i.slug.match(/^(usd|gbp|eur|cad|jpy|aud|chf|nzd)-/) // not a data release slug
+    );
+    const shouldRunBroadNews = todayBroadItems.length < 3; // only run if fewer than 3 broad items today
+
+    // Run both tracks — Track 2 conditional
     const [dataReleasesResult, broadNewsResult] = await Promise.all([
-      // Track 1: LLM writes items for real data releases (only if any)
+      // Track 1: LLM writes items for real data releases (only if any new ones exist)
       releasedEvents.length > 0
         ? base44.asServiceRole.integrations.Core.InvokeLLM({
             model: 'gemini_3_flash',
             add_context_from_internet: true,
             prompt: `You are the senior markets editor at Keystone Macro, an institutional macro intelligence platform. Today is ${londonDate}, ${londonTime} London time.
 
-The following are REAL economic data releases from today, sourced from MQL5 and Forex Factory. These are the ONLY events you are allowed to write about in this batch.
+The following are REAL economic data releases sourced from MQL5 and Forex Factory. Write ONLY about these — do not invent or extrapolate.
 
 CRITICAL RULES:
-1. ONLY use the Actual, Forecast, and Previous figures provided — do NOT invent any numbers
-2. Do NOT reference current asset prices, equity levels, commodity prices, or FX rates
-3. Headlines must state the actual figure and beat/miss (e.g. "US Core CPI prints 2.8% YoY, below 3.0% forecast")
-4. Write in Bloomberg terminal / FT Markets Desk style — factual, concise, no filler
+1. Use ONLY the Actual, Forecast, and Previous figures provided below — never invent numbers
+2. Do NOT reference current asset prices, equity index levels, or FX spot rates
+3. Headline must state the exact actual figure and whether it beat or missed (e.g. "US Core CPI 2.8% YoY — misses 3.0% forecast")
+4. Write in Bloomberg terminal / FT Markets Desk style — factual, precise, no filler
 
 ${releasedEvents.slice(0, 6).map((e, i) => `EVENT ${i + 1}:
 Name: ${e.Name}
@@ -133,11 +172,11 @@ Previous: ${e.Previous !== undefined ? e.Previous : 'N/A'}
 Outcome: ${e.Outcome || ''}
 Quality: ${e.Quality || ''}`).join('\n\n')}
 
-For EACH event, write one intelligence item:
-- event_index: EVENT number (1-based)
-- headline: max 15 words, include actual figure and beat/miss
-- sentiment: positive / negative / neutral
-- impact: 2 sentences — what data showed and direct market implication
+For EACH event write one item:
+- event_index: 1-based index matching EVENT number above
+- headline: max 15 words, must include exact actual figure and beat/miss vs forecast
+- sentiment: positive / negative / neutral (based on market impact of beat vs miss)
+- impact: 2 sentences — what the data showed and the direct market implication
 - desk_view: 3 sentences — structural context, cross-asset read-through, what to monitor next 48h
 - what_to_watch: 3-4 instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
             response_json_schema: {
@@ -162,56 +201,51 @@ For EACH event, write one intelligence item:
           })
         : Promise.resolve({ items: [] }),
 
-      // Track 2: Broad geopolitics / macro / markets coverage
-      base44.asServiceRole.integrations.Core.InvokeLLM({
-        model: 'gemini_3_flash',
-        add_context_from_internet: true,
-        prompt: `You are a senior correspondent at Keystone Macro, covering global macro, geopolitics, financial markets, and economic policy — in the style of the Financial Times, Bloomberg, and BBC News.
+      // Track 2: Broad macro/geopolitics — ONLY runs if we don't already have today's broad coverage
+      shouldRunBroadNews
+        ? base44.asServiceRole.integrations.Core.InvokeLLM({
+            model: 'gemini_3_flash',
+            add_context_from_internet: true,
+            prompt: `You are a senior correspondent at Keystone Macro. Today is ${londonDate}, ${londonTime} London time.
 
-Today is ${londonDate}, ${londonTime} London time.
+Search the internet RIGHT NOW and find the 2 most significant breaking macro or geopolitical stories from the past 6 hours that are NEW and NOT widely recycled. You must only write about stories that:
+- Are real and verifiable (you can cite specific names, figures, governments, companies)
+- Have occurred in the past 6 hours or are actively developing right now
+- Have direct financial market implications (FX, rates, equities, commodities)
+- Are NOT generic economic data releases (CPI, GDP, PMI etc — those are covered separately)
 
-Search the internet RIGHT NOW for the most important breaking and developing stories across:
-- Geopolitics (wars, trade disputes, sanctions, elections, diplomatic developments)
-- Global macro (central bank decisions/speeches, IMF/World Bank, sovereign debt)
-- Financial markets (major moves, corporate earnings surprises, M&A, IPOs)
-- Economic policy (tariffs, fiscal policy, regulatory changes)
-- Energy & commodities (OPEC, supply shocks, key price moves with % context)
-
-Write 4 intelligence items on the most significant real stories happening RIGHT NOW. Each must:
-- Be based on a REAL, VERIFIABLE story from today or the past 48 hours
-- NOT duplicate any of these already-covered topics: GDP, CPI, FOMC, ECB, BOE rate decisions (those are covered separately)
-- Include the specific facts, figures, and named parties involved
-- Be written in authoritative institutional style — no fluff, no speculation
+DO NOT write about a story if you are not certain it happened today. If you cannot find 2 genuinely new stories, return fewer items rather than fabricating or recycling old news.
 
 For each item:
-- headline: max 15 words — specific, factual, include key figures/names
-- category: one of Macro / Equities / Rates / Commodities / FX / Geopolitics / Credit / Technology / US Economy / UK Economy / EU Economy
-- beat: one of macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech
-- sentiment: positive / negative / neutral (for markets)
-- impact: 2 sentences — what happened and the direct financial/market implication
-- desk_view: 3 sentences — broader context, cross-asset implications, key risks or catalysts ahead
-- what_to_watch: 3-4 specific instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            items: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  headline:      { type: 'string' },
-                  category:      { type: 'string' },
-                  beat:          { type: 'string' },
-                  sentiment:     { type: 'string' },
-                  impact:        { type: 'string' },
-                  desk_view:     { type: 'string' },
-                  what_to_watch: { type: 'string' },
+- headline: max 15 words — must include specific names, countries, figures — NO vague language
+- category: Macro / Equities / Rates / Commodities / FX / Geopolitics / Credit / Technology / US Economy / UK Economy / EU Economy
+- beat: macro / equities / us_economy / uk_economy / eu_economy / rates / commodities / fx / geopolitics / credit / tech
+- sentiment: positive / negative / neutral (market impact)
+- impact: 2 sentences — what happened (with specifics) and the direct market implication
+- desk_view: 3 sentences — context, cross-asset read-through, key risks
+- what_to_watch: 2-3 instruments, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
+            response_json_schema: {
+              type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      headline:      { type: 'string' },
+                      category:      { type: 'string' },
+                      beat:          { type: 'string' },
+                      sentiment:     { type: 'string' },
+                      impact:        { type: 'string' },
+                      desk_view:     { type: 'string' },
+                      what_to_watch: { type: 'string' },
+                    }
+                  }
                 }
               }
             }
-          }
-        }
-      }),
+          })
+        : Promise.resolve({ items: [] }),
     ]);
 
     let created = 0;
@@ -226,8 +260,9 @@ For each item:
 
       const slug = generateEventSlug(sourceEvent);
       if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
-      const headlineKey = item.headline.toLowerCase().slice(0, 60);
-      if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
+
+      // Similarity check against existing headlines
+      if (isTooSimilar(item.headline, existingHeadlinesFull)) { skipped++; continue; }
 
       const { beat, category } = currencyToBeat(sourceEvent.Currency || 'USD');
       let publishedAt = parseJBDate(sourceEvent.Date) || now.toISOString();
@@ -243,21 +278,24 @@ For each item:
         is_top_story: false, batch_id: batchId,
       });
       existingSlugs.add(slug);
-      existingHeadlines.add(headlineKey);
+      existingHeadlinesFull.push(item.headline);
       created++;
     }
 
     // ── Save Track 2: broad news items ───────────────────────────────────────
+    const validBeats = ['macro','equities','us_economy','uk_economy','eu_economy','rates','commodities','fx','geopolitics','credit','tech'];
+    const validCategories = ['Macro','Equities','Rates','Commodities','FX','Geopolitics','Credit','Technology','US Economy','UK Economy','EU Economy'];
+
     for (const item of (broadNewsResult?.items || [])) {
       if (!item.headline || item.headline.length < 10) continue;
-      const headlineKey = item.headline.toLowerCase().slice(0, 60);
-      if (existingHeadlines.has(headlineKey)) { skipped++; continue; }
 
-      const slug = `news-${slugify(item.headline)}-${now.toISOString().slice(0, 10).replace(/-/g, '')}`;
+      // Similarity check — the key defence against duplicates
+      if (isTooSimilar(item.headline, existingHeadlinesFull)) { skipped++; continue; }
+
+      // Use a date-specific slug so it won't re-collide across days, but WILL collide within same day
+      const slug = `news-${slugify(item.headline)}-${todayStr.replace(/-/g, '')}`;
       if (existingSlugs.has(slug)) { skipped++; continue; }
 
-      const validBeats = ['macro','equities','us_economy','uk_economy','eu_economy','rates','commodities','fx','geopolitics','credit','tech'];
-      const validCategories = ['Macro','Equities','Rates','Commodities','FX','Geopolitics','Credit','Technology','US Economy','UK Economy','EU Economy'];
       const beat = validBeats.includes(item.beat) ? item.beat : 'macro';
       const category = validCategories.includes(item.category) ? item.category : 'Macro';
 
@@ -270,7 +308,7 @@ For each item:
         is_top_story: false, batch_id: batchId,
       });
       existingSlugs.add(slug);
-      existingHeadlines.add(headlineKey);
+      existingHeadlinesFull.push(item.headline);
       created++;
     }
 
@@ -283,6 +321,7 @@ For each item:
     return Response.json({
       ok: true, created, skipped,
       pruned: old.length,
+      broad_news_ran: shouldRunBroadNews,
       data_events: releasedEvents.length,
       batch_id: batchId,
     });
