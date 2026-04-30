@@ -517,7 +517,6 @@ export default function EconomicCalendar() {
             <div className="text-center py-20 text-muted-foreground">
               <Loader2 className="w-8 h-8 mx-auto mb-4 opacity-40 animate-spin" />
               <p className="text-sm font-medium mb-1">Loading calendar...</p>
-              <p className="text-xs text-muted-foreground/50">Fetching live data from Forex Factory</p>
             </div>
           ) : grouped.length > 0 ? (
             grouped.map(([dateStr, evs]) => <DateGroup key={dateStr} dateStr={dateStr} events={evs} today={today} />)
