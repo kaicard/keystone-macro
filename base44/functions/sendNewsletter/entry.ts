@@ -183,6 +183,8 @@ Deno.serve(async (req) => {
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const isoDate = now.toISOString().split('T')[0];
+    const cutoffISO = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const editionLabel = editionType === 'morning' ? 'Morning Brief' : 'Evening Wrap';
     const timeContext = editionType === 'morning'
       ? 'pre-market brief covering overnight developments, Asian session, European open and what to watch today'
@@ -191,12 +193,14 @@ Deno.serve(async (req) => {
     // ── Generate content via two LLM calls to avoid JSON truncation ─────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr}. This is the ${editionLabel}.
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.
+
+CRITICAL: All data must be from TODAY (${isoDate}) only. Do not use figures, levels, or events from any previous date.
 
 Return JSON with:
-- subject_line: A PUNCHY subject line (max 72 chars). Urgent, specific, no emojis.
-- market_snapshot: array of exactly 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with real current levels.
-- footer_note: A sharp 1-line closing observation. No emojis.`,
+- subject_line: A PUNCHY subject line (max 72 chars) reflecting the single most important story from today. Urgent, specific, no emojis.
+- market_snapshot: array of exactly 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with real current levels from today.
+- footer_note: A sharp 1-line closing observation referencing today's market action. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -211,18 +215,22 @@ Return JSON with:
         }
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr}. This is the ${editionLabel} — a ${timeContext}.
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel} — a ${timeContext}.
 
-Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section must be thorough: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise. No emojis anywhere.
+CRITICAL RULES — failure invalidates the entire edition:
+1. Every fact, figure, price level, and event MUST be from TODAY (${isoDate}) — published after ${cutoffISO}. Do not recycle yesterday's or last week's news.
+2. If you cannot verify a development happened today, do NOT include it. Write "Markets were quiet in [sector]" rather than fabricating.
+3. No URLs, hyperlinks, source citations, footnotes, or "(source.com)" references anywhere. Pure prose only.
+4. No emojis anywhere.
 
-CRITICAL: Do NOT include any URLs, hyperlinks, source citations, footnotes, or references to external websites anywhere in any field. No brackets with URLs. No "(source.com)" style references. Pure prose only.
+Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise.
 
 Return JSON with:
 - sections: array of exactly 6 objects, each with:
-  - label: short category tag
-  - headline: punchy 1-line headline
-  - body: 4-5 dense specific sentences with exact data. NO URLs or citations whatsoever.
-  - callout: 1 forward-looking actionable sentence`,
+  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "Macro", "Geopolitics")
+  - headline: punchy 1-line headline anchored to today's specific development
+  - body: 4-5 dense sentences with exact data from today only. NO URLs or citations.
+  - callout: 1 forward-looking sentence — what to watch next`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -263,11 +271,11 @@ Return JSON with:
       sent++;
     }
 
-    // ── Persist as a NewsletterEdition record ────────────────────────────────
-    const slug = `${editionType}-${now.toISOString().split('T')[0]}`;
-    await base44.asServiceRole.entities.NewsletterEdition.create({
+    // ── Persist as a NewsletterEdition record (upsert — no duplicates) ──────
+    const todaySlug = `${editionType}-${now.toISOString().split('T')[0]}`;
+    const editionData = {
       title: subject,
-      slug,
+      slug: todaySlug,
       edition_type: editionType,
       publish_date: now.toISOString().split('T')[0],
       published_at: now.toISOString(),
@@ -275,7 +283,13 @@ Return JSON with:
       market_summary: marketSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' · '),
       body: sections.map(s => `## ${s.label}: ${s.headline}\n\n${s.body}${s.callout ? `\n\n> ${s.callout}` : ''}`).join('\n\n---\n\n'),
       tags: sections.map(s => s.label),
-    });
+    };
+    const existingEditions = await base44.asServiceRole.entities.NewsletterEdition.filter({ slug: todaySlug });
+    if (existingEditions?.length > 0) {
+      await base44.asServiceRole.entities.NewsletterEdition.update(existingEditions[0].id, editionData);
+    } else {
+      await base44.asServiceRole.entities.NewsletterEdition.create(editionData);
+    }
 
     return Response.json({ message: `The Keystone Macro Brief — ${editionLabel} sent successfully`, sent, subject });
   } catch (error) {

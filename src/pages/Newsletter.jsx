@@ -45,7 +45,7 @@ export default function Newsletter() {
 
   const { data: editions = [] } = useQuery({
     queryKey: ['newsletter-editions-public'],
-    queryFn: () => base44.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 6)
+    queryFn: () => base44.entities.NewsletterEdition.filter({ status: 'published' }, '-published_at', 10)
   });
 
   const checkSubscription = async (email) => {
@@ -278,20 +278,21 @@ export default function Newsletter() {
             </div>
 
             {isSubscribed ?
-          <div className="space-y-4">
-                {editions.slice(0, showAllEditions ? editions.length : 4).map((ed, idx) =>
-            <EditionCard key={ed.id} edition={ed} index={idx} />
-            )}
-                {!showAllEditions && editions.length > 4 &&
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              onClick={() => setShowAllEditions(true)}
-              className="w-full py-4 mt-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/40 rounded-xl hover:border-primary/20 hover:bg-primary/5">
-              
-                    View {editions.length - 4} more editions
+          <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {editions.slice(0, showAllEditions ? editions.length : 6).map((ed, idx) =>
+                    <EditionCard key={ed.id} edition={ed} index={idx} />
+                  )}
+                </div>
+                {!showAllEditions && editions.length > 6 && (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={() => setShowAllEditions(true)}
+                    className="w-full py-4 mt-4 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/40 rounded-xl hover:border-primary/20 hover:bg-primary/5">
+                    View {editions.length - 6} more editions
                   </motion.button>
-            }
+                )}
               </div> :
 
           <div className="glass rounded-2xl p-12 text-center border border-border/50">
