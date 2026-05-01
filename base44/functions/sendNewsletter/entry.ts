@@ -280,8 +280,15 @@ Return JSON with:
       publish_date: now.toISOString().split('T')[0],
       published_at: now.toISOString(),
       status: 'published',
-      market_summary: marketSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' · '),
-      body: sections.map(s => `## ${s.label}: ${s.headline}\n\n${s.body}${s.callout ? `\n\n> ${s.callout}` : ''}`).join('\n\n---\n\n'),
+      market_summary: marketSnapshot.map(m => {
+        // Normalise change to a bare percentage string, stripping any nested parens
+        // e.g. "-76.49 (-1.07%)" → "-1.07%"  |  "-1.07%" → "-1.07%"
+        const rawChange = String(m.change || '');
+        const pctMatch = rawChange.match(/([-+]?[0-9.,]+%)/);
+        const cleanChange = pctMatch ? pctMatch[1] : rawChange;
+        return `${m.label}: ${m.value} (${cleanChange})`;
+      }).join(' · '),
+      body: sections.map(s => `## ${prettyLabel(s.label || '')}: ${s.headline}\n\n${s.body}${s.callout ? `\n\n> ${s.callout}` : ''}`).join('\n\n---\n\n'),
       tags: sections.map(s => s.label),
     };
     const existingEditions = await base44.asServiceRole.entities.NewsletterEdition.filter({ slug: todaySlug });

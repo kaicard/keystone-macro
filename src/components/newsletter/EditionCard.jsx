@@ -10,11 +10,25 @@ function parseMarketItems(summary) {
     if (colonIdx === -1) return null;
     const label = item.slice(0, colonIdx).trim();
     const rest = item.slice(colonIdx + 1).trim();
-    const match = rest.match(/^([^\(]+)\s*(\([^)]+\))?$/);
-    const value = match ? match[1].trim() : rest;
-    const change = match && match[2] ? match[2].replace(/[()]/g, '').trim() : null;
-    const isPos = change && change.startsWith('+');
-    const isNeg = change && change.startsWith('-');
+
+    // Handle nested parens: "7,212.44 (-76.49 (-1.07%))" → value=7,212.44, change=-1.07%
+    // Extract the innermost percentage change first
+    const pctMatch = rest.match(/([-+][0-9.,]+%)/);
+    const pctChange = pctMatch ? pctMatch[1] : null;
+
+    // Value is everything before the first '('
+    const parenIdx = rest.indexOf('(');
+    const value = parenIdx !== -1 ? rest.slice(0, parenIdx).trim() : rest.trim();
+
+    // Prefer the pct change; fall back to the simple single-parens format
+    let change = pctChange;
+    if (!change) {
+      const simpleMatch = rest.match(/^[^\(]+\(([^)]+)\)$/);
+      change = simpleMatch ? simpleMatch[1].trim() : null;
+    }
+
+    const isPos = change ? change.startsWith('+') : false;
+    const isNeg = change ? change.startsWith('-') : false;
     return { label, value, change, isPos, isNeg };
   }).filter(Boolean);
 }
