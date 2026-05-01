@@ -16,7 +16,14 @@ export default function MarketSummary({ summary, loading }) {
           <div className="h-4 bg-muted/30 rounded w-4/6" />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground leading-relaxed">{summary || 'Loading market summary...'}</p>
+        typeof summary === 'object' && summary !== null ? (
+          <div className="space-y-2">
+            {summary.headline && <p className="text-sm font-medium text-foreground">{summary.headline}</p>}
+            {summary.detail && <p className="text-sm text-muted-foreground leading-relaxed">{summary.detail}</p>}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground leading-relaxed">{summary || 'Loading market summary...'}</p>
+        )
       )}
     </div>
   );
