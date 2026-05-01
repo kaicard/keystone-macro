@@ -525,7 +525,11 @@ export default function EconomicCalendar() {
               <Calendar className="w-10 h-10 mx-auto mb-4 opacity-20" />
               <p className="text-sm font-medium mb-1">No events for this period</p>
               <p className="text-xs text-muted-foreground/50">
-                {liveStatus === 'error' ? 'Could not reach Forex Factory. Try refreshing.' : 'Use Today, This Week, or Previous.'}
+                {liveStatus === 'error'
+                  ? 'Try refreshing or check a different date range.'
+                  : tab === 'today'
+                  ? 'No medium or high impact releases today. Check "This Week" for upcoming events.'
+                  : 'Use Today, This Week, or Previous.'}
               </p>
             </div>
           )}
