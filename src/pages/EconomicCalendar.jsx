@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { base44 } from '@/api/base44Client';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -88,86 +89,11 @@ const SEED_PREVIOUS = [
   { id: 's11', date: '2026-04-30', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.40%',       forecast: '2.15%',       actual: '2.15%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.15% as expected. Lagarde described tariffs as a significant headwind. EUR/USD fell 0.25% on the dovish press conference.' },
 ];
 
-const CURRENCY_TO_COUNTRY = {
-  USD: 'US', GBP: 'UK', EUR: 'EU', JPY: 'JP', CNY: 'CN',
-  CAD: 'CA', AUD: 'AU', CHF: 'CH', NZD: 'NZ', SEK: 'SE',
-  NOK: 'NO', BRL: 'BR', INR: 'IN', MXN: 'MX', KRW: 'KR', ZAR: 'ZA',
-};
-
-function getCategory(title) {
-  const t = (title || '').toLowerCase();
-  if (/official bank rate|policy rate|overnight rate|federal funds|refinancing rate|cash rate|bank rate|rate decision|monetary policy statement|mpc.*votes|boe monetary|fomc statement/.test(t)) return 'Central Bank';
-  if (/press conference|gov .* speaks|speaks|inflation letter|outlook report|monetary policy summary|rate statement/.test(t)) return 'Speeches';
-  if (/cpi|ppi|inflation|price index|pce|hicp|trimmed mean/.test(t)) return 'Inflation';
-  if (/nonfarm|employment change|unemployment claims|jobless|payroll|wages|earning|employment cost/.test(t)) return 'Labour';
-  if (/\bpmi\b|purchasing|manufacturing pmi|services pmi|composite pmi|chicago pmi/.test(t)) return 'PMI';
-  if (/retail sales|consumer confidence|consumer sentiment|gfk|ifo|zew|michigan|cb consumer/.test(t)) return 'Consumer';
-  if (/housing|home sales|building permits|hpi|house price|construction/.test(t)) return 'Housing';
-  if (/trade balance|current account|goods trade/.test(t)) return 'Trade';
-  if (/\bgdp\b|gross domestic|industrial production|output|advance gdp|prelim gdp|flash gdp/.test(t)) return 'GDP';
-  if (/bank holiday|holiday/.test(t)) return 'Holiday';
-  return 'GDP';
-}
-
-function getImportance(ffImpact) {
-  if (ffImpact === 'High')    return 'high';
-  if (ffImpact === 'Medium')  return 'medium';
-  if (ffImpact === 'Holiday') return 'high';
-  return 'low';
-}
-
-function parseFFEvent(ev, idx) {
-  const dt      = new Date(ev.date);
-  const dateStr = dt.toISOString().split('T')[0];
-  const utcTime = ev.impact === 'Holiday'
-    ? 'All Day'
-    : `${String(dt.getUTCHours()).padStart(2,'0')}:${String(dt.getUTCMinutes()).padStart(2,'0')}`;
-  return {
-    id:         `ff_${idx}_${dateStr}_${utcTime}`,
-    date:       dateStr,
-    utcTime,
-    country:    CURRENCY_TO_COUNTRY[ev.country] || ev.country,
-    event:      ev.title,
-    importance: getImportance(ev.impact),
-    previous:   ev.previous || '—',
-    forecast:   ev.forecast || '—',
-    actual:     ev.actual   || null,
-    category:   getCategory(ev.title),
-    outcome:    null,
-    ffSource:   true,
-  };
-}
-
-// Try multiple proxies in sequence
-async function fetchFFWeek() {
-  const FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(FF_URL)}`,
-    `https://api.allorigins.win/get?url=${encodeURIComponent(FF_URL)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(FF_URL)}`,
-  ];
-
-  for (const proxy of proxies) {
-    try {
-      const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-
-      // allorigins wraps in {contents: "..."}
-      let raw;
-      try {
-        const parsed = JSON.parse(text);
-        raw = parsed.contents ? JSON.parse(parsed.contents) : parsed;
-      } catch { continue; }
-
-      if (!Array.isArray(raw) || raw.length === 0) continue;
-
-      return raw
-        .filter(ev => ev.impact === 'High' || ev.impact === 'Medium' || ev.impact === 'Holiday')
-        .map(parseFFEvent);
-    } catch (_) { continue; }
-  }
-  throw new Error('All proxies failed');
+async function fetchCalendarWeek() {
+  const res = await base44.functions.invoke('calendarToday', { source: 'mql5', range: 'week' });
+  const events = res?.data?.events;
+  if (!Array.isArray(events)) throw new Error('No events returned');
+  return events.filter(e => e.importance === 'high' || e.importance === 'medium');
 }
 
 function toLocalTime(dateStr, utcTime) {
@@ -397,11 +323,11 @@ export default function EconomicCalendar() {
     setLoading(true);
     setLiveStatus('loading');
     try {
-      const events = await fetchFFWeek();
+      const events = await fetchCalendarWeek();
       setFfEvents(events);
       setLiveStatus('live');
     } catch (err) {
-      console.error('FF fetch failed:', err);
+      console.error('Calendar fetch failed:', err);
       setLiveStatus('error');
     } finally {
       setLoading(false);
