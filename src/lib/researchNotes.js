@@ -103,7 +103,51 @@ This week crystallised three themes that will dominate the remainder of 2026:
     takeaway: 'The week validated soft-landing optimism and the AI supercycle narrative. Position for: continued AI infrastructure exposure (compute, power, data centres), neutral US equities at index level, cautious on long Treasuries, gold as a Fed uncertainty hedge, and EUR/USD upside on a 12-month view.',
     what_would_change_mind: 'A Q2 GDP reading below 1.0% combined with non-farm payrolls consistently below 100K would shift our base case toward recession and require aggressive defensive rotation. A confirmed Warsh hawkish surprise — signalling rates on hold through 2027 — would be incrementally negative for equity multiples.',
   },
+  {
+    id: 24,
+    title: 'Dollar Weakness: Structural Shift or Tactical Opportunity?',
+    subtitle: 'The DXY tests multi-year lows — drivers, duration, and cross-asset implications',
+    category: 'Macro',
+    tags: ['USD', 'DXY', 'FX', 'Dollar', 'Global Macro'],
+    publish_date: '2026-04-24',
+    read_time_minutes: 6,
+    slug: 'dollar-weakness-structural-shift-april-2026',
+    executive_summary: 'The US dollar has weakened materially in April, with the DXY falling to its lowest levels in three years. The driver is a confluence of eroding US exceptionalism, fiscal credibility concerns, and repositioning away from USD assets. We assess whether this is the beginning of a structural dollar bear market or a tactical overshoot.',
+    body: `## The Dollar's April Reversal
 
+The DXY fell approximately 4-5% in April alone — a significant move for the world's reserve currency. This is not a typical Fed-driven dollar move. It is happening as US growth is downgraded, tariff policy creates uncertainty about the attractiveness of US assets, and foreign investors question whether the traditional "safe haven" premium on USD assets remains deserved.
+
+## Three Drivers, One Direction
+
+**1. The US Fiscal Credibility Premium is Eroding**
+
+For decades, the USD benefited from a credibility premium — the belief that the US will honour its debts, maintain institutional independence, and remain the global reserve anchor. Recent events — contested Fed independence, trade policy unpredictability, and fiscal deficits with no consolidation path — are chipping at this premium. Foreign central banks that have historically recycled surpluses into USD assets are quietly diversifying.
+
+**2. Growth Differential Compression**
+
+The USD bull cycle of 2022-2025 was powered by US growth outperformance. As tariff headwinds weigh on US growth and Europe's fiscal expansion (Germany's €500bn package) supports European growth, the differential that justified USD strength is compressing. A world where the US grows at 2% and Europe grows at 1.5-1.8% is not one that supports a strong dollar.
+
+**3. Positioning and Flows**
+
+CFTC data shows speculative long-USD positioning has unwound sharply. When a crowded trade reverses, the move is non-linear. The DXY breaking below 100 triggered systematic selling.
+
+## Asset Class Implications
+
+**EUR/USD:** The move to 1.12-1.15 we flagged in our Germany note is now the base case. Fiscal pivot in Europe combined with dollar weakness is a powerful combination for EUR.
+
+**Gold:** Dollar weakness is structurally positive for gold. At $3,300+, gold is reflecting both dollar weakness and geopolitical risk premium.
+
+**EM:** Dollar weakness is a significant tailwind for EM assets — it reduces USD-denominated debt service costs and supports capital flows into higher-yielding EM assets.
+
+**UK:** GBP/USD has broken above 1.32. Our 1.33-1.35 target is in play.
+
+## Is This Structural?
+
+We think yes — with the caveat that the FOMC fracture and Warsh appointment (see our May 2 note) provide a short-term floor. Near-term DXY range: 99-102. Medium-term trend: lower.`,
+    key_risks: 'Global risk-off triggers flight to USD safety regardless of fundamentals; Warsh-led Fed signals prolonged hawkishness re-widening the rate differential.',
+    takeaway: 'Dollar weakness looks structural. Add EUR/USD upside, maintain gold as a USD hedge, favour EM assets with USD-denominated debt. Reduce USD cash overweights on rallies.',
+    what_would_change_mind: 'Three consecutive months of US data significantly outperforming European data; or a global risk event forcing USD safe-haven demand.',
+  },
   {
     id: 23,
     title: 'Tariff Impact: Q1 Earnings Season Reality Check',
