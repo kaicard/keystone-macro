@@ -9,7 +9,7 @@ import AppLayout from '@/components/layout/AppLayout';
 
 // Existing pages
 import Home from '@/pages/Home';
-import Research from '@/pages/Research';
+import Research from '@/pages/Research.jsx';
 import ResearchArticle from '@/pages/ResearchArticle';         // NEW — individual research note
 import ResearchIntelligence from '@/pages/ResearchIntelligence'; // NEW — individual intelligence item
 import Portfolios from '@/pages/Portfolios';                   // WealthCases merged in here
