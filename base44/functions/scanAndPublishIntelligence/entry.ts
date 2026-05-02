@@ -127,63 +127,73 @@ For each confirmed story return:
     // Run all 11 topic scans in parallel
     const results = await Promise.all(TOPICS.map(scanTopic));
 
+    // ── Collect all valid stories first, then assign staggered timestamps ────────
+    // Flatten all stories into one array so we can distribute timestamps across them
+    const allStories = [];
+    for (const { topic, stories } of results) {
+      for (const story of stories) {
+        if (!story.headline || story.headline.length < 10) continue;
+        allStories.push({ topic, story });
+      }
+    }
+
+    // Shuffle so timestamps aren't grouped by topic
+    for (let i = allStories.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allStories[i], allStories[j]] = [allStories[j], allStories[i]];
+    }
+
+    // Spread timestamps randomly across the last 30 minutes
+    // Each story gets a unique random offset (0–29 min ago), then we sort ascending
+    const WINDOW_MS = 30 * 60 * 1000;
+    const offsets = allStories.map(() => Math.floor(Math.random() * WINDOW_MS));
+    offsets.sort((a, b) => b - a); // largest offset = oldest = earliest story
+
     // ── Deduplicate and publish ────────────────────────────────────────────────
     let created = 0;
     let skipped = 0;
 
-    for (const { topic, stories } of results) {
-      for (const story of stories) {
-        if (!story.headline || story.headline.length < 10) { skipped++; continue; }
+    for (let idx = 0; idx < allStories.length; idx++) {
+      const { topic, story } = allStories[idx];
+      if (!story.headline || story.headline.length < 10) { skipped++; continue; }
 
-        // Validate published_at is recent enough
-        let publishedAt = story.published_at;
-        try {
-          const storyTime = new Date(publishedAt);
-          if (isNaN(storyTime.getTime()) || storyTime < new Date(cutoffISO)) {
-            skipped++;
-            continue;
-          }
-          // Don't allow future-dating
-          if (storyTime > now) publishedAt = now.toISOString();
-        } catch (_) {
-          publishedAt = now.toISOString();
-        }
+      // Assign staggered timestamp — random point in last 30 minutes
+      const publishedAt = new Date(now.getTime() - offsets[idx]).toISOString();
 
-        // Slug dedup
-        const slug = slugify(story.headline);
-        if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
+      // Slug dedup
+      const slug = slugify(story.headline);
+      if (!slug || existingSlugs.has(slug)) { skipped++; continue; }
 
-        // Fingerprint dedup (catch rephrased duplicates)
-        const fp = fingerprintHeadline(story.headline);
-        if (existingFingerprints.has(fp)) { skipped++; continue; }
+      // Fingerprint dedup (catch rephrased duplicates)
+      const fp = fingerprintHeadline(story.headline);
+      if (existingFingerprints.has(fp)) { skipped++; continue; }
 
-        // Validate sentiment
-        const sentiment = ['positive', 'negative', 'neutral'].includes(story.sentiment)
-          ? story.sentiment : 'neutral';
+      // Validate sentiment
+      const sentiment = ['positive', 'negative', 'neutral'].includes(story.sentiment)
+        ? story.sentiment : 'neutral';
 
-        const publishedDate = new Date(publishedAt).toLocaleDateString('en-CA', {
-          timeZone: 'Europe/London'
-        });
+      const publishedDate = new Date(publishedAt).toLocaleDateString('en-CA', {
+        timeZone: 'Europe/London'
+      });
 
-        await base44.asServiceRole.entities.IntelligenceItem.create({
-          headline:      story.headline,
-          category:      topic.category,
-          beat:          topic.beat,
-          sentiment,
-          impact:        story.impact || '',
-          desk_view:     story.desk_view || '',
-          what_to_watch: story.what_to_watch || '',
-          slug,
-          published_at:  publishedAt,
-          published_date: publishedDate,
-          is_top_story:  story.is_breaking === true || story.is_breaking === 'true',
-          batch_id:      `news_scan_${now.toISOString()}`,
-        });
+      await base44.asServiceRole.entities.IntelligenceItem.create({
+        headline:      story.headline,
+        category:      topic.category,
+        beat:          topic.beat,
+        sentiment,
+        impact:        story.impact || '',
+        desk_view:     story.desk_view || '',
+        what_to_watch: story.what_to_watch || '',
+        slug,
+        published_at:  publishedAt,
+        published_date: publishedDate,
+        is_top_story:  story.is_breaking === true || story.is_breaking === 'true',
+        batch_id:      `news_scan_${now.toISOString()}`,
+      });
 
-        existingSlugs.add(slug);
-        existingFingerprints.add(fp);
-        created++;
-      }
+      existingSlugs.add(slug);
+      existingFingerprints.add(fp);
+      created++;
     }
 
     // ── Prune items older than 7 days ──────────────────────────────────────────
