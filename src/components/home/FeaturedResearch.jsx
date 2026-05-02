@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Clock, Tag, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { sampleNotes } from '@/lib/researchNotes';
-import ResearchNoteModal from '@/components/research/ResearchNoteModal';
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
@@ -73,10 +72,19 @@ function isNew(dateStr) {
   return (now - d) / (1000 * 60 * 60 * 24) <= 3;
 }
 
+function generateSlug(title) {
+  return title
+    ?.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim() || '';
+}
+
 export default function FeaturedResearch() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
-  const [selectedNote, setSelectedNote] = useState(null);
+  const navigate = useNavigate();
 
   const { data: dbNotes } = useQuery({
     queryKey: ['research-notes'],
@@ -136,7 +144,7 @@ export default function FeaturedResearch() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {displayRecent.map((note, i) => (
-            <NoteCard key={note.id} note={note} delay={i * 0.1} inView={inView} onClick={() => setSelectedNote(note)} />
+            <NoteCard key={note.id} note={note} delay={i * 0.1} inView={inView} onClick={() => navigate(`/Research/${note.slug || generateSlug(note.title)}`)} />
           ))}
         </div>
 
@@ -161,7 +169,7 @@ export default function FeaturedResearch() {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     {displayOlder.map((note, i) => (
-                      <NoteCard key={note.id} note={note} delay={i * 0.05} inView={true} onClick={() => setSelectedNote(note)} />
+                      <NoteCard key={note.id} note={note} delay={i * 0.05} inView={true} onClick={() => navigate(`/Research/${note.slug || generateSlug(note.title)}`)} />
                     ))}
                   </div>
                 </motion.div>
@@ -170,10 +178,6 @@ export default function FeaturedResearch() {
           </div>
         )}
       </div>
-
-      {selectedNote && (
-        <ResearchNoteModal note={selectedNote} onClose={() => setSelectedNote(null)} />
-      )}
     </section>
   );
 }

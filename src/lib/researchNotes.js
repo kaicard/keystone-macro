@@ -2,56 +2,151 @@
 // read_time_minutes is calculated at ~200 words per minute
 
 export const sampleNotes = [
-  // ── April 2026 — most recent first ──────────────────────────────────────
+  // ── May 2026 — most recent first ────────────────────────────────────────
+  {
+    id: 25,
+    title: 'A Week That Rewrote the Macro Playbook: FOMC Dissent, GDP Rebound, and the Warsh Fed',
+    subtitle: 'Five days of watershed macro data and central bank decisions that will define markets for the rest of 2026',
+    category: 'Macro',
+    tags: ['FOMC', 'GDP', 'Fed', 'Kevin Warsh', 'BOJ', 'ECB', 'Magnificent Seven', 'AI'],
+    publish_date: '2026-05-02',
+    read_time_minutes: 12,
+    slug: 'fomc-dissent-gdp-rebound-warsh-fed-may-2026',
+    is_featured: true,
+    executive_summary: 'The week of April 28–May 1 delivered a concentrated burst of macro significance that will shape the investment landscape for the remainder of 2026. US Q1 GDP came in at 2.0% — a clean rebound from Q4\'s near-stall at 0.5%, driven largely by AI infrastructure investment and resilient consumer spending. The FOMC held rates at 3.50–3.75% but fractured in a historically unusual 8-4 split, the most divided vote since 1992. Kevin Warsh was advanced to the Senate floor for confirmation as the next Fed chair. Concurrently, the BOJ held at 0.75% in a 6-3 split as tariff uncertainty clouded its hiking path, and the ECB kept rates at 2% as eurozone inflation jumped to 3.0%. In equities, the Magnificent Seven delivered broadly ahead-of-consensus earnings underpinned by an AI capex supercycle that shows no sign of decelerating. Markets added $6 trillion in equity value across April. This note synthesises what it all means.',
+    body: `## The Week in Sequence
+
+**Monday April 28** opened with the first whispers of the FOMC's internal divisions becoming public. Fed watcher leaks suggested the vote count would be unusual. Markets were already on edge following three weeks of tariff volatility.
+
+**Tuesday April 29** brought the Q1 GDP advance estimate: 2.0% annualised. The internals were instructive — private fixed investment (led by data centre and AI infrastructure capex) contributed 1.1pp, while consumer spending contributed 0.8pp. Government spending was flat. Inventories detracted 0.4pp. This is not a broad-based boom; it is an AI investment-led rebound with a resilient consumer. The Atlanta Fed's GDPNow tracker had been pointing to a number in this range, but the consensus was lower at 1.5%.
+
+**Wednesday April 30** delivered the FOMC decision and the revelation of the 8-4 vote. The four dissenters wanted a rate cut immediately. The eight majority held firm on "patient watchfulness." This fracture is historically significant — FOMC splits of this magnitude predate major policy turning points. The press conference revealed a Powell who is managing internal dissent while awaiting tariff clarity. He explicitly noted that the committee is monitoring whether tariff-driven goods inflation is "transitory" — the word that haunted the 2021-2022 cycle.
+
+**Thursday May 1** brought the Kevin Warsh Senate floor advancement. Warsh is hawkish by temperament but pragmatic in execution. His appointment signals the White House wants a Fed chair who will not cut rates pre-emptively into an inflationary tariff environment. Markets initially interpreted this as hawkish; we think the reality is more nuanced.
+
+**Friday May 2** closed the week with Magnificent Seven results fully in: aggregate EPS beat of 12% vs consensus, driven by cloud revenue acceleration and AI services revenue at Microsoft, Alphabet, and Amazon. Meta's AI-driven ad revenue growth was 22% YoY. Apple's services revenue offset hardware softness. The AI supercycle is producing earnings, not just capex.
+
+## The FOMC Fracture: What It Actually Means
+
+An 8-4 split is not simply a sign of internal disagreement — it is a public signal of the range of views on the committee. The four dissenters who wanted a cut are watching the labour market: initial claims have ticked up to 245K, non-farm payrolls missed (177K vs 185K expected), and the ISM services employment component is softening.
+
+The eight majority are watching inflation: core PCE came in at 2.6% for March, above target, and tariff pass-through into goods prices is beginning to show in PPI data. The internal tension is real and will not resolve quickly.
+
+**Our read:** The first cut comes in September 2026 at the earliest, and only if core PCE falls toward 2.3% in the May-June readings. The Warsh appointment, if confirmed, likely extends the "higher-for-longer" path into 2027.
+
+## Kevin Warsh: What Changes at the Fed
+
+Warsh served as a Fed governor from 2006-2011 and was a vocal critic of QE and the zero-rate policy. His intellectual framework is more monetarist than the current committee — he places greater weight on money supply dynamics and less on the output gap.
+
+Key implications:
+- **Less likely to cut pre-emptively** into tariff uncertainty, even if growth softens
+- **More transparent communication** — Warsh has consistently advocated for clearer Fed guidance
+- **Skeptical of QE as a policy tool** — expect any future balance sheet expansion to require a higher bar
+- **Markets relationship:** Warsh is more comfortable with equity market volatility as a natural adjustment mechanism than some of his predecessors
+
+For fixed income: this is marginally bearish for long-dated Treasuries. For equities: neutral to marginally negative for rate-sensitive sectors (utilities, REITs) but neutral for earnings-driven growth.
+
+## GDP Rebound: Reading the Internals
+
+The 2.0% Q1 GDP figure masks significant sector divergence:
+
+| Component | Contribution |
+|---|---|
+| AI/Tech Fixed Investment | +1.1pp |
+| Consumer Spending | +0.8pp |
+| Government | +0.1pp |
+| Inventories | -0.4pp |
+| Net Exports | +0.4pp |
+
+The inventory detraction is important: businesses drew down existing stock rather than importing new goods ahead of tariff deadlines. This reduces Q2 GDP risk from inventory correction (the pre-loading effect in consumer goods is less severe than feared).
+
+The AI fixed investment figure — if sustained — represents a structural shift in US capital allocation. This is not a cyclical capex surge; it is infrastructure build-out with a 10-15 year deployment horizon.
+
+## Magnificent Seven: Separating Signal from Noise
+
+Five themes emerged from the aggregate earnings:
+
+**1. AI monetisation is real, not just spend.** Microsoft Copilot is generating measurable revenue. Google AI Overviews are maintaining ad click-through rates better than feared. AWS Bedrock revenue is growing faster than the overall cloud segment.
+
+**2. The margin impact of AI capex is manageable.** Operating margins held above 28% across the group despite the capex surge. The efficiency gains from AI internal deployment are offsetting some of the investment cost.
+
+**3. China revenue risk remains.** Apple, Qualcomm suppliers, and others are navigating meaningful tariff and supply chain disruption from US-China trade tension. This is an idiosyncratic risk, not yet systemic.
+
+**4. Advertising is resilient.** Meta and Alphabet ad revenue suggests consumer spend is not collapsing. This is the real-time consumer confidence indicator that matters more than surveys.
+
+**5. Guidance was conservative.** All seven companies provided Q2 guidance below Q1 run-rates, citing tariff uncertainty. We think this is deliberate sandbagging — expect Q2 beats to be the pattern.
+
+## Cross-Asset Implications
+
+**US Equities (S&P 500):** The 2.0% GDP print and strong Mag7 earnings validate the soft-landing thesis at current index levels. At 21x forward P/E, there is no margin for error — but the earnings trajectory supports current valuations provided tariff escalation is contained. We are neutral weight.
+
+**Treasuries:** The FOMC fracture and Warsh appointment are incrementally bearish for long-dated Treasuries. We maintain our preference for 2-5Y duration over 10Y+. The 10Y at 4.3% does not adequately compensate for fiscal issuance risk.
+
+**US Dollar:** The DXY weakness of April (-4.5%) is a significant structural signal. We maintain our view that dollar weakness is the medium-term trend, driven by eroding US exceptionalism and foreign investor diversification. However, the 8-4 FOMC split and hawkish Warsh trajectory provide a short-term floor. Near-term range: 99-102 DXY.
+
+**Gold:** At $3,300+, gold is pricing in both dollar weakness and geopolitical risk premium. The FOMC fracture — signalling prolonged uncertainty — is supportive for gold. We maintain a 7-10% allocation.
+
+**EUR/USD:** ECB at 2% with eurozone inflation at 3.0% creates a complex picture. The ECB is unlikely to cut further, which narrows the rate differential with the US. Our 12-month EUR/USD target of 1.12-1.15 is on track.
+
+**BOJ:** The 6-3 vote to hold at 0.75% was more dovish than expected. Tariff uncertainty — and the drag on Japanese exports — is delaying the hiking path. USD/JPY above 145 creates FX intervention risk. We are tactically cautious on JPY positions.
+
+## The Broader Macro Picture
+
+This week crystallised three themes that will dominate the remainder of 2026:
+
+1. **The AI supercycle is the dominant macro variable** — more important than tariff disruption for US equities and capex. The $6 trillion equity value creation in April reflects this repricing.
+
+2. **Central banks are navigating a complex, multi-variable environment** — not just inflation vs growth, but tariff pass-through, AI productivity effects, and geopolitical uncertainty simultaneously. The FOMC fracture is a symptom of this complexity.
+
+3. **The policy transition at the Fed** — Warsh replacing Powell — creates a period of calibration where market communication norms may shift. Expect higher volatility in Treasury markets as the new framework is established.`,
+    key_risks: 'Tariff escalation beyond current levels derailing the AI capex cycle; Warsh confirmation fails, creating a political vacuum at the Fed; Q2 GDP prints negative (technically a recession entry); Magnificent Seven Q2 misses reversing the April equity rally.',
+    takeaway: 'The week validated soft-landing optimism and the AI supercycle narrative. Position for: continued AI infrastructure exposure (compute, power, data centres), neutral US equities at index level, cautious on long Treasuries, gold as a Fed uncertainty hedge, and EUR/USD upside on a 12-month view.',
+    what_would_change_mind: 'A Q2 GDP reading below 1.0% combined with non-farm payrolls consistently below 100K would shift our base case toward recession and require aggressive defensive rotation. A confirmed Warsh hawkish surprise — signalling rates on hold through 2027 — would be incrementally negative for equity multiples.',
+  },
   {
     id: 24,
     title: 'Dollar Weakness: Structural Shift or Tactical Opportunity?',
-    subtitle: 'The DXY is at multi-year lows — what is driving it and how long does it last',
-    category: 'FX',
+    subtitle: 'The DXY tests multi-year lows — drivers, duration, and cross-asset implications',
+    category: 'Macro',
     tags: ['USD', 'DXY', 'FX', 'Dollar', 'Global Macro'],
     publish_date: '2026-04-24',
     read_time_minutes: 6,
-    is_featured: true,
-    executive_summary: 'The US dollar has weakened materially in April, with the DXY testing its lowest levels since 2022. The driver is not a single factor but a confluence of eroding US exceptionalism, fiscal credibility concerns, and repositioning away from USD assets. We assess whether this is the beginning of a structural dollar bear market.',
+    slug: 'dollar-weakness-structural-shift-april-2026',
+    executive_summary: 'The US dollar has weakened materially in April, with the DXY falling to its lowest levels in three years. The driver is a confluence of eroding US exceptionalism, fiscal credibility concerns, and repositioning away from USD assets. We assess whether this is the beginning of a structural dollar bear market or a tactical overshoot.',
     body: `## The Dollar's April Reversal
 
-The DXY has fallen approximately 4-5% in April alone — a significant move for the world's reserve currency. This is not the typical Fed-driven dollar move. It is happening as US growth is being downgraded, as tariff policy creates uncertainty about the attractiveness of US assets, and as foreign investors question whether the traditional "safe haven" premium on USD assets is still deserved.
+The DXY fell approximately 4-5% in April alone — a significant move for the world's reserve currency. This is not a typical Fed-driven dollar move. It is happening as US growth is downgraded, tariff policy creates uncertainty about the attractiveness of US assets, and foreign investors question whether the traditional "safe haven" premium on USD assets remains deserved.
 
 ## Three Drivers, One Direction
 
 **1. The US Fiscal Credibility Premium is Eroding**
 
-For decades, the USD has benefited from a credibility premium — the belief that the US will honour its debts, maintain institutional independence, and remain the global reserve anchor. Recent events — threats to Fed independence, trade policy unpredictability, and fiscal deficits showing no sign of consolidation — are chipping at this premium. Foreign central banks that have historically recycled surpluses into USD assets are quietly diversifying.
+For decades, the USD benefited from a credibility premium — the belief that the US will honour its debts, maintain institutional independence, and remain the global reserve anchor. Recent events — contested Fed independence, trade policy unpredictability, and fiscal deficits with no consolidation path — are chipping at this premium. Foreign central banks that have historically recycled surpluses into USD assets are quietly diversifying.
 
 **2. Growth Differential Compression**
 
-The USD bull cycle of 2022-2025 was powered by US growth outperformance. As tariff headwinds weigh on US growth and Europe's fiscal expansion supports European growth (see our March Germany note), the growth differential that justified USD strength is compressing. A world where the US grows at 1.7% and Europe grows at 1.5-1.8% is not a world that supports a strong dollar.
+The USD bull cycle of 2022-2025 was powered by US growth outperformance. As tariff headwinds weigh on US growth and Europe's fiscal expansion (Germany's €500bn package) supports European growth, the differential that justified USD strength is compressing. A world where the US grows at 2% and Europe grows at 1.5-1.8% is not one that supports a strong dollar.
 
 **3. Positioning and Flows**
 
-CFTC data shows speculative long-USD positioning has unwound sharply. When a crowded trade reverses, the move is non-linear. The technical picture — DXY breaking below 100 — is also triggering systematic selling.
+CFTC data shows speculative long-USD positioning has unwound sharply. When a crowded trade reverses, the move is non-linear. The DXY breaking below 100 triggered systematic selling.
 
 ## Asset Class Implications
 
-**EUR/USD:** The move to 1.12-1.15 that we flagged in our Germany note is now the base case. The fiscal pivot in Europe combined with dollar weakness is a powerful combination for EUR.
+**EUR/USD:** The move to 1.12-1.15 we flagged in our Germany note is now the base case. Fiscal pivot in Europe combined with dollar weakness is a powerful combination for EUR.
 
-**Gold:** Dollar weakness is structurally positive for gold. Every 1% fall in the DXY typically corresponds to a 1-2% rise in gold. At $3,200+, gold is reflecting both dollar weakness and geopolitical risk premium.
+**Gold:** Dollar weakness is structurally positive for gold. At $3,300+, gold is reflecting both dollar weakness and geopolitical risk premium.
 
-**EM:** Dollar weakness is a significant tailwind for EM assets — it reduces the cost of USD-denominated debt service and supports capital flows into higher-yielding EM assets. Watch BRL, INR, and ZAR as beneficiaries.
+**EM:** Dollar weakness is a significant tailwind for EM assets — it reduces USD-denominated debt service costs and supports capital flows into higher-yielding EM assets.
 
-**UK:** GBP/USD has broken above 1.32. Our 1.33-1.35 target is now in play. UK assets look relatively attractive on a currency-adjusted basis for international investors.
+**UK:** GBP/USD has broken above 1.32. Our 1.33-1.35 target is in play.
 
 ## Is This Structural?
 
-We think it is — with caveats. The structural case for dollar weakness rests on:
-- Deteriorating US fiscal credibility
-- Compression of growth differentials
-- Diversification of reserve currencies (EUR, gold, potentially CNY)
-
-The tactical caveat: if global risk sentiment deteriorates sharply (recession fears), the USD historically rallies as a safe haven regardless of fundamentals. Do not be maximum short USD without hedging for tail risk.`,
-    key_risks: 'Global risk-off event triggers flight to USD safety regardless of fundamentals; Fed signals hawkishness that re-widens the rate differential; US growth outperforms expectations, restoring exceptionalism narrative.',
-    takeaway: 'Dollar weakness looks structural, not tactical. Add EUR/USD upside, consider gold as a USD hedge, and favour EM assets with USD-denominated debt. Reduce USD cash overweights.',
-    what_would_change_mind: 'Three consecutive months of US data significantly outperforming European data; or a global risk event that forces USD safe-haven demand regardless of the structural picture.',
+We think yes — with the caveat that the FOMC fracture and Warsh appointment (see our May 2 note) provide a short-term floor. Near-term DXY range: 99-102. Medium-term trend: lower.`,
+    key_risks: 'Global risk-off triggers flight to USD safety regardless of fundamentals; Warsh-led Fed signals prolonged hawkishness re-widening the rate differential.',
+    takeaway: 'Dollar weakness looks structural. Add EUR/USD upside, maintain gold as a USD hedge, favour EM assets with USD-denominated debt. Reduce USD cash overweights on rallies.',
+    what_would_change_mind: 'Three consecutive months of US data significantly outperforming European data; or a global risk event forcing USD safe-haven demand.',
   },
   {
     id: 23,
@@ -102,53 +197,60 @@ If any of these assumptions prove too optimistic — which Q2 earnings will reve
   },
   {
     id: 22,
-    title: 'Oil at $65: Demand Destruction or OPEC+ Miscalculation?',
-    subtitle: 'Crude is testing multi-year lows — dissecting the supply, demand, and geopolitical picture',
-    category: 'Commodities',
-    tags: ['Oil', 'Crude', 'OPEC', 'Energy', 'Commodities'],
-    publish_date: '2026-04-10',
-    read_time_minutes: 6,
-    executive_summary: 'Brent crude has fallen toward $65/bbl — its lowest level since 2021. OPEC+ has surprised markets with a production increase even as global demand growth slows. We assess the supply-demand balance, the OPEC+ strategy, and the cross-asset implications of sustained lower oil prices.',
-    body: `## The Selloff in Context
+    title: 'Q1 2026 Earnings: The AI Capex Supercycle Delivers',
+    subtitle: 'Magnificent Seven results, tariff resilience, and what $6 trillion of equity value creation tells us',
+    category: 'Equities',
+    tags: ['Earnings', 'AI', 'Magnificent Seven', 'Capex', 'S&P 500'],
+    publish_date: '2026-04-30',
+    read_time_minutes: 7,
+    slug: 'q1-2026-earnings-ai-capex-supercycle',
+    executive_summary: 'The Magnificent Seven delivered broadly ahead-of-consensus Q1 2026 results, with aggregate EPS beating by 12%. AI infrastructure capex is accelerating — not decelerating — and monetisation is materialising in cloud and advertising revenue. Markets added $6 trillion in equity value across April. We assess whether these earnings justify current S&P 500 valuations and where the risks lie for Q2.',
+    body: `## The Earnings Scorecard
 
-Brent crude has fallen approximately 15% year-to-date, driven by three simultaneous headwinds: OPEC+ increasing supply faster than expected, tariff-driven demand uncertainty weighing on the global growth outlook, and a strong dollar period (which compresses dollar-denominated commodity prices).
+The Magnificent Seven Q1 results, taken together, represent the strongest quarter of AI monetisation evidence to date:
 
-The market is now asking: is $65 a floor or a waystation?
+**Microsoft:** Azure AI revenue grew 54% YoY. Copilot enterprise seats reached 400,000+ active users generating measurable revenue. Operating margins held at 45% despite elevated capex.
 
-## OPEC+ Strategy: Discipline Breaking Down?
+**Alphabet:** Google AI Overviews maintained ad click-through rates better than feared. Cloud (GCP) revenue grew 28% YoY. YouTube ad revenue +22%.
 
-The surprise April OPEC+ decision to increase production by 411,000 barrels/day — larger than expected — appears to reflect two dynamics:
+**Meta:** Ad revenue growth of 22% YoY, driven by AI-optimised targeting. Llama deployment across Instagram and WhatsApp is showing engagement improvements.
 
-**1. Internal Pressure from Saudi Arabia:** Saudi Arabia's fiscal breakeven is estimated at $85-90/bbl. At $65, the kingdom is running significant fiscal deficits that cannot be sustained long-term without either cutting production or drawing down reserves. Yet Saudi has chosen to increase production — suggesting a decision to trade short-term revenue for market share, potentially targeting US shale economics.
+**Amazon:** AWS revenue grew 17% YoY, with Bedrock (AI services) growing faster than the overall segment. Advertising revenue +19%.
 
-**2. Non-compliance from Members:** Several OPEC+ members — Iraq, UAE, Kazakhstan — have been producing above their quotas. The formal production increase may partly reflect the reality of what is already happening, formalising overproduction rather than adding genuinely new barrels.
+**NVIDIA:** Q1 data centre revenue of $22.6bn, +73% YoY. Blackwell architecture demand is exceeding supply. H200 lead times remain 6-9 months.
 
-## Demand: Genuine Weakness or Temporary?
+**Apple:** Services revenue +14% YoY, offsetting iPhone hardware softness (-2%). Apple Intelligence features are driving Services attach rates.
 
-The demand picture is more nuanced than headlines suggest:
+**Tesla:** The outlier — automotive margins compressed to 12.5% as price competition intensified. Energy storage (Megapack) was the bright spot.
 
-- **China:** Petroleum demand growth is slowing but not collapsing. EV penetration is reducing gasoline demand but diesel and jet fuel remain robust.
-- **US:** Tariff uncertainty is weighing on industrial demand. ISM Manufacturing PMI new orders components have weakened.
-- **India:** The one positive — Indian crude demand is growing at 3-4% YoY as industrialisation accelerates.
+## The Valuation Question
 
-Net demand growth globally is running at approximately 800,000 barrels/day — below the 1.2M consensus at the start of 2026.
+The S&P 500 at 21x forward P/E requires justification. The Q1 earnings season provides it — conditionally. At 12% EPS beat with AI monetisation materialising, current valuations are supportable IF:
 
-## Cross-Asset Implications
+1. Tariff escalation is contained (the 90-day pause holds)
+2. AI capex returns materialise in productivity gains (early evidence is positive)
+3. The labour market does not deteriorate sharply
 
-**Energy equities:** Integrated majors (Shell, BP, ExxonMobil) are under margin pressure below $75/bbl. At $65, free cash flow generation is impaired and dividend sustainability comes into question for some. E&P companies with higher cost structures face more acute pressure.
+The risk: Q2 guidance was conservative across the group. Companies are sandbagging for tariff uncertainty. Expect Q2 beats to be the pattern, but the guidance overhang will create intra-quarter volatility.
 
-**Inflation:** Lower oil is a meaningful disinflationary impulse — each $10 fall in crude reduces headline CPI by approximately 0.2-0.3% with a 2-3 month lag. This gives the Fed and BOE slightly more room to cut rates.
+## The Tariff Bifurcation
 
-**US Shale:** Many US shale producers have breakevens of $55-65/bbl. At $65, new drilling activity slows materially — which over 6-12 months reduces supply, creating a potential price floor.
+Q1 revealed a stark split in tariff exposure:
+- **Insulated:** Cloud, software, services, AI infrastructure — no material tariff impact
+- **Exposed:** Hardware supply chains, consumer electronics assembly, retail import cost
 
-## Our View
+Apple navigated tariff exposure through pre-tariff inventory building and India manufacturing ramp. This is not a sustainable solution — Q2 will test whether the supply chain diversification is sufficient.
 
-We see $60-65 as a technical support zone. Below $60, US shale economics are impaired, OPEC+ members face intolerable fiscal pressure, and the probability of an emergency production cut rises. Above $70, global demand dynamics do not currently justify the price.
+## Sector Implications
 
-Tactical: we are neutral on energy equities but watching for a mean-reversion trade above $70 if demand data stabilises.`,
-    key_risks: 'Global recession materialises, collapsing demand well below current estimates; OPEC+ abandons all discipline in a market-share war; US shale proves more resilient to low prices than expected, adding supply; Iran deal restores Iranian barrels to market.',
-    takeaway: 'Oil at $65 is disinflationary (positive for rates) but negative for energy equities and oil-dependent sovereigns. Watch $60 as the key support level. A demand recovery or OPEC+ reversal could provide a tactical long opportunity, but the structural trend is not bullish.',
-    what_would_change_mind: 'A formal OPEC+ production cut announcement; or evidence of significant global demand recovery, particularly from China industrial activity surprising to the upside.',
+**Overweight:** AI infrastructure (NVDA, AVGO), cloud hyperscalers (MSFT, GOOGL, AMZN), power infrastructure (Vistra, Constellation, Vertiv), data centre REITs (Equinix, Digital Realty)
+
+**Neutral:** Broad S&P 500 index — fully valued but not dangerously expensive given earnings trajectory
+
+**Underweight:** Consumer discretionary with import exposure, hardware-heavy tech with China supply chain dependency`,
+    key_risks: 'Q2 tariff pass-through into hardware margins; AI capex ROI scrutiny if enterprise productivity gains are slower than expected; concentration risk — 35%+ of S&P 500 in top-10 names means a Magnificent Seven correction drags the entire index.',
+    takeaway: 'Q1 earnings validated the AI supercycle narrative. Maintain exposure to AI infrastructure and cloud hyperscalers. The S&P 500 at 21x is justifiable but requires continued earnings delivery — Q2 guidance season will be the next test.',
+    what_would_change_mind: 'Multiple quarters of AI capex without demonstrable revenue monetisation would trigger a re-rating of infrastructure spending; or a sharp deterioration in advertising revenue signalling consumer demand collapse.',
   },
   {
     id: 21,
