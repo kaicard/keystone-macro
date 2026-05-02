@@ -123,7 +123,6 @@ export default function Research() {
   const featured = filtered.find(n => n.is_featured) || filtered[0];
   const nonFeatured = filtered.filter(n => n !== featured || search || activeCategory !== 'All');
   const visibleNotes = showAll ? nonFeatured : nonFeatured.slice(0, INITIAL_VISIBLE);
-  const hasMore = nonFeatured.length > INITIAL_VISIBLE && !showAll;
   const isFiltering = search || activeCategory !== 'All';
 
   const handleNoteClick = (note) => {
