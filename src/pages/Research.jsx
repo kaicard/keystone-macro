@@ -176,18 +176,20 @@ export default function Research() {
 
         {featured && activeCategory === 'All' && !search && (
           <motion.div
-            className="glass rounded-2xl p-8 mb-8 hover:border-primary/30 transition-all cursor-pointer glow-primary group"
+            className="glass rounded-2xl mb-8 hover:border-primary/30 transition-all cursor-pointer glow-primary group overflow-hidden"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             onClick={() => handleNoteClick(featured)}
           >
-            <div className="flex items-start justify-between gap-4">
-              <Badge className="bg-primary/10 text-primary border-0 mb-4">Featured</Badge>
-              <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+            <div className="p-8">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <Badge className="bg-primary/10 text-primary border-0">Featured</Badge>
+                <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0" />
+              </div>
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2 group-hover:text-primary transition-colors leading-snug">{featured.title}</h2>
+              {featured.subtitle && <p className="text-muted-foreground mb-4 text-sm">{featured.subtitle}</p>}
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">{featured.executive_summary}</p>
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2 group-hover:text-primary transition-colors">{featured.title}</h2>
-            {featured.subtitle && <p className="text-muted-foreground mb-4">{featured.subtitle}</p>}
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">{featured.executive_summary}</p>
-            <div className="flex items-center gap-4 mt-6 text-xs text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-4 px-8 py-4 border-t border-border/30 bg-muted/5 text-xs text-muted-foreground flex-wrap">
               <Badge variant="outline" className={categoryColors[featured.category]}>{featured.category}</Badge>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{featured.read_time_minutes} min read</span>
               <span>{new Date(featured.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
