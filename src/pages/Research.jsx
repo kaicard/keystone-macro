@@ -98,7 +98,12 @@ export default function Research() {
     refetchInterval: 10 * 60 * 1000,
   });
 
-  const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
+  // Merge DB notes with sample notes — DB notes take precedence (dedup by title)
+  const allNotes = useMemo(() => {
+    const dbTitles = new Set(dbNotes.map(n => n.title?.toLowerCase().trim()));
+    const filteredSamples = sampleNotes.filter(n => !dbTitles.has(n.title?.toLowerCase().trim()));
+    return [...dbNotes, ...filteredSamples];
+  }, [dbNotes]);
 
   const sorted = useMemo(() =>
     [...allNotes].sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date)),

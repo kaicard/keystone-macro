@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Clock, Tag, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
@@ -88,7 +88,12 @@ export default function FeaturedResearch() {
 
   const [showOlder, setShowOlder] = useState(false);
 
-  const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
+  // Merge DB notes with sample notes — DB notes take precedence (dedup by title)
+  const allNotes = useMemo(() => {
+    const dbTitles = new Set(dbNotes.map(n => n.title?.toLowerCase().trim()));
+    const filteredSamples = sampleNotes.filter(n => !dbTitles.has(n.title?.toLowerCase().trim()));
+    return [...dbNotes, ...filteredSamples];
+  }, [dbNotes]);
 
   const sorted = [...allNotes]
     .filter(n => !n.status || n.status === 'published' || n.publish_date)
