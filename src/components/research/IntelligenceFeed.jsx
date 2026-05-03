@@ -422,15 +422,26 @@ export default function IntelligenceFeed() {
               {sortedDates.map((dateStr, di) => (
                 <DayGroup key={dateStr} dateStr={dateStr} items={byDate[dateStr]} defaultOpen={di === 0} />
               ))}
-              {hasMore && (
-                <div className="flex justify-center py-4 border-t border-border/20">
-                  <button
-                    onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all"
-                  >
-                    <ChevronDown className="w-3.5 h-3.5" />
-                    See {Math.min(PAGE_SIZE, filtered.length - visibleCount)} more stories
-                  </button>
+              {(hasMore || visibleCount > PAGE_SIZE) && (
+                <div className="flex justify-center gap-3 py-4 border-t border-border/20">
+                  {visibleCount > PAGE_SIZE && (
+                    <button
+                      onClick={() => setVisibleCount(v => Math.max(PAGE_SIZE, v - PAGE_SIZE))}
+                      className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      See less
+                    </button>
+                  )}
+                  {hasMore && (
+                    <button
+                      onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                      className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      See {Math.min(PAGE_SIZE, filtered.length - visibleCount)} more stories
+                    </button>
+                  )}
                 </div>
               )}
             </>
