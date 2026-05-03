@@ -41,8 +41,13 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const now = new Date();
 
+    // ── Quiet hours: do not publish between 00:00 and 06:00 BST ─────────────
+    const londonHour = parseInt(now.toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Europe/London' }), 10);
+    if (londonHour >= 0 && londonHour < 6) {
+      return Response.json({ ok: true, skipped_reason: 'quiet_hours', hour_bst: londonHour });
+    }
+
     // Allow unauthenticated calls from the scheduler (no user session available)
-    // but still protect against arbitrary public invocation with a simple check
     let user = null;
     try { user = await base44.auth.me(); } catch (_) {}
     // If called from frontend, require auth. Scheduler calls have no user — allow.
@@ -143,18 +148,20 @@ For each confirmed story return:
       [allStories[i], allStories[j]] = [allStories[j], allStories[i]];
     }
 
+    // ── Quality over quantity: cap at 3 stories per run ──────────────────────
+    const cappedStories = allStories.slice(0, 3);
+
     // Spread timestamps randomly across the last 30 minutes
-    // Each story gets a unique random offset (0–29 min ago), then we sort ascending
     const WINDOW_MS = 30 * 60 * 1000;
-    const offsets = allStories.map(() => Math.floor(Math.random() * WINDOW_MS));
+    const offsets = cappedStories.map(() => Math.floor(Math.random() * WINDOW_MS));
     offsets.sort((a, b) => b - a); // largest offset = oldest = earliest story
 
     // ── Deduplicate and publish ────────────────────────────────────────────────
     let created = 0;
     let skipped = 0;
 
-    for (let idx = 0; idx < allStories.length; idx++) {
-      const { topic, story } = allStories[idx];
+    for (let idx = 0; idx < cappedStories.length; idx++) {
+      const { topic, story } = cappedStories[idx];
       if (!story.headline || story.headline.length < 10) { skipped++; continue; }
 
       // Assign staggered timestamp — random point in last 30 minutes

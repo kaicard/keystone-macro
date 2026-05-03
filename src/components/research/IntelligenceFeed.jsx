@@ -288,9 +288,17 @@ export default function IntelligenceFeed() {
     });
   }, [allItems, activeDateFilter, activeBeat]);
 
+  const PAGE_SIZE = 10;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [activeDateFilter, activeBeat]);
+
+  const visibleItems = filtered.slice(0, visibleCount);
+
   const byDate = useMemo(() => {
     const groups = {};
-    filtered.forEach(item => {
+    visibleItems.forEach(item => {
       const d = item.published_date || item.published_at?.split('T')[0] || 'unknown';
       if (!groups[d]) groups[d] = [];
       groups[d].push(item);
@@ -299,9 +307,11 @@ export default function IntelligenceFeed() {
       g.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || ''))
     );
     return groups;
-  }, [filtered]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleItems]);
 
   const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+  const hasMore = filtered.length > visibleCount;
 
   const todayStr = localDateStr();
   const topStories = useMemo(() =>
@@ -408,9 +418,22 @@ export default function IntelligenceFeed() {
               <p className="text-xs">Items appear as economic data releases throughout the day</p>
             </div>
           ) : (
-            sortedDates.map((dateStr, di) => (
-              <DayGroup key={dateStr} dateStr={dateStr} items={byDate[dateStr]} defaultOpen={di === 0} />
-            ))
+            <>
+              {sortedDates.map((dateStr, di) => (
+                <DayGroup key={dateStr} dateStr={dateStr} items={byDate[dateStr]} defaultOpen={di === 0} />
+              ))}
+              {hasMore && (
+                <div className="flex justify-center py-4 border-t border-border/20">
+                  <button
+                    onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    See {Math.min(PAGE_SIZE, filtered.length - visibleCount)} more stories
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
