@@ -242,8 +242,18 @@ export default function IntelligenceFeed() {
 
   const loadItems = useCallback(async () => {
     try {
-      const items = await base44.entities.IntelligenceItem.list('-published_at', 300);
-      return (items || []).filter(isValidItem);
+      const [items, topStoryItems] = await Promise.all([
+        base44.entities.IntelligenceItem.list('-published_at', 300),
+        base44.entities.IntelligenceItem.filter({ is_top_story: true }, '-published_at', 20),
+      ]);
+      const all = [...(items || []), ...(topStoryItems || [])];
+      // Deduplicate by id
+      const seen = new Set();
+      return all.filter(i => {
+        if (seen.has(i.id)) return false;
+        seen.add(i.id);
+        return isValidItem(i);
+      });
     } catch { return []; }
   }, []);
 
