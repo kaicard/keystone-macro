@@ -71,6 +71,8 @@ Deno.serve(async (req) => {
     const existingSlugs = new Set(recentItems.map(i => i.slug));
     // Fingerprint recent headlines to catch semantic duplicates
     const existingFingerprints = new Set(recentItems.map(i => fingerprintHeadline(i.headline || '')));
+    // Count today's top stories — hard cap of 5 per day
+    const todayTopStoryCount = recentItems.filter(i => i.is_top_story && i.published_date === todayStr).length;
 
     // ── Scan each topic in parallel ────────────────────────────────────────────
     const TOPIC_SCHEMA = {
@@ -120,7 +122,7 @@ For each confirmed story return:
 - desk_view: 2-3 sentences — the development, why it matters structurally, what it means for positioning
 - what_to_watch: 2 specific instruments or data points to monitor next (e.g. "GBPUSD, 2Y Gilt yield")
 - published_at: ISO timestamp of when the story broke (your best estimate, must be after ${cutoffISO})
-- is_breaking: true if this is a live/developing story, false if it confirmed/settled`,
+- is_breaking: ONLY mark true if this is a genuinely market-moving, unexpected, or rare event — a central bank surprise, major policy shift, geopolitical escalation, or significant data shock. Do NOT mark routine data releases, scheduled meetings with expected outcomes, or minor developments as true. Expect at most 1 in 5 stories to qualify.`,
           response_json_schema: TOPIC_SCHEMA,
         });
         return { topic, stories: result?.stories || [] };
@@ -183,6 +185,9 @@ For each confirmed story return:
         timeZone: 'Europe/London'
       });
 
+      const wantsTopStory = story.is_breaking === true || story.is_breaking === 'true';
+      const isTopStory = wantsTopStory && (todayTopStoryCount + created) < 5;
+
       await base44.asServiceRole.entities.IntelligenceItem.create({
         headline:      story.headline,
         category:      topic.category,
@@ -194,7 +199,7 @@ For each confirmed story return:
         slug,
         published_at:  publishedAt,
         published_date: publishedDate,
-        is_top_story:  story.is_breaking === true || story.is_breaking === 'true',
+        is_top_story:  isTopStory,
         batch_id:      `news_scan_${now.toISOString()}`,
       });
 
