@@ -107,13 +107,14 @@ Today is ${londonDate}, ${londonTime} London time.
 
 Search the web RIGHT NOW for the 2-3 most important and genuinely NEW developments in: **${topic.name}**
 
-HARD RULES — violating any of these means the story is rejected:
-1. ONLY stories confirmed to have broken or developed after ${cutoffISO} (last 4 hours). Do NOT republish older stories.
-2. Do NOT fabricate, hallucinate, or infer. If you cannot confirm a story via web search, do not include it.
-3. Write in Keystone Macro's editorial voice — sharp, analytical, no waffle. Do NOT copy-paste from sources.
-4. Do NOT include any URLs, source names, or publication names anywhere.
-5. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
-6. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array. Do not force stories.
+HARD RULES — violating ANY of these means the story is REJECTED outright:
+1. ONLY stories confirmed to have broken or developed after ${cutoffISO}. The current date is ${londonDate}. Do NOT include anything from 2024, 2023, or any prior year. If a story is more than 4 hours old, reject it.
+2. VERIFY the story is genuinely current — check the publication date in the search result. If you cannot confirm it happened today or in the last 4 hours, do NOT include it.
+3. Do NOT fabricate, hallucinate, speculate, or infer. If you cannot confirm a story via web search, return an empty array.
+4. Write in Keystone Macro's editorial voice — sharp, analytical, no waffle. Do NOT copy-paste from sources.
+5. Do NOT include any URLs, source names, or publication names anywhere.
+6. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
+7. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array. Do NOT force stories to fill a quota.
 
 For each confirmed story return:
 - headline: original 15-word max headline with a specific fact
@@ -150,8 +151,8 @@ For each confirmed story return:
       [allStories[i], allStories[j]] = [allStories[j], allStories[i]];
     }
 
-    // ── Quality over quantity: cap at 3 stories per run ──────────────────────
-    const cappedStories = allStories.slice(0, 3);
+    // ── Quality over quantity: cap at 2 stories per run ──────────────────────
+    const cappedStories = allStories.slice(0, 2);
 
     // Spread timestamps randomly across the last 30 minutes
     const WINDOW_MS = 30 * 60 * 1000;
@@ -168,6 +169,11 @@ For each confirmed story return:
 
       // Assign staggered timestamp — random point in last 30 minutes
       const publishedAt = new Date(now.getTime() - offsets[idx]).toISOString();
+
+      // Hard recency check — reject anything not from today or yesterday (guards against LLM hallucinating old dates)
+      const storyDate = new Date(publishedAt).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+      const yesterdayStr = new Date(now.getTime() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+      if (storyDate !== todayStr && storyDate !== yesterdayStr) { skipped++; continue; }
 
       // Slug dedup
       const slug = slugify(story.headline);
