@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, Send, RotateCcw, FlaskConical, Loader2 } from 'lucide-react';
+import { Send, RotateCcw, FlaskConical, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,23 @@ import PageBackground from '@/components/layout/PageBackground';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import AILabResults from '@/components/ailab/AILabResults';
+
+// Custom Keystone AI logo — diamond/key motif
+function KeystoneIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Outer diamond */}
+      <path d="M16 2L28 16L16 30L4 16Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.08"/>
+      {/* Inner diamond */}
+      <path d="M16 8L23 16L16 24L9 16Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.18"/>
+      {/* Center dot */}
+      <circle cx="16" cy="16" r="2.5" fill="currentColor"/>
+      {/* Corner ticks */}
+      <line x1="16" y1="2" x2="16" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="16" y1="27" x2="16" y2="30" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
 
@@ -94,7 +111,7 @@ function MessageBubble({ msg }) {
     >
       {!isUser && (
         <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-1">
-          <Sparkles className="w-4 h-4 text-primary" />
+          <KeystoneIcon className="w-4 h-4 text-primary" />
         </div>
       )}
       <div className={`rounded-2xl ${
@@ -123,7 +140,7 @@ function TypingIndicator() {
   return (
     <div className="flex gap-3 justify-start">
       <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-        <Sparkles className="w-4 h-4 text-primary" />
+        <KeystoneIcon className="w-4 h-4 text-primary" />
       </div>
       <div className="glass rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
         {[0, 1, 2].map(i => (
@@ -154,7 +171,16 @@ function AnalystChat() {
     setMessages(newMessages);
     setLoading(true);
     const history = buildHistory(messages);
-    const prompt = `${SYSTEM_PROMPT}\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
+
+    // Fetch live market context to ground the AI in current events
+    let liveContext = '';
+    try {
+      const ctx = await base44.functions.invoke('liveMarketContext', {});
+      if (ctx?.data?.summary) liveContext = `\n\nLIVE MARKET CONTEXT (as of now):\n${ctx.data.summary}`;
+      else if (typeof ctx?.data === 'string') liveContext = `\n\nLIVE MARKET CONTEXT (as of now):\n${ctx.data}`;
+    } catch (_) {}
+
+    const prompt = `${SYSTEM_PROMPT}${liveContext}\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
     const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'claude_sonnet_4_6' });
     const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
@@ -179,7 +205,7 @@ function AnalystChat() {
         {messages.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center py-10 text-center">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-              <Sparkles className="w-7 h-7 text-primary" />
+              <KeystoneIcon className="w-7 h-7 text-primary" />
             </div>
             <h2 className="font-display text-2xl font-semibold mb-2">Ask the Desk</h2>
             <p className="text-muted-foreground mb-6 max-w-md text-sm">Ask about markets, policy, positioning, or portfolio construction.</p>
@@ -356,7 +382,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
           </div>
 
           <Button className="w-full gap-2" onClick={generate} disabled={!canGenerate || loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeystoneIcon className="w-4 h-4" />}
             {loading ? 'Generating...' : 'Generate Portfolio'}
           </Button>
         </div>
@@ -394,7 +420,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'chat', label: 'Analyst Chat', icon: Sparkles },
+  { id: 'chat', label: 'Analyst Chat', icon: KeystoneIcon },
   { id: 'lab', label: 'Portfolio Lab', icon: FlaskConical },
 ];
 
@@ -409,8 +435,8 @@ export default function KeystoneAI() {
         {/* Header */}
         <motion.div className="mb-6" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center">
+              <KeystoneIcon className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h1 className="font-display text-2xl font-semibold">Keystone AI</h1>
