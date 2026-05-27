@@ -209,7 +209,7 @@ For each confirmed story return:
       created,
       skipped,
       pruned: old.length,
-      topics_scanned: runTopics.map(t => t.name),
+      topics_scanned: TOPICS.map(t => t.name),
       ran_at: now.toISOString(),
     });
   } catch (error) {
