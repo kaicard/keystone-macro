@@ -132,8 +132,18 @@ For each confirmed story return:
       }
     };
 
-    // Run all 11 topic scans in parallel
-    const results = await Promise.all(TOPICS.map(scanTopic));
+    // Run topics in small batches of 3 to avoid rate limiting (11 parallel calls hit 429)
+    const results = [];
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < TOPICS.length; i += BATCH_SIZE) {
+      const batch = TOPICS.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(batch.map(scanTopic));
+      results.push(...batchResults);
+      // Small pause between batches to stay within rate limits
+      if (i + BATCH_SIZE < TOPICS.length) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
 
     // ── Collect all valid stories first, then assign staggered timestamps ────────
     // Flatten all stories into one array so we can distribute timestamps across them

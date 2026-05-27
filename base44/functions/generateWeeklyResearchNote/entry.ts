@@ -3,9 +3,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    if (user?.role !== 'admin') {
+    // Allow scheduler calls (no session). If called from frontend, require admin.
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (user !== null && user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
@@ -67,6 +69,10 @@ Format:
         }
       }
     });
+
+    if (!result || !result.title) {
+      return Response.json({ error: 'LLM returned no title — skipping' }, { status: 500 });
+    }
 
     // Generate slug from title
     const slug = result.title
