@@ -5,15 +5,22 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Warm all caches in parallel so users always get instant loads
+    // Warm caches sequentially in small batches to avoid rate limits
     const BEATS = ['markets', 'global_equities', 'us_economy', 'uk_economy', 'eu_economy', 'commodities', 'tech', 'geopolitics', 'rates_credit'];
 
-    const [quotesRes, contextRes, newsRes, ...beatResults] = await Promise.all([
+    const [quotesRes, contextRes, newsRes] = await Promise.all([
       base44.asServiceRole.functions.invoke('liveQuotes', {}),
       base44.asServiceRole.functions.invoke('liveMarketContext', {}),
       base44.asServiceRole.functions.invoke('liveNews', {}),
-      ...BEATS.map(beat => base44.asServiceRole.functions.invoke('beatNews', { beat })),
     ]);
+
+    // Warm beats one at a time to stay within rate limits
+    const beatResults = [];
+    for (const beat of BEATS) {
+      const res = await base44.asServiceRole.functions.invoke('beatNews', { beat });
+      beatResults.push(res);
+      await new Promise(r => setTimeout(r, 1500));
+    }
 
     return Response.json({
       ok: true,

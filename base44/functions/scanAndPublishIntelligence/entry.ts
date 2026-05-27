@@ -14,8 +14,6 @@ const TOPICS = [
   { name: 'Technology',  beat: 'technology',  category: 'Technology'  },
 ];
 
-// Scan 1 topic per run, rotating by hour — all 11 topics covered every 11 hours
-const TOPICS_PER_RUN = 1;
 
 function slugify(str) {
   return str
@@ -60,11 +58,6 @@ Deno.serve(async (req) => {
     const cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
-    // ── Pick this run's topic by rotating based on current hour ──────────────
-    // Use hour + minute to get a more varied rotation within the same hour
-    const rotationIndex = (londonHour * 4 + Math.floor(now.getMinutes() / 15)) % TOPICS.length;
-    const runTopics = TOPICS.slice(rotationIndex, rotationIndex + TOPICS_PER_RUN);
-
     // ── Load existing items for dedup ─────────────────────────────────────────
     const existing = await base44.asServiceRole.entities.IntelligenceItem.list('-published_at', 300);
     const recentItems = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
@@ -72,7 +65,7 @@ Deno.serve(async (req) => {
     const existingFingerprints = new Set(recentItems.map(i => fingerprintHeadline(i.headline || '')));
     const todayTopStoryCount = recentItems.filter(i => i.is_top_story && i.published_date === todayStr).length;
 
-    // ── Scan the 3 topics in parallel (safe at this count) ───────────────────
+    // ── Scan all topics one at a time to avoid rate limits ───────────────────
     const TOPIC_SCHEMA = {
       type: 'object',
       properties: {
@@ -130,7 +123,12 @@ For each confirmed story return:
       }
     };
 
-    const results = await Promise.all(runTopics.map(scanTopic));
+    const results = [];
+    for (const topic of TOPICS) {
+      const result = await scanTopic(topic);
+      results.push(result);
+      await new Promise(r => setTimeout(r, 2000));
+    }
 
     // ── Collect, shuffle, cap at 2 stories per run ───────────────────────────
     const allStories = [];
