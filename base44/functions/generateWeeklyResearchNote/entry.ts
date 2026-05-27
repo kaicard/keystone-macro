@@ -70,23 +70,27 @@ Format:
       }
     });
 
-    if (!result || !result.title) {
-      return Response.json({ error: 'LLM returned no title — skipping' }, { status: 500 });
+    const title = result?.title || result?.response?.title || null;
+    if (!title) {
+      return Response.json({ error: 'LLM returned no usable title — skipping' }, { status: 500 });
     }
 
     // Generate slug from title
-    const slug = result.title
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .substring(0, 80);
 
+    const VALID_CATEGORIES = ['Macro', 'Equities', 'Fixed Income', 'Multi-Asset', 'Commodities', 'Wealth Strategy', 'Behavioural Finance', 'Risk Management', 'Trade Reviews'];
+    const category = VALID_CATEGORIES.includes(result.category) ? result.category : 'Macro';
+
     const note = await base44.asServiceRole.entities.ResearchNote.create({
-      title:                  result.title,
+      title,
       slug,
       subtitle:               result.subtitle,
-      category:               result.category,
+      category,
       tags:                   result.tags,
       executive_summary:      result.executive_summary,
       body:                   result.body,

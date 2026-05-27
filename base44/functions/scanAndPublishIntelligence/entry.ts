@@ -58,6 +58,10 @@ Deno.serve(async (req) => {
     const cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
+    // ── Pick 1 topic this run, rotating by 30-min slot ───────────────────────
+    const slot = Math.floor(now.getTime() / (30 * 60 * 1000)) % TOPICS.length;
+    const runTopics = [TOPICS[slot]];
+
     // ── Load existing items for dedup ─────────────────────────────────────────
     const existing = await base44.asServiceRole.entities.IntelligenceItem.list('-published_at', 300);
     const recentItems = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
@@ -124,7 +128,7 @@ For each confirmed story return:
     };
 
     const results = [];
-    for (const topic of TOPICS) {
+    for (const topic of runTopics) {
       const result = await scanTopic(topic);
       results.push(result);
       await new Promise(r => setTimeout(r, 2000));
@@ -209,7 +213,7 @@ For each confirmed story return:
       created,
       skipped,
       pruned: old.length,
-      topics_scanned: TOPICS.map(t => t.name),
+      topics_scanned: runTopics.map(t => t.name),
       ran_at: now.toISOString(),
     });
   } catch (error) {
