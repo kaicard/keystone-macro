@@ -1,12 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const BASE = 'https://www.jblanked.com/news/api';
-
-const ENDPOINTS = {
-  mql5:            { today: `${BASE}/mql5/calendar/today/`,          week: `${BASE}/mql5/calendar/week/`          },
-  'forex-factory': { today: `${BASE}/forex-factory/calendar/today/`, week: `${BASE}/forex-factory/calendar/week/` },
-  fxstreet:        { today: `${BASE}/fxstreet/calendar/today/`,      week: `${BASE}/fxstreet/calendar/week/`      },
-};
+// Key countries to show (high-signal economies)
+const KEY_COUNTRIES = new Set([
+  'united states', 'united kingdom', 'euro area', 'germany', 'france',
+  'japan', 'china', 'canada', 'australia', 'new zealand', 'switzerland',
+  'italy', 'spain', 'sweden', 'norway'
+]);
 
 Deno.serve(async (req) => {
   try {
@@ -15,41 +14,50 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const source = body.source ?? 'mql5';
-    const range  = body.range  ?? 'today';
+    const range = body.range ?? 'today';
 
-    const cacheKey = `calendar_${source}_${range}`;
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const cacheKey = `calendar_te_${range}`;
 
-    // Check cache first
+    // Check cache — 15 min TTL so actuals appear promptly
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: cacheKey });
     if (cached?.length > 0) {
       const entry = cached[0];
-      const fetchedAt = new Date(entry.fetched_at);
-      const ageMinutes = (Date.now() - fetchedAt.getTime()) / 60000;
-      // Cache for 15 minutes only — actuals release throughout the day
+      const ageMinutes = (Date.now() - new Date(entry.fetched_at).getTime()) / 60000;
       if (ageMinutes < 15) {
         const events = JSON.parse(entry.payload);
-        return Response.json({ events, source, range, cached: true });
+        return Response.json({ events, range, cached: true });
       }
     }
 
-    // Fetch fresh from jblanked
-    const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
-    const url = range === 'week' ? sourceMap.week : sourceMap.today;
-    const apiKey = Deno.env.get('JBLANKED_API_KEY');
+    const apiKey = Deno.env.get('TRADING_ECONOMICS_API_KEY');
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const weekEnd = new Date(now);
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
+    const weekEndStr = weekEnd.toISOString().slice(0, 10);
 
-    const response = await fetch(url, {
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Api-Key ${apiKey}` },
-    });
+    // date range: today only, or today→+7 days for week view
+    const startDate = todayStr;
+    const endDate   = range === 'week' ? weekEndStr : todayStr;
+
+    const url = `https://api.tradingeconomics.com/calendar/country/All/${startDate}/${endDate}?c=${apiKey}&f=json`;
+    const response = await fetch(url);
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return Response.json({ error: `API error ${response.status}`, details: err }, { status: response.status });
+      const txt = await response.text().catch(() => '');
+      return Response.json({ error: `TE API error ${response.status}`, details: txt }, { status: response.status });
     }
 
     const data = await response.json();
-    const events = data.map((item, idx) => normalise(item, idx));
+
+    // Normalise and filter
+    const events = data
+      .filter(item => {
+        const country = (item.Country || '').toLowerCase();
+        return KEY_COUNTRIES.has(country);
+      })
+      .map((item, idx) => normalise(item, idx))
+      .filter(e => e.importance === 'high' || e.importance === 'medium');
 
     // Save to cache
     const payload = JSON.stringify(events);
@@ -60,61 +68,67 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.MarketCache.create({ key: cacheKey, payload, fetched_at });
     }
 
-    return Response.json({ events, source, range, cached: false });
+    return Response.json({ events, range, cached: false });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
 });
 
 function normalise(item, idx) {
-  const rawDate = item.Date ?? item.date ?? '';
-  const normalised = rawDate.replace(/^(\d{4})\.(\d{2})\.(\d{2})/, '$1-$2-$3');
-  const [datePart, timePart] = normalised.split(' ');
+  // TE date format: "2023-03-30T00:00:00"
+  const rawDate = item.Date || '';
+  const [datePart, timePart] = rawDate.split('T');
   const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
 
-  const rawActual = item.Actual ?? item.actual;
-  const actual = rawActual != null && rawActual !== '' ? String(rawActual) : null;
-
-  const prev = item.Previous ?? item.previous;
-  const fore = item.Forecast ?? item.forecast;
+  const actual   = item.Actual   != null && item.Actual   !== '' ? String(item.Actual)   : null;
+  const previous = item.Previous != null && item.Previous !== '' ? String(item.Previous) : '—';
+  const forecast = item.Forecast != null && item.Forecast !== '' ? String(item.Forecast)
+                 : item.TEForecast != null && item.TEForecast !== '' ? String(item.TEForecast) : '—';
 
   return {
-    id:         item.EventID ?? item.eventID ?? idx,
+    id:         item.CalendarId ?? idx,
     date:       datePart ?? '',
     utcTime,
-    country:    mapCurrency(item.Currency ?? item.currency ?? ''),
-    event:      item.Name ?? item.name ?? '',
-    importance: mapImpact(item.Impact ?? item.impact),
-    category:   mapCategory(item.Category ?? item.category ?? item.Name ?? item.name ?? ''),
-    previous:   prev != null ? String(prev) : '—',
-    forecast:   fore != null ? String(fore) : '—',
+    country:    mapCountry(item.Country || ''),
+    event:      item.Event || '',
+    importance: mapImpact(item.Importance),
+    category:   mapCategory(item.Category || item.Event || ''),
+    previous,
+    forecast,
     actual,
-    outcome:    (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
+    outcome:    null, // TE doesn't provide narrative outcome text
   };
 }
 
-function mapCurrency(cur) {
-  const map = { USD:'US', EUR:'EU', GBP:'UK', JPY:'JP', CNY:'CN', CAD:'CA', AUD:'AU', CHF:'CH', NZD:'NZ', SEK:'SE', NOK:'NO', DKK:'DK', HKD:'HK', SGD:'SG', KRW:'KR', INR:'IN', BRL:'BR', MXN:'MX', ZAR:'ZA' };
-  return map[cur] ?? (cur.length >= 2 ? cur.slice(0, 2) : cur);
+function mapCountry(name) {
+  const map = {
+    'united states': 'US', 'united kingdom': 'UK', 'euro area': 'EU',
+    'germany': 'DE', 'france': 'FR', 'japan': 'JP', 'china': 'CN',
+    'canada': 'CA', 'australia': 'AU', 'new zealand': 'NZ',
+    'switzerland': 'CH', 'italy': 'IT', 'spain': 'ES',
+    'sweden': 'SE', 'norway': 'NO',
+  };
+  return map[name.toLowerCase()] ?? name.slice(0, 2).toUpperCase();
 }
 
-function mapImpact(impact) {
-  if (!impact) return 'low';
-  const s = String(impact).toLowerCase();
-  if (s === '3' || s === 'high')   return 'high';
-  if (s === '2' || s === 'medium') return 'medium';
+function mapImpact(importance) {
+  const n = parseInt(importance, 10);
+  if (n >= 3) return 'high';
+  if (n === 2) return 'medium';
   return 'low';
 }
 
 function mapCategory(cat) {
   if (!cat) return 'Other';
   const c = cat.toLowerCase();
-  if (c.includes('rate') || c.includes('central') || c.includes('bank') || c.includes('monetary') || c.includes('boj') || c.includes('fed') || c.includes('ecb') || c.includes('boe')) return 'Central Bank';
+  if (c.includes('rate') || c.includes('central') || c.includes('bank') || c.includes('monetary') || c.includes('boj') || c.includes('fed') || c.includes('ecb') || c.includes('boe') || c.includes('fomc') || c.includes('rba') || c.includes('rbnz')) return 'Central Bank';
   if (c.includes('inflation') || c.includes('cpi') || c.includes('ppi') || c.includes('price')) return 'Inflation';
-  if (c.includes('employ') || c.includes('job') || c.includes('labour') || c.includes('labor') || c.includes('payroll') || c.includes('claims')) return 'Labour';
-  if (c.includes('gdp') || c.includes('growth') || c.includes('production') || c.includes('trade')) return 'GDP';
-  if (c.includes('pmi') || c.includes('manufacturing') || c.includes('services') || c.includes('business')) return 'PMI';
+  if (c.includes('employ') || c.includes('job') || c.includes('labour') || c.includes('labor') || c.includes('payroll') || c.includes('claims') || c.includes('unemployment')) return 'Labour';
+  if (c.includes('gdp') || c.includes('growth')) return 'GDP';
+  if (c.includes('pmi') || c.includes('manufacturing') || c.includes('services') || c.includes('business confidence') || c.includes('ifo') || c.includes('zew')) return 'PMI';
   if (c.includes('consumer') || c.includes('retail') || c.includes('sentiment') || c.includes('confidence') || c.includes('spending')) return 'Consumer';
   if (c.includes('housing') || c.includes('home') || c.includes('building') || c.includes('construction') || c.includes('mortgage')) return 'Housing';
+  if (c.includes('trade') || c.includes('export') || c.includes('import') || c.includes('current account')) return 'Trade';
+  if (c.includes('speech') || c.includes('testimony') || c.includes('minutes') || c.includes('press conference')) return 'Speeches';
   return 'Other';
 }
