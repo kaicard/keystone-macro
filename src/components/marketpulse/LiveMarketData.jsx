@@ -206,10 +206,13 @@ async function fetchRegimeAndSummary() {
 Provide:
 
 regime:
-- label: current macro regime in 3-4 words (e.g. "Stagflationary Slowdown", "Risk-Off", "Goldilocks")
+- label: current macro regime in 3-4 words (e.g. "Stagflationary Slowdown", "Risk-Off", "Goldilocks", "Inflationary Growth")
 - description: 2 sentences describing the current macro environment
-- risk_level: "low", "medium", or "high"
-- key_drivers: array of 3 short strings (e.g. ["Tariff uncertainty", "Fed on hold", "Dollar strength"])
+- growth: one short phrase describing the growth signal (e.g. "Expanding", "Contracting", "Stable", "Strong")
+- inflation: one short phrase describing the inflation signal (e.g. "Easing", "Elevated", "Accelerating", "Moderating")
+- policy: one short phrase describing central bank policy stance (e.g. "Restrictive", "Easing", "Neutral", "Accommodative")
+- volatility: one short phrase describing market volatility (e.g. "Low", "Elevated", "High", "Decreasing")
+- leadership: one short phrase on what is leading the market (e.g. "Growth stocks", "Defensives", "Energy", "Consumer-led")
 
 market_summary:
 - headline: one sharp sentence summarising today's market tone
@@ -223,8 +226,11 @@ market_summary:
           properties: {
             label:       { type: 'string' },
             description: { type: 'string' },
-            risk_level:  { type: 'string' },
-            key_drivers: { type: 'array', items: { type: 'string' } },
+            growth:      { type: 'string' },
+            inflation:   { type: 'string' },
+            policy:      { type: 'string' },
+            volatility:  { type: 'string' },
+            leadership:  { type: 'string' },
           }
         },
         market_summary: {
