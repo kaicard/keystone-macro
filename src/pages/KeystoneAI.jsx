@@ -73,6 +73,7 @@ RESPONSE RULES — follow strictly:
 - Use **bold** for key terms/levels. Use bullet points for structured views.
 - Give a concrete view with: base case + 1-2 key risks + what to watch. That's it.
 - No lengthy disclaimers. No repeating the question back.
+- NEVER use memo/report headers (TO:, FROM:, DATE:, RE:, MEMORANDUM, etc). This is a chat, not a memo.
 - Use markdown headers (##) sparingly — only for multi-section answers.`;
 
 const STARTERS = [
