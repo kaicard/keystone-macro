@@ -190,17 +190,38 @@ Deno.serve(async (req) => {
       ? 'pre-market brief covering overnight developments, Asian session, European open and what to watch today'
       : 'end-of-day wrap covering everything that moved markets today — equities, bonds, FX, commodities, M&A, macro data releases, geopolitical developments, central bank commentary, and corporate news';
 
+    // ── Load recent editions for uniqueness context ──────────────────────────
+    const recentEditions = await base44.asServiceRole.entities.NewsletterEdition.list('-publish_date', 4);
+    const recentContext = recentEditions.length > 0
+      ? `\n\nRECENT EDITIONS ALREADY SENT (do NOT repeat these subjects, angles, or lead stories):\n${recentEditions.map(e => `- ${e.publish_date}: "${e.title}" | Topics: ${(e.tags || []).join(', ')}`).join('\n')}`
+      : '';
+
+    // ── Rotating tone/angle directive (cycles by day of week) ────────────────
+    const toneOptions = [
+      'Lead with the most surprising or counterintuitive market move. Challenge consensus views where the data supports it.',
+      'Lead with the macro-structural angle — what does today tell us about the longer-term regime? Connect dots across asset classes.',
+      'Lead with the policy angle — central banks, fiscal decisions, regulatory moves. How are they shaping the near-term outlook?',
+      'Lead with the geopolitical or cross-border angle — trade flows, sanctions, elections, war risk. Quantify the market impact.',
+      'Lead with the sector or single-name story that best captures the broader market narrative today.',
+      'Lead with the rates and credit angle — yield moves, spread dynamics, financing conditions. What is the bond market signalling?',
+      'Lead with the commodity or energy angle — supply shocks, demand shifts, China dynamics. Connect to inflation and growth.',
+    ];
+    const toneDirective = toneOptions[now.getDay()];
+
     // ── Generate content via two LLM calls to avoid JSON truncation ─────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.
 
 CRITICAL: All data must be from TODAY (${isoDate}) only. Do not use figures, levels, or events from any previous date.
+${recentContext}
+
+${toneDirective}
 
 Return JSON with:
-- subject_line: A PUNCHY subject line (max 72 chars) reflecting the single most important story from today. Urgent, specific, no emojis.
+- subject_line: A PUNCHY, UNIQUE subject line (max 72 chars) reflecting the single most important story from today. Must be DIFFERENT in structure and topic from the recent editions above. Urgent, specific, no emojis.
 - market_snapshot: array of exactly 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with real current levels from today.
-- footer_note: A sharp 1-line closing observation referencing today's market action. No emojis.`,
+- footer_note: A sharp, memorable 1-line closing thought — a market aphorism, a bold forward view, or a wry observation on today's action. Vary the style each edition. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -216,21 +237,26 @@ Return JSON with:
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel} — a ${timeContext}.
+${recentContext}
+
+EDITORIAL DIRECTIVE FOR THIS EDITION: ${toneDirective}
 
 CRITICAL RULES — failure invalidates the entire edition:
 1. Every fact, figure, price level, and event MUST be from TODAY (${isoDate}) — published after ${cutoffISO}. Do not recycle yesterday's or last week's news.
 2. If you cannot verify a development happened today, do NOT include it. Write "Markets were quiet in [sector]" rather than fabricating.
 3. No URLs, hyperlinks, source citations, footnotes, or "(source.com)" references anywhere. Pure prose only.
 4. No emojis anywhere.
+5. UNIQUENESS: Check the recent editions above. Do NOT repeat the same lead story angle, the same headlines, or the same framing used in prior editions. Find a fresh angle on today's events.
+6. Vary the section order — do not always start with Equities. Let the day's most important story lead.
 
-Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise.
+Write 6 analytical sections. Cover the key themes: Equities, Fixed Income, FX, Commodities, Macro Data, and one of (Geopolitics / Central Banks / M&A / Corporate) based on what was most significant today. Each section: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise, with a distinct point of view.
 
 Return JSON with:
 - sections: array of exactly 6 objects, each with:
-  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "Macro", "Geopolitics")
-  - headline: punchy 1-line headline anchored to today's specific development
-  - body: 4-5 dense sentences with exact data from today only. NO URLs or citations.
-  - callout: 1 forward-looking sentence — what to watch next`,
+  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "Macro", "Geopolitics", "Central Banks", "M&A")
+  - headline: punchy, specific 1-line headline anchored to today's development — must be unique vs recent editions
+  - body: 4-5 dense sentences with exact data from today only. NO URLs or citations. Take a clear analytical stance.
+  - callout: 1 forward-looking sentence — what to watch next or the key risk to the view`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
