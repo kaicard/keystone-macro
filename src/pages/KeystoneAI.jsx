@@ -191,14 +191,7 @@ function AnalystChat() {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
 
-  const prevMsgCount = useRef(0);
-  useEffect(() => {
-    // Only scroll when a new assistant message arrives (not when user sends)
-    if (messages.length > prevMsgCount.current && messages[messages.length - 1]?.role === 'assistant') {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-    prevMsgCount.current = messages.length;
-  }, [messages]);
+
 
   const buildHistory = (msgs) => msgs.map(m => `${m.role === 'user' ? 'USER' : 'ANALYST'}: ${m.content}`).join('\n\n');
 
