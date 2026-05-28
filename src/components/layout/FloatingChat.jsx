@@ -5,7 +5,9 @@ import { X, Send, RotateCcw, Maximize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
-const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics. Give direct, institutional-grade analysis. Be concise but substantive. Use markdown sparingly — this is a chat widget so keep responses focused and readable. Reference specific data and levels where relevant. Today's date is ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.`;
+const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. Today is ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
+
+RULES: Be extremely concise. 2-4 sentences or 3-4 bullet points max. No preamble, no "great question", no disclaimers. Give the view, 1 key risk, done. Use **bold** for key terms. Institutional tone throughout.`;
 
 function KeystoneIcon({ className = "w-6 h-6" }) {
   const id = Math.random().toString(36).slice(2);
@@ -157,12 +159,14 @@ export default function FloatingChat() {
                     </div>
                   )}
                   <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                    msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'glass rounded-tl-sm'
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                      : 'bg-card/70 border border-border/40 rounded-tl-sm text-foreground/90'
                   }`}>
                     {msg.role === 'user' ? (
                       <p>{msg.content}</p>
                     ) : (
-                      <ReactMarkdown className="prose prose-xs dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0 [&_strong]:text-foreground">
+                      <ReactMarkdown className="prose prose-xs dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-1 [&_p]:leading-5 [&_ul]:my-1 [&_ul]:pl-0 [&_li]:my-0.5 [&_li]:flex [&_li]:gap-1.5 [&_strong]:text-foreground [&_strong]:font-semibold [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-0.5 [&_h3]:text-primary">
                         {msg.content}
                       </ReactMarkdown>
                     )}

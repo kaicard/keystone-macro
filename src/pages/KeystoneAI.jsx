@@ -64,26 +64,16 @@ function KeystoneIcon({ className = "w-6 h-6" }) {
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro, a premier institutional research platform. You have deep expertise across:
+const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics.
 
-- Global macroeconomics (Fed, ECB, BOJ, BOE policy; inflation dynamics; growth cycles)
-- Fixed income (yield curves, duration, credit spreads, sovereign debt)
-- Equities (sector rotation, factor investing, earnings cycles, valuation)
-- Commodities (oil, gold, metals, agricultural; supply/demand dynamics)
-- FX (DXY, G10, EM; carry trade; capital flows)
-- Geopolitics (sanctions, trade policy, war risk, political cycles)
-- M&A and corporate strategy
-- Portfolio construction and asset allocation
-
-Your tone is precise, direct, and institutional — like a Goldman Sachs or BlackRock research note. You give concrete views, not hedged non-answers. You reference specific data, levels, and catalysts. You always consider cross-asset implications. You are rigorous, analytical, and confident in your views while acknowledging key risks.
-
-When asked about markets or macro, always provide:
-1. Your base case view with supporting data
-2. Key risks to that view
-3. How you'd position (instruments to watch or trade)
-4. What would change your mind
-
-Keep responses concise but substantive. Use markdown headers and bullet points for clarity.`;
+RESPONSE RULES — follow strictly:
+- Be direct and institutional in tone. No fluff, no preamble, no "great question".
+- Keep responses SHORT. Most answers: 3-6 bullet points or 2-3 tight paragraphs max.
+- Only go longer if the question genuinely requires it (e.g. multi-part or complex portfolio questions).
+- Use **bold** for key terms/levels. Use bullet points for structured views.
+- Give a concrete view with: base case + 1-2 key risks + what to watch. That's it.
+- No lengthy disclaimers. No repeating the question back.
+- Use markdown headers (##) sparingly — only for multi-section answers.`;
 
 const STARTERS = [
   "What's your view on Fed policy and duration risk in 2025?",
@@ -97,39 +87,26 @@ const STARTERS = [
 ];
 
 const markdownComponents = {
-  h1: ({ children }) => <h1 className="text-xl font-display font-semibold mt-6 mb-3 pb-2 border-b border-border/50 text-foreground">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-base font-semibold mt-5 mb-2.5 text-foreground">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-sm font-semibold mt-4 mb-2 text-primary">{children}</h3>,
-  p: ({ children }) => <p className="text-sm leading-7 text-foreground/90 mb-4 last:mb-0">{children}</p>,
-  ul: ({ children }) => <ul className="my-3 space-y-1.5 pl-1">{children}</ul>,
-  ol: ({ children }) => <ol className="my-3 space-y-1.5 pl-1 list-decimal list-inside">{children}</ol>,
+  h2: ({ children }) => <h2 className="text-sm font-semibold mt-4 mb-2 text-foreground border-b border-border/30 pb-1">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-xs font-semibold mt-3 mb-1.5 text-primary uppercase tracking-wide">{children}</h3>,
+  p: ({ children }) => <p className="text-sm leading-6 text-foreground/90 mb-2.5 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="my-2 space-y-1">{children}</ul>,
+  ol: ({ children }) => <ol className="my-2 space-y-1 pl-4 list-decimal">{children}</ol>,
   li: ({ children }) => (
-    <li className="flex items-start gap-2 text-sm text-foreground/90 leading-6">
-      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+    <li className="flex items-start gap-2 text-sm text-foreground/85 leading-5.5">
+      <span className="mt-1.5 w-1 h-1 rounded-full bg-primary/50 shrink-0" />
       <span>{children}</span>
     </li>
   ),
   strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
   em: ({ children }) => <em className="italic text-muted-foreground">{children}</em>,
   blockquote: ({ children }) => (
-    <blockquote className="my-4 pl-4 border-l-2 border-primary/40 text-muted-foreground italic text-sm">
-      {children}
-    </blockquote>
+    <blockquote className="my-2 pl-3 border-l-2 border-primary/40 text-muted-foreground text-sm italic">{children}</blockquote>
   ),
   code: ({ inline, children }) => inline
-    ? <code className="px-1.5 py-0.5 rounded bg-muted text-xs font-mono text-primary">{children}</code>
-    : <pre className="my-4 p-4 rounded-xl bg-muted/60 overflow-x-auto text-xs font-mono leading-relaxed">{children}</pre>,
-  hr: () => <hr className="my-5 border-border/40" />,
-  table: ({ children }) => (
-    <div className="my-4 overflow-x-auto rounded-xl border border-border/50">
-      <table className="w-full text-sm border-collapse">{children}</table>
-    </div>
-  ),
-  thead: ({ children }) => <thead className="bg-muted/60">{children}</thead>,
-  tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
-  tr: ({ children }) => <tr className="hover:bg-muted/20 transition-colors">{children}</tr>,
-  th: ({ children }) => <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{children}</th>,
-  td: ({ children }) => <td className="px-4 py-2.5 text-sm text-foreground/85">{children}</td>,
+    ? <code className="px-1 py-0.5 rounded bg-muted text-xs font-mono text-primary">{children}</code>
+    : <pre className="my-3 p-3 rounded-lg bg-muted/60 overflow-x-auto text-xs font-mono leading-relaxed">{children}</pre>,
+  hr: () => <hr className="my-3 border-border/30" />,
 };
 
 function MessageBubble({ msg }) {
@@ -137,33 +114,28 @@ function MessageBubble({ msg }) {
   return (
     <motion.div
       className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.2 }}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-1">
-          <KeystoneIcon className="w-4 h-4 text-primary" />
+        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-1">
+          <KeystoneIcon className="w-3.5 h-3.5 text-primary" />
         </div>
       )}
-      <div className={`rounded-2xl ${
+      <div className={`rounded-xl ${
         isUser
-          ? 'max-w-[75%] px-5 py-3.5 bg-primary text-primary-foreground rounded-tr-sm'
-          : 'w-full max-w-[92%] px-6 py-5 glass rounded-tl-sm text-foreground'
+          ? 'max-w-[72%] px-4 py-2.5 bg-primary text-primary-foreground rounded-tr-sm text-sm leading-relaxed'
+          : 'w-full max-w-[90%] px-4 py-3.5 bg-card/60 border border-border/40 rounded-tl-sm'
       }`}>
         {isUser ? (
-          <p className="text-sm leading-relaxed">{msg.content}</p>
+          <p>{msg.content}</p>
         ) : (
           <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
             {msg.content}
           </ReactMarkdown>
         )}
       </div>
-      {isUser && (
-        <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-1 text-xs font-bold text-muted-foreground">
-          You
-        </div>
-      )}
     </motion.div>
   );
 }
@@ -205,7 +177,7 @@ function AnalystChat() {
     const history = buildHistory(messages);
 
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    const prompt = `${SYSTEM_PROMPT}\n\nToday is ${today}.\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
+    const prompt = `${SYSTEM_PROMPT}\n\nToday is ${today}.\n\n${history ? `HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond concisely. Prioritise signal over length.`;
     const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'gemini_3_flash' });
     const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
