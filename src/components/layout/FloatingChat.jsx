@@ -1,11 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, X, Send, RotateCcw, Maximize2 } from 'lucide-react';
+import { X, Send, RotateCcw, Maximize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
-const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics. Give direct, institutional-grade analysis. Be concise but substantive. Use markdown sparingly — this is a chat widget so keep responses focused and readable. Reference specific data and levels where relevant.`;
+const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics. Give direct, institutional-grade analysis. Be concise but substantive. Use markdown sparingly — this is a chat widget so keep responses focused and readable. Reference specific data and levels where relevant. Today's date is ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.`;
+
+function KeystoneIcon({ className = "w-6 h-6" }) {
+  const id = Math.random().toString(36).slice(2);
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`kg-${id}`} x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.55" />
+        </linearGradient>
+      </defs>
+      <path d="M16 3 L28.5 9.5 L28.5 22.5 L16 29 L3.5 22.5 L3.5 9.5 Z" stroke={`url(#kg-${id})`} strokeWidth="1.4" strokeLinejoin="round" fill="currentColor" fillOpacity="0.06" />
+      <path d="M16 8 L23.5 12 L23.5 20 L16 24 L8.5 20 L8.5 12 Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" strokeOpacity="0.35" fill="currentColor" fillOpacity="0.10" />
+      <line x1="16" y1="9.5" x2="16" y2="22.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeOpacity="0.9" />
+      <path d="M16 15 L21.5 9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.9" />
+      <path d="M16 15 L21.5 22.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.9" />
+      <circle cx="16" cy="15" r="2" fill="currentColor" fillOpacity="0.9" />
+      <circle cx="16" cy="15" r="3.5" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.25" fill="none" />
+    </svg>
+  );
+}
 
 function TypingDots() {
   return (
@@ -44,7 +65,7 @@ export default function FloatingChat() {
     const history = buildHistory(messages);
     const prompt = `${SYSTEM_PROMPT}\n\n${history ? `HISTORY:\n${history}\n\n` : ''}USER: ${text}\n\nRespond concisely as the Keystone Macro analyst. 2-4 sentences max unless the question requires more depth.`;
 
-    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'claude_sonnet_4_6' });
+    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'gemini_3_flash', add_context_from_internet: true });
     const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
@@ -68,7 +89,7 @@ export default function FloatingChat() {
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Sparkles className="w-6 h-6" />
+            <KeystoneIcon className="w-6 h-6" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -88,7 +109,7 @@ export default function FloatingChat() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-card/50 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <KeystoneIcon className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold">Keystone AI</p>
@@ -115,7 +136,7 @@ export default function FloatingChat() {
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-center py-8">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                    <Sparkles className="w-5 h-5 text-primary" />
+                    <KeystoneIcon className="w-5 h-5 text-primary" />
                   </div>
                   <p className="font-semibold text-sm mb-1">Ask the Desk</p>
                   <p className="text-xs text-muted-foreground mb-4">Macro analysis, market views, positioning ideas</p>
@@ -132,7 +153,7 @@ export default function FloatingChat() {
                 <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.role === 'assistant' && (
                     <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles className="w-3 h-3 text-primary" />
+                      <KeystoneIcon className="w-3 h-3 text-primary" />
                     </div>
                   )}
                   <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
@@ -151,7 +172,7 @@ export default function FloatingChat() {
               {loading && (
                 <div className="flex gap-2 justify-start">
                   <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-3 h-3 text-primary" />
+                    <KeystoneIcon className="w-3 h-3 text-primary" />
                   </div>
                   <div className="glass rounded-xl rounded-tl-sm">
                     <TypingDots />

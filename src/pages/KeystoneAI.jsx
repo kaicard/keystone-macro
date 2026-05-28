@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Send, RotateCcw, FlaskConical, Loader2 } from 'lucide-react';
@@ -191,7 +191,14 @@ function AnalystChat() {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+  const prevMsgCount = useRef(0);
+  useEffect(() => {
+    // Only scroll when a new message is added (not on initial render)
+    if (messages.length > prevMsgCount.current || loading) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMsgCount.current = messages.length;
+  }, [messages, loading]);
 
   const buildHistory = (msgs) => msgs.map(m => `${m.role === 'user' ? 'USER' : 'ANALYST'}: ${m.content}`).join('\n\n');
 
@@ -204,16 +211,9 @@ function AnalystChat() {
     setLoading(true);
     const history = buildHistory(messages);
 
-    // Fetch live market context to ground the AI in current events
-    let liveContext = '';
-    try {
-      const ctx = await base44.functions.invoke('liveMarketContext', {});
-      if (ctx?.data?.summary) liveContext = `\n\nLIVE MARKET CONTEXT (as of now):\n${ctx.data.summary}`;
-      else if (typeof ctx?.data === 'string') liveContext = `\n\nLIVE MARKET CONTEXT (as of now):\n${ctx.data}`;
-    } catch (_) {}
-
-    const prompt = `${SYSTEM_PROMPT}${liveContext}\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
-    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'claude_sonnet_4_6' });
+    const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const prompt = `${SYSTEM_PROMPT}\n\nToday is ${today}.\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
+    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'gemini_3_flash', add_context_from_internet: true });
     const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
