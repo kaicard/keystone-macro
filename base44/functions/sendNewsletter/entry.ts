@@ -190,17 +190,25 @@ Deno.serve(async (req) => {
       ? 'pre-market brief covering overnight developments, Asian session, European open and what to watch today'
       : 'end-of-day wrap covering everything that moved markets today — equities, bonds, FX, commodities, M&A, macro data releases, geopolitical developments, central bank commentary, and corporate news';
 
+    // ── Fetch recent editions to avoid repeating content ────────────────────
+    const recentEditions = await base44.asServiceRole.entities.NewsletterEdition.list('-published_at', 5);
+    const recentContext = recentEditions.length > 0
+      ? `\n\nPREVIOUS EDITIONS — you MUST NOT repeat these subjects, angles, or section headlines:\n${
+          recentEditions.map(e => `- [${e.publish_date}] "${e.title}"${e.body ? '\n  ' + e.body.split('\n').filter(l => l.startsWith('##')).map(l => l.replace(/^##\s*/, '')).slice(0, 6).join(' | ') : ''}`).join('\n')
+        }\nEach edition must take a FRESH ANGLE even on recurring themes (e.g. if last edition led with Fed rate expectations, this one must lead with something else).`
+      : '';
+
     // ── Generate content via two LLM calls to avoid JSON truncation ─────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.${recentContext}
 
 CRITICAL: All data must be from TODAY (${isoDate}) only. Do not use figures, levels, or events from any previous date.
 
 Return JSON with:
-- subject_line: A PUNCHY subject line (max 72 chars) reflecting the single most important story from today. Urgent, specific, no emojis.
+- subject_line: A PUNCHY, UNIQUE subject line (max 72 chars) reflecting the single most important story from today. Must be completely different in angle and phrasing from previous editions. Urgent, specific, no emojis.
 - market_snapshot: array of exactly 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with real current levels from today.
-- footer_note: A sharp 1-line closing observation referencing today's market action. No emojis.`,
+- footer_note: A sharp, original 1-line closing observation referencing today's specific market action. Must feel fresh — not a generic placeholder. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -215,22 +223,23 @@ Return JSON with:
         }
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel} — a ${timeContext}.
+        prompt: `You are the lead analyst at Keystone Macro writing The Keystone Macro Brief. Today is ${dateStr} (${isoDate}). This is the ${editionLabel} — a ${timeContext}.${recentContext}
 
 CRITICAL RULES — failure invalidates the entire edition:
 1. Every fact, figure, price level, and event MUST be from TODAY (${isoDate}) — published after ${cutoffISO}. Do not recycle yesterday's or last week's news.
 2. If you cannot verify a development happened today, do NOT include it. Write "Markets were quiet in [sector]" rather than fabricating.
 3. No URLs, hyperlinks, source citations, footnotes, or "(source.com)" references anywhere. Pure prose only.
 4. No emojis anywhere.
+5. VARIETY: Each section headline must take a completely different editorial angle from the previous editions listed above. If last edition discussed "Fed pause" under Fixed Income, this edition must focus on a different fixed income theme (e.g. credit spreads, curve shape, foreign demand). Rotate the lead story — if equities led last time, consider leading with macro data or geopolitics this time.
 
-Write 6 analytical sections covering: Equities, Fixed Income, FX, Commodities, Macro Data, and Geopolitics (or Central Banks or M&A as relevant). Each section: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise.
+Write 6 analytical sections. Choose the 6 most important and DISTINCT themes from today — pick from: Equities, Fixed Income, FX, Commodities, Macro Data, Geopolitics, Central Banks, M&A, Credit, Technology, Emerging Markets. Prioritise whichever 6 had the most genuine market-moving news TODAY. Each section: exact tickers, levels, percentages, named policymakers, named companies. Write like a senior Goldman Sachs analyst — sharp, authoritative, precise, never formulaic.
 
 Return JSON with:
 - sections: array of exactly 6 objects, each with:
-  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "Macro", "Geopolitics")
-  - headline: punchy 1-line headline anchored to today's specific development
-  - body: 4-5 dense sentences with exact data from today only. NO URLs or citations.
-  - callout: 1 forward-looking sentence — what to watch next`,
+  - label: short category tag (e.g. "Equities", "Fixed Income", "FX", "Commodities", "Macro", "Geopolitics", "Central Banks", "M&A", "Credit", "Emerging Markets")
+  - headline: punchy, specific 1-line headline anchored to today's actual development — must be unique vs. previous editions
+  - body: 4-5 dense sentences with exact data from today only. Vary sentence structure and opening words across sections. NO URLs or citations.
+  - callout: 1 specific forward-looking sentence — an instrument, data release, or event to watch next (not generic)`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
