@@ -21,7 +21,6 @@ const footerLinks = [
     links: [
       { label: 'Wealth Cases', path: '/WealthCases' },
       { label: 'Newsletter', path: '/Newsletter' },
-      { label: 'Trade Ideas', path: '/Research' },
     ]
   },
   {
