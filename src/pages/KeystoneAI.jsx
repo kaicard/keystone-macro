@@ -193,12 +193,12 @@ function AnalystChat() {
 
   const prevMsgCount = useRef(0);
   useEffect(() => {
-    // Only scroll when a new message is added (not on initial render)
-    if (messages.length > prevMsgCount.current || loading) {
+    // Only scroll when a new assistant message arrives (not when user sends)
+    if (messages.length > prevMsgCount.current && messages[messages.length - 1]?.role === 'assistant') {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     prevMsgCount.current = messages.length;
-  }, [messages, loading]);
+  }, [messages]);
 
   const buildHistory = (msgs) => msgs.map(m => `${m.role === 'user' ? 'USER' : 'ANALYST'}: ${m.content}`).join('\n\n');
 
@@ -213,7 +213,7 @@ function AnalystChat() {
 
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const prompt = `${SYSTEM_PROMPT}\n\nToday is ${today}.\n\n${history ? `CONVERSATION HISTORY:\n${history}\n\n` : ''}USER: ${userMsg}\n\nRespond as the Keystone Macro senior analyst. Be direct, data-driven, and institutional.`;
-    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'gemini_3_flash', add_context_from_internet: true });
+    const response = await base44.integrations.Core.InvokeLLM({ prompt, model: 'gemini_3_flash' });
     const reply = typeof response === 'string' ? response : response?.response || response?.text || JSON.stringify(response);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
