@@ -90,7 +90,7 @@ const SEED_PREVIOUS = [
 ];
 
 async function fetchCalendarWeek() {
-  const res = await base44.functions.invoke('calendarToday', { source: 'mql5', range: 'week' });
+  const res = await base44.functions.invoke('calendarToday', { source: 'forex-factory', range: 'week' });
   const events = res?.data?.events;
   if (!Array.isArray(events)) throw new Error('No events returned');
   return events.filter(e => e.importance === 'high' || e.importance === 'medium');
@@ -244,11 +244,11 @@ function EventRow({ event, today }) {
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.previous || '—'}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.previous || event.previous === '0' || event.previous === '—') ? '—' : event.previous}</p>
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">FCST</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.forecast || '—'}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.forecast || event.forecast === '0' || event.forecast === '—') ? '—' : event.forecast}</p>
           </div>
           <div className="text-right">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">ACTUAL</p>

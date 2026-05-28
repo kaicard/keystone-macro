@@ -25,8 +25,10 @@ Deno.serve(async (req) => {
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: cacheKey });
     if (cached?.length > 0) {
       const entry = cached[0];
-      const cachedDate = entry.fetched_at?.slice(0, 10);
-      if (cachedDate === today) {
+      const cachedAt = new Date(entry.fetched_at).getTime();
+      const ageMs = Date.now() - cachedAt;
+      // Cache for 15 minutes only so actuals update throughout the day
+      if (ageMs < 15 * 60 * 1000) {
         const events = JSON.parse(entry.payload);
         return Response.json({ events, source, range, cached: true });
       }
@@ -71,7 +73,7 @@ function normalise(item, idx) {
   const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
 
   const rawActual = item.Actual ?? item.actual;
-  const actual = (rawActual === 0 || rawActual === '0') ? null : rawActual != null ? String(rawActual) : null;
+  const actual = rawActual != null && rawActual !== '' ? String(rawActual) : null;
 
   const prev = item.Previous ?? item.previous;
   const fore = item.Forecast ?? item.forecast;
