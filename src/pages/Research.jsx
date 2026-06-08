@@ -43,15 +43,15 @@ function generateSlug(title) {
 function NoteCard({ note, viewMode, delay, onClick }) {
   return (
     <motion.div
-      className={`glass rounded-xl p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group ${
-        viewMode === 'list' ? 'flex gap-6 items-start' : ''
+      className={`glass rounded-xl p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col ${
+        viewMode === 'list' ? 'flex-row gap-6 items-start' : 'h-full'
       }`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
       onClick={onClick}
     >
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Badge variant="outline" className={`text-xs ${categoryColors[note.category] || 'bg-muted text-muted-foreground'}`}>
             {note.category}
@@ -63,7 +63,7 @@ function NoteCard({ note, viewMode, delay, onClick }) {
         <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors leading-snug">{note.title}</h3>
         {note.subtitle && <p className="text-sm text-muted-foreground/80 mb-2">{note.subtitle}</p>}
         <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{note.executive_summary}</p>
-        <div className="flex items-center gap-2 mt-4 flex-wrap">
+        <div className="flex items-center gap-2 mt-4 flex-wrap flex-1 content-start">
           {note.tags?.slice(0, 3).map(tag => (
             <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tag}</span>
           ))}
@@ -119,9 +119,7 @@ export default function Research() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sorted, search, activeCategory]);
 
-  const featured = filtered.find(n => n.is_featured) || filtered[0];
-  const nonFeatured = filtered.filter(n => n !== featured || search || activeCategory !== 'All');
-  const visibleNotes = showAll ? nonFeatured : nonFeatured.slice(0, INITIAL_VISIBLE);
+  const visibleNotes = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
   const isFiltering = search || activeCategory !== 'All';
 
   const handleNoteClick = (note) => {
@@ -177,30 +175,7 @@ export default function Research() {
           </div>
         </div>
 
-        {featured && activeCategory === 'All' && !search && (
-          <motion.div
-            className="glass rounded-2xl mb-8 hover:border-primary/30 transition-all cursor-pointer glow-primary group overflow-hidden"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            onClick={() => handleNoteClick(featured)}
-          >
-            <div className="p-8">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <Badge className="bg-primary/10 text-primary border-0">Featured</Badge>
-                <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0" />
-              </div>
-              <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2 group-hover:text-primary transition-colors leading-snug">{featured.title}</h2>
-              {featured.subtitle && <p className="text-muted-foreground mb-4 text-sm">{featured.subtitle}</p>}
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">{featured.executive_summary}</p>
-            </div>
-            <div className="flex items-center gap-4 px-8 py-4 border-t border-border/30 bg-muted/5 text-xs text-muted-foreground flex-wrap">
-              <Badge variant="outline" className={categoryColors[featured.category]}>{featured.category}</Badge>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{featured.read_time_minutes} min read</span>
-              <span>{new Date(featured.publish_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-            </div>
-          </motion.div>
-        )}
-
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch' : 'space-y-4'}>
           <AnimatePresence>
             {visibleNotes.map((note, i) => (
               <NoteCard key={note.id} note={note} viewMode={viewMode} delay={i * 0.04} onClick={() => handleNoteClick(note)} />
@@ -208,14 +183,14 @@ export default function Research() {
           </AnimatePresence>
         </div>
 
-        {nonFeatured.length > INITIAL_VISIBLE && !isFiltering && (
+        {filtered.length > INITIAL_VISIBLE && !isFiltering && (
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setShowAll(v => !v)}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl glass border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all duration-200 group"
             >
               <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAll ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
-              {showAll ? 'See less' : `See ${nonFeatured.length - INITIAL_VISIBLE} more note${nonFeatured.length - INITIAL_VISIBLE !== 1 ? 's' : ''}`}
+              {showAll ? 'See less' : `See ${filtered.length - INITIAL_VISIBLE} more note${filtered.length - INITIAL_VISIBLE !== 1 ? 's' : ''}`}
             </button>
           </div>
         )}
