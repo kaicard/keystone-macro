@@ -23,7 +23,7 @@ export default function AILabPreview() {
               <span className="text-xs font-medium text-primary">AI-Powered Educational Tool</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-4">
-              AI Portfolio Lab
+              Keystone AI
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
               An intelligent tool that generates illustrative portfolio suggestions based on your selected market regime, 
@@ -50,7 +50,7 @@ export default function AILabPreview() {
             <Link to="/AIPortfolioLab">
               <Button className="gap-2 rounded-full">
                 <Sparkles className="w-4 h-4" />
-                Try AI Portfolio Lab
+                Try Keystone AI
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
