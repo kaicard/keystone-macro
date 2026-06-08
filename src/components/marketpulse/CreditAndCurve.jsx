@@ -3,25 +3,9 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 function DirectionIcon({ direction }) {
-  if (direction === 'tightening' || direction === 'steepening' || direction === 'up') return <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />;
-  if (direction === 'widening' || direction === 'flattening' || direction === 'inverted' || direction === 'down') return <TrendingUp className="w-3.5 h-3.5 text-red-400" />;
+  if (direction === 'tightening' || direction === 'up') return <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />;
+  if (direction === 'widening' || direction === 'down') return <TrendingUp className="w-3.5 h-3.5 text-red-400" />;
   return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
-}
-
-function trendColor(direction) {
-  if (direction === 'tightening' || direction === 'steepening') return 'text-emerald-400';
-  if (direction === 'widening' || direction === 'flattening' || direction === 'inverted') return 'text-red-400';
-  return 'text-muted-foreground';
-}
-
-function getSpreadLabel(name) {
-  const map = {
-    'US IG OAS': 'US IG',
-    'US HY OAS': 'US HY',
-    'EUR IG OAS': 'EUR IG',
-    'EUR HY OAS': 'EUR HY',
-  };
-  return map[name] || name;
 }
 
 export default function CreditAndCurve({ creditSpreads, yieldCurve, dxy, loading }) {
@@ -33,54 +17,78 @@ export default function CreditAndCurve({ creditSpreads, yieldCurve, dxy, loading
     );
   }
 
+  // creditSpreads is a flat object: { ig_spread, hy_spread, ig_direction, hy_direction, commentary }
+  const cs = creditSpreads || {};
+  // yieldCurve is a flat object: { spread_2s10s, shape, commentary }
+  const yc = yieldCurve || {};
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Credit Spreads */}
-      <div className="glass rounded-xl p-5 min-h-[140px] flex flex-col">
+      <div className="glass rounded-xl p-5 flex flex-col">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Credit Spreads</h3>
-        <div className="space-y-3 flex-1">
-          {(creditSpreads || []).length > 0 ? (
-            creditSpreads.map((c, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-xs font-medium text-muted-foreground/70">{getSpreadLabel(c.name)}</span>
-                  <span className="text-lg font-bold tracking-tight">{c.value_bps}</span>
+        {cs.ig_spread != null || cs.hy_spread != null ? (
+          <div className="space-y-3 flex-1">
+            {cs.ig_spread != null && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">US IG OAS</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg font-bold tabular-nums">{cs.ig_spread}<span className="text-xs font-normal text-muted-foreground ml-0.5">bp</span></span>
+                  <Badge variant="outline" className={`text-[10px] border-0 px-1.5 py-0.5 ${
+                    cs.ig_direction === 'tightening' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'
+                  }`}>{cs.ig_direction || '—'}</Badge>
                 </div>
-                <p className="text-xs text-muted-foreground/50 leading-relaxed line-clamp-2">{c.trend || c.direction}</p>
               </div>
-            ))
-          ) : (
-            <p className="text-xs text-muted-foreground/50">Awaiting data...</p>
-          )}
-        </div>
+            )}
+            {cs.hy_spread != null && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">US HY OAS</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg font-bold tabular-nums">{cs.hy_spread}<span className="text-xs font-normal text-muted-foreground ml-0.5">bp</span></span>
+                  <Badge variant="outline" className={`text-[10px] border-0 px-1.5 py-0.5 ${
+                    cs.hy_direction === 'tightening' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'
+                  }`}>{cs.hy_direction || '—'}</Badge>
+                </div>
+              </div>
+            )}
+            {cs.commentary && (
+              <p className="text-xs text-muted-foreground/50 leading-relaxed mt-2 pt-2 border-t border-border/20">{cs.commentary}</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground/50">Awaiting data...</p>
+        )}
       </div>
 
       {/* Yield Curve */}
-      <div className="glass rounded-xl p-5 min-h-[140px] flex flex-col">
+      <div className="glass rounded-xl p-5 flex flex-col">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Yield Curve (2s10s)</h3>
-        <div className="space-y-3 flex-1">
-          {(yieldCurve || []).length > 0 ? (
-            yieldCurve.map((y, i) => (
-              <div key={i} className="flex items-start justify-between gap-2">
-                <span className="text-xs text-muted-foreground">{y.name}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-sm font-bold">{y.spread_bps}<span className="text-xs font-normal text-muted-foreground ml-0.5">bps</span></span>
-                  <Badge variant="outline" className={`text-xs border-0 px-1.5 py-0.5 ${
-                    y.shape === 'inverted' ? 'bg-red-400/10 text-red-400' :
-                    y.shape === 'steepening' ? 'bg-emerald-400/10 text-emerald-400' :
-                    'bg-muted/40 text-muted-foreground'
-                  }`}>{y.shape || y.direction}</Badge>
-                </div>
+        {yc.spread_2s10s != null ? (
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs text-muted-foreground">2s10s Spread</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg font-bold tabular-nums">
+                  {yc.spread_2s10s}<span className="text-xs font-normal text-muted-foreground ml-0.5">bps</span>
+                </span>
+                <Badge variant="outline" className={`text-[10px] border-0 px-1.5 py-0.5 ${
+                  yc.shape === 'inverted' ? 'bg-red-400/10 text-red-400' :
+                  yc.shape === 'steepening' ? 'bg-emerald-400/10 text-emerald-400' :
+                  'bg-muted/40 text-muted-foreground'
+                }`}>{yc.shape || '—'}</Badge>
               </div>
-            ))
-          ) : (
-            <p className="text-xs text-muted-foreground/50">Awaiting data...</p>
-          )}
-        </div>
+            </div>
+            {yc.commentary && (
+              <p className="text-xs text-muted-foreground/50 leading-relaxed mt-2 pt-2 border-t border-border/20">{yc.commentary}</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground/50">Awaiting data...</p>
+        )}
       </div>
 
       {/* DXY */}
-      <div className="glass rounded-xl p-5 min-h-[140px] flex flex-col justify-center">
+      <div className="glass rounded-xl p-5 flex flex-col justify-center">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Dollar Index (DXY)</h3>
         {dxy ? (
           <div>
