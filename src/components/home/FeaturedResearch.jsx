@@ -90,8 +90,8 @@ export default function FeaturedResearch() {
     queryKey: ['research-notes'],
     queryFn: () => base44.entities.ResearchNote.list('-created_date', 50),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 10 * 60 * 1000,
+    staleTime: 0,
+    refetchInterval: 5 * 60 * 1000,
   });
 
   const [showOlder, setShowOlder] = useState(false);
@@ -107,20 +107,12 @@ export default function FeaturedResearch() {
     .filter(n => !n.status || n.status === 'published' || n.publish_date)
     .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
 
-  // Split into current/prev week vs older
-  const now = new Date();
-  const startOfThisWeek = new Date(now);
-  startOfThisWeek.setDate(now.getDate() - now.getDay()); // Sunday
-  startOfThisWeek.setHours(0, 0, 0, 0);
-  const startOfPrevWeek = new Date(startOfThisWeek);
-  startOfPrevWeek.setDate(startOfThisWeek.getDate() - 7);
+  // Show top 6 most recent as "recent", rest as older
+  const recentNotes = sorted.slice(0, 6);
+  const olderNotes = sorted.slice(6);
 
-  const recentNotes = sorted.filter(n => new Date(n.publish_date) >= startOfPrevWeek);
-  const olderNotes = sorted.filter(n => new Date(n.publish_date) < startOfPrevWeek);
-
-  // Fallback: if recentNotes empty, just show top 4 from all
-  const displayRecent = recentNotes.length > 0 ? recentNotes : sorted.slice(0, 4);
-  const displayOlder = recentNotes.length > 0 ? olderNotes : [];
+  const displayRecent = recentNotes;
+  const displayOlder = olderNotes;
 
   return (
     <section ref={ref} className="py-20 sm:py-28">

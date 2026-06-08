@@ -1,0 +1,95 @@
+{
+  "name": "WealthCase",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Case study title"
+    },
+    "client_type": {
+      "type": "string",
+      "description": "Client archetype"
+    },
+    "client_snapshot": {
+      "type": "string",
+      "description": "Brief client overview"
+    },
+    "objectives": {
+      "type": "string",
+      "description": "Client objectives"
+    },
+    "constraints": {
+      "type": "string",
+      "description": "Investment constraints"
+    },
+    "risk_tolerance": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Low-Medium",
+        "Medium",
+        "Medium-High",
+        "High"
+      ]
+    },
+    "liquidity_needs": {
+      "type": "string"
+    },
+    "time_horizon": {
+      "type": "string"
+    },
+    "investable_amount": {
+      "type": "string"
+    },
+    "proposed_saa": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset_class": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "taa_adjustments": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "key_risks": {
+      "type": "string"
+    },
+    "rebalancing_considerations": {
+      "type": "string"
+    },
+    "behavioural_considerations": {
+      "type": "string"
+    },
+    "regime_changes": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "title",
+    "client_type"
+  ]
+}

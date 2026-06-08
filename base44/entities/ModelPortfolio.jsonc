@@ -1,0 +1,103 @@
+{
+  "name": "ModelPortfolio",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Portfolio name"
+    },
+    "objective": {
+      "type": "string",
+      "description": "Investment objective"
+    },
+    "suitable_investor": {
+      "type": "string",
+      "description": "Target investor profile"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Risk level"
+    },
+    "time_horizon": {
+      "type": "string",
+      "description": "Recommended time horizon"
+    },
+    "allocation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset_class": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Asset allocation breakdown"
+    },
+    "regional_allocation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "volatility_estimate": {
+      "type": "string"
+    },
+    "max_drawdown_estimate": {
+      "type": "string"
+    },
+    "commentary": {
+      "type": "string",
+      "description": "Current positioning commentary"
+    },
+    "rebalancing_notes": {
+      "type": "string"
+    },
+    "illustrative_holdings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name",
+    "risk_level"
+  ]
+}

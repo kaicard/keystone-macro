@@ -1,0 +1,96 @@
+{
+  "name": "ResearchNote",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the research note"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL slug e.g. germany-fiscal-pivot"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Subtitle or summary line"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Macro",
+        "Equities",
+        "Fixed Income",
+        "Multi-Asset",
+        "Commodities",
+        "Wealth Strategy",
+        "Behavioural Finance",
+        "Risk Management",
+        "Trade Reviews"
+      ],
+      "description": "Research category"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for filtering"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Hero image URL"
+    },
+    "executive_summary": {
+      "type": "string",
+      "description": "Executive summary"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full article body in markdown"
+    },
+    "key_risks": {
+      "type": "string",
+      "description": "Key risks section"
+    },
+    "takeaway": {
+      "type": "string",
+      "description": "Key takeaway box content"
+    },
+    "what_would_change_mind": {
+      "type": "string",
+      "description": "What would change my mind section"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Publication date"
+    },
+    "read_time_minutes": {
+      "type": "number",
+      "description": "Estimated read time"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured on homepage"
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false,
+      "description": "Premium content"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}
