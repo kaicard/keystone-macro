@@ -66,10 +66,10 @@ export default function HeroSection() {
               View Model Portfolios
             </Button>
           </Link>
-          <Link to="/AIPortfolioLab">
+          <Link to="/AI">
             <Button size="lg" variant="ghost" className="gap-2 rounded-full text-primary hover:text-primary">
               <Sparkles className="w-4 h-4" />
-              AI Portfolio Lab
+              Keystone AI
             </Button>
           </Link>
         </motion.div>
