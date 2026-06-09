@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { Sparkles, ArrowRight, Sliders, BarChart3, Shield, Lightbulb } from 'lucide-react';
+import { Sparkles, ArrowRight, BarChart3, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AILabPreview() {
@@ -20,34 +20,38 @@ export default function AILabPreview() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-6">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">AI-Powered Educational Tool</span>
+              <span className="text-xs font-medium text-primary">AI-Powered Research & Portfolio Tool</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-4">
               Keystone AI
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              An intelligent tool that generates illustrative portfolio suggestions based on your selected market regime, 
-              risk appetite, and investment objectives. Powered by AI, designed to educate.
+              Two tools in one: chat with a senior macro analyst for real-time market views and positioning ideas, or generate illustrative portfolio allocations tailored to your regime, risk appetite, and objectives.
             </p>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {[
-                { icon: Sliders, label: 'Customise Inputs', desc: 'Risk, horizon, regime' },
-                { icon: BarChart3, label: 'Visual Outputs', desc: 'Charts & allocation cards' },
-                { icon: Shield, label: 'Risk-Aware', desc: 'Regime-sensitive tilts' },
-                { icon: Lightbulb, label: 'Educational', desc: 'Learn allocation logic' },
-              ].map(item => (
-                <div key={item.label} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <item.icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className="text-xs text-muted-foreground">{item.desc}</p>
-                  </div>
+
+            {/* Two feature cards */}
+            <div className="space-y-3 mb-8">
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/40 border border-border/40">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Lightbulb className="w-4 h-4 text-primary" />
                 </div>
-              ))}
+                <div>
+                  <p className="text-sm font-semibold mb-0.5">Analyst Chat</p>
+                  <p className="text-xs text-muted-foreground">Ask macro questions, get institutional-grade views on markets, policy, and positioning — conversationally.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/40 border border-border/40">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold mb-0.5">Portfolio Lab</p>
+                  <p className="text-xs text-muted-foreground">Generate illustrative SAA/TAA allocations based on risk tolerance, time horizon, and market regime. Designed to educate.</p>
+                </div>
+              </div>
             </div>
-            <Link to="/AIPortfolioLab">
+
+            <Link to="/AI">
               <Button className="gap-2 rounded-full">
                 <Sparkles className="w-4 h-4" />
                 Try Keystone AI
