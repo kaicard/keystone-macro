@@ -118,11 +118,28 @@ export default function Newsletter() {
   // Editions archive
   const { data: editions = [] } = useQuery({
     queryKey: ['newsletter-editions'],
-    queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 20),
+    queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 50),
   });
 
-  const weeklyEditions = editions.filter(e => e.edition_type === 'evening' && e.status === 'published');
-  const premiumEditions = editions.filter(e => e.edition_type === 'morning' && e.status === 'published');
+  // Check paid status — look up active subscription by email
+  const [checkEmail, setCheckEmail] = useState('');
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [isPaidSubscriber, setIsPaidSubscriber] = useState(justSubscribed);
+
+  const handleVerifyEmail = async (e) => {
+    e.preventDefault();
+    if (!checkEmail) return;
+    setVerifyLoading(true);
+    const subs = await base44.entities.NewsletterSubscription.filter({ email: checkEmail, status: 'active' });
+    setIsPaidSubscriber(subs?.length > 0);
+    setVerifyEmail(checkEmail);
+    setVerifyLoading(false);
+  };
+
+  const allEditions = editions.filter(e => e.status === 'published');
+  const freeEditions = allEditions.filter(e => e.edition_type === 'evening');
+  const premiumEditions = allEditions.filter(e => e.edition_type === 'morning');
 
   const handleFreeSignup = async (e) => {
     e.preventDefault();
@@ -317,75 +334,92 @@ export default function Newsletter() {
           </div>
         </motion.div>
 
-        {/* ── FREE ARCHIVE ── */}
-        {weeklyEditions.length > 0 && (
+        {/* ── RECENT EDITIONS ── */}
+        {allEditions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <h3 className="text-sm font-semibold">Recent Weekly Digests</h3>
-              <span className="text-xs text-muted-foreground ml-auto">{weeklyEditions.length} edition{weeklyEditions.length !== 1 ? 's' : ''}</span>
+            <div className="mb-6">
+              <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
+              <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
             </div>
-            <div className="space-y-3">
-              {weeklyEditions.slice(0, 4).map((edition, i) => (
-                <EditionCard key={edition.id} edition={edition} index={i} />
-              ))}
-            </div>
-          </motion.div>
-        )}
 
-        {/* ── PREMIUM ARCHIVE ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <h3 className="text-sm font-semibold">Premium Edition Archive</h3>
-            {justSubscribed && premiumEditions.length > 0 && (
-              <span className="text-xs text-muted-foreground ml-auto">{premiumEditions.length} edition{premiumEditions.length !== 1 ? 's' : ''}</span>
+            {/* FREE — Weekly Digests */}
+            {freeEditions.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">Weekly Digest</span>
+                  <span className="text-xs text-muted-foreground">— Free</span>
+                </div>
+                <div className="space-y-3">
+                  {freeEditions.map((edition, i) => (
+                    <EditionCard key={edition.id} edition={edition} index={i} />
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
 
-          {justSubscribed ? (
-            <div className="space-y-3">
-              {premiumEditions.slice(0, 5).map((edition, i) => (
-                <EditionCard key={edition.id} edition={edition} index={i} />
-              ))}
-              {premiumEditions.length === 0 && (
-                <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
-                  No premium editions published yet — check back soon.
+            {/* PREMIUM — Morning Briefs */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-3 h-3 text-primary" />
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">Morning Brief & Evening Wrap</span>
+                <span className="text-xs text-muted-foreground">— Premium</span>
+              </div>
+
+              {isPaidSubscriber ? (
+                <div className="space-y-3">
+                  {premiumEditions.map((edition, i) => (
+                    <EditionCard key={edition.id} edition={edition} index={i} />
+                  ))}
+                  {premiumEditions.length === 0 && (
+                    <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
+                      No premium editions published yet — check back soon.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="glass rounded-2xl border border-primary/20 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                      <Lock className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold mb-1">Premium subscribers only</p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Enter your subscriber email to verify access, or subscribe below for £9.99/month.
+                      </p>
+                      {verifyEmail && !isPaidSubscriber ? (
+                        <p className="text-xs text-destructive mb-3">No active premium subscription found for {verifyEmail}.</p>
+                      ) : null}
+                      <form onSubmit={handleVerifyEmail} className="flex gap-2">
+                        <Input
+                          type="email"
+                          placeholder="subscriber@email.com"
+                          value={checkEmail}
+                          onChange={(e) => setCheckEmail(e.target.value)}
+                          required
+                          className="h-9 text-sm"
+                        />
+                        <Button type="submit" size="sm" variant="outline" disabled={verifyLoading || !checkEmail} className="shrink-0">
+                          {verifyLoading ? '…' : 'Verify'}
+                        </Button>
+                      </form>
+                      <button
+                        className="text-xs text-primary underline-offset-2 hover:underline mt-3 block"
+                        onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+                      >
+                        Not subscribed yet? Subscribe for £9.99/month →
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="relative">
-              {/* Blurred preview */}
-              <div className="space-y-3 select-none pointer-events-none" style={{ filter: 'blur(4px)', opacity: 0.4 }}>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-5 h-24" />
-                ))}
-              </div>
-              {/* Lock overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-primary" />
-                </div>
-                <p className="text-sm font-semibold">Premium subscribers only</p>
-                <p className="text-xs text-muted-foreground text-center max-w-xs">Subscribe for £9.99/month to unlock the full archive of morning briefs and evening wraps.</p>
-                <Button
-                  size="sm"
-                  className="gap-1.5 rounded-full mt-1"
-                  onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Subscribe to unlock
-                </Button>
-              </div>
-            </div>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* ── CANCEL / MANAGE ── */}
         <motion.div
