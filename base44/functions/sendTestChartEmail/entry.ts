@@ -40,7 +40,8 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
       }]
     },
     options: {
-      layout: { padding: { left: 4, right: 20, top: 20, bottom: 4 } },
+      layout: { padding: { left: 4, right: 20, top: 8, bottom: 4 } },
+      legend: { display: false },
       plugins: {
         legend: { display: false },
         tooltip: { enabled: false },
@@ -500,7 +501,7 @@ Return JSON:
       let chartHtml = '';
       if (i === chartSectionIdx && chartDataMap[i]) {
         const d = chartDataMap[i];
-        const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 260 });
+        const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 290 });
         if (url) {
           chartHtml = chartCardHtml({
             title: s.chart_config.title,
