@@ -1,71 +1,69 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // ─── Chart builder — high quality, clean, properly spaced ──────────────────────
-function buildChartUrl({ labels, data, color, symbol, isUp, height = 220 }) {
-  // Tight Y-axis range for meaningful visual movement
+function buildChartUrl({ labels, data, isUp, height = 260 }) {
   const validData = data.filter(d => d != null && !isNaN(d));
   if (validData.length < 3) return null;
 
+  // Tight Y-axis for visible movement
   const minVal = Math.min(...validData);
   const maxVal = Math.max(...validData);
-  const range = maxVal - minVal;
-  const padding = range * 0.15 || minVal * 0.002;
-  const yMin = parseFloat((minVal - padding).toFixed(4));
-  const yMax = parseFloat((maxVal + padding).toFixed(4));
+  const range = maxVal - minVal || minVal * 0.005;
+  const pad = range * 0.18;
+  const yMin = parseFloat((minVal - pad).toFixed(6));
+  const yMax = parseFloat((maxVal + pad).toFixed(6));
 
-  // Determine decimal places from data magnitude
-  const magnitude = Math.abs(validData[0]);
-  const decimalPlaces = magnitude > 1000 ? 0 : magnitude > 10 ? 2 : magnitude > 1 ? 4 : 5;
+  // Smart decimal places
+  const mag = Math.abs(validData[0]);
+  const dp = mag >= 10000 ? 0 : mag >= 100 ? 1 : mag >= 1 ? 2 : 4;
 
-  const fillColor = isUp ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+  // Reduce to max 12 labels on x-axis, evenly spread
+  const maxLabels = 12;
+  const step = Math.max(1, Math.floor(labels.length / maxLabels));
+  const sparseLabels = labels.map((l, i) => (i % step === 0 ? l : ''));
+
   const lineColor = isUp ? '#10b981' : '#ef4444';
-  const finalColor = color || lineColor;
-  const finalFill = color ? (color + '12') : fillColor;
+  const fillColor = isUp ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)';
 
   const chartConfig = {
     type: 'line',
     data: {
-      labels,
+      labels: sparseLabels,
       datasets: [{
         data,
-        borderColor: finalColor,
-        backgroundColor: finalFill,
+        borderColor: lineColor,
+        backgroundColor: fillColor,
         fill: true,
-        tension: 0.35,
+        tension: 0.3,
         pointRadius: 0,
-        pointHoverRadius: 0,
-        borderWidth: 2,
+        borderWidth: 2.5,
       }]
     },
     options: {
-      layout: { padding: { left: 8, right: 16, top: 16, bottom: 8 } },
-      plugins: {
-        legend: { display: false },
-      },
+      layout: { padding: { left: 4, right: 20, top: 20, bottom: 4 } },
+      plugins: { legend: { display: false } },
       scales: {
         x: {
-          grid: { color: 'rgba(148,163,184,0.12)', borderColor: 'rgba(148,163,184,0.2)' },
-          border: { color: 'rgba(148,163,184,0.2)' },
+          grid: { color: 'rgba(148,163,184,0.1)' },
           ticks: {
-            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif", weight: '500' },
+            font: { size: 11, family: 'Arial,sans-serif' },
             color: '#94a3b8',
             maxRotation: 0,
-            maxTicksLimit: 7,
-            padding: 6,
+            autoSkip: false,
+            padding: 8,
           }
         },
         y: {
           min: yMin,
           max: yMax,
           position: 'right',
-          grid: { color: 'rgba(148,163,184,0.12)', borderColor: 'rgba(148,163,184,0.2)' },
-          border: { color: 'rgba(148,163,184,0.2)', dash: [3, 3] },
+          grid: { color: 'rgba(148,163,184,0.1)' },
           ticks: {
-            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif", weight: '600' },
+            font: { size: 11, family: 'Arial,sans-serif' },
             color: '#64748b',
             maxTicksLimit: 6,
-            padding: 8,
-            callback: `function(val) { return val.toFixed(${decimalPlaces}); }`
+            padding: 10,
+            callback: `function(v){return v.toFixed(${dp});}`
           }
         }
       }
@@ -73,7 +71,7 @@ function buildChartUrl({ labels, data, color, symbol, isUp, height = 220 }) {
   };
 
   const encoded = encodeURIComponent(JSON.stringify(chartConfig));
-  return `https://quickchart.io/chart?w=520&h=${height}&bkg=%23f8fafc&c=${encoded}`;
+  return `https://quickchart.io/chart?w=540&h=${height}&bkg=%23f8fafc&c=${encoded}`;
 }
 
 // ─── Fetch live intraday data from Yahoo Finance ───────────────────────────────
@@ -161,57 +159,64 @@ function getContextualImage(label, headline) {
 }
 
 // ─── Chart card HTML ───────────────────────────────────────────────────────────
-function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, low, changePct, isUp, color }) {
+function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, low, changePct, isUp }) {
   const changeColor = isUp ? '#10b981' : '#ef4444';
   const arrow = isUp ? '▲' : '▼';
-  const sign = isUp ? '+' : '';
+  const sign = parseFloat(changePct) >= 0 ? '+' : '';
+
+  function fmt(val) {
+    if (typeof val !== 'number') return '–';
+    const abs = Math.abs(val);
+    const dp = abs >= 10000 ? 0 : abs >= 100 ? 1 : abs >= 1 ? 2 : 4;
+    return val.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  }
+
+  const ohlc = [['Open', open], ['High', high], ['Low', low], ['Close', close]];
 
   return `
-  <div style="margin-bottom:8px;border-radius:14px;border:1px solid #e2e8f0;background:#ffffff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-    <!-- Chart header -->
-    <div style="background:#f8fafc;padding:16px 20px 14px;border-bottom:1px solid #f1f5f9;">
+  <div style="border-radius:12px;border:1px solid #e2e8f0;background:#ffffff;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+    <!-- Header -->
+    <div style="background:#f8fafc;padding:18px 22px 16px;border-bottom:1px solid #eef2f7;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td style="vertical-align:middle;">
-            <div style="font-size:8px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;">Intraday Chart · NYSE Session</div>
-            <div style="font-size:16px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">${title}</div>
-            <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:2px;">${symbol}</div>
+          <td style="vertical-align:top;">
+            <div style="font-size:8px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:5px;">Intraday · Today's Session</div>
+            <div style="font-size:17px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">${title}</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:3px;letter-spacing:0.5px;">${symbol}</div>
           </td>
-          <td style="vertical-align:middle;text-align:right;">
-            <div style="font-size:22px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;">${typeof close === 'number' ? close.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'}</div>
-            <div style="font-size:13px;font-weight:700;color:${changeColor};margin-top:2px;">${arrow} ${sign}${changePct}% today</div>
+          <td style="vertical-align:top;text-align:right;padding-left:12px;">
+            <div style="font-size:24px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;">${fmt(close)}</div>
+            <div style="font-size:13px;font-weight:700;color:${changeColor};margin-top:3px;">${arrow}&nbsp;${sign}${changePct}% today</div>
           </td>
         </tr>
       </table>
-      <!-- OHLC row -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
-        <tr>
-          ${[['Open', open], ['High', high], ['Low', low], ['Close', close]].map(([lbl, val]) => `
-          <td style="text-align:center;padding:8px 4px;background:#f1f5f9;border-radius:6px;">
-            <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;">${lbl}</div>
-            <div style="font-size:12px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${typeof val === 'number' ? val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'}</div>
-          </td>`).join('<td style="width:6px;"></td>')}
-        </tr>
-      </table>
     </div>
-    <!-- Chart image -->
-    <div style="background:#f8fafc;padding:4px 0 0 0;">
-      <img src="${chartUrl}" width="520" alt="${title} intraday chart" style="display:block;width:100%;max-width:520px;border:none;" />
-    </div>
+    <!-- OHLC strip -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px solid #eef2f7;">
+      <tr>
+        ${ohlc.map(([lbl, val], idx) => `
+        <td width="25%" style="text-align:center;padding:12px 8px;${idx < 3 ? 'border-right:1px solid #eef2f7;' : ''}">
+          <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:5px;">${lbl}</div>
+          <div style="font-size:13px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${fmt(val)}</div>
+        </td>`).join('')}
+      </tr>
+    </table>
+    <!-- Chart — full bleed -->
+    <img src="${chartUrl}" width="560" alt="${title} intraday" style="display:block;width:560px;max-width:100%;border:none;" />
     <!-- Caption -->
-    ${caption ? `<div style="padding:12px 20px 14px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11.5px;color:#64748b;line-height:1.65;font-style:italic;">${caption}</div>
+    ${caption ? `<div style="padding:12px 22px 14px;border-top:1px solid #eef2f7;">
+      <div style="font-size:11px;color:#64748b;line-height:1.65;font-style:italic;">${caption}</div>
     </div>` : ''}
   </div>`;
 }
 
 // ─── Image block HTML ──────────────────────────────────────────────────────────
-function imageBlockHtml({ imageUrl, caption, accent }) {
+function imageBlockHtml({ imageUrl, caption }) {
   return `
-  <div style="margin-bottom:8px;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-    <img src="${imageUrl}" width="560" alt="" style="display:block;width:100%;max-width:560px;height:220px;object-fit:cover;" />
-    ${caption ? `<div style="background:#f8fafc;padding:10px 18px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:10.5px;color:#94a3b8;line-height:1.5;font-style:italic;">↑ ${caption}</div>
+  <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+    <img src="${imageUrl}" width="560" alt="" style="display:block;width:560px;max-width:100%;height:auto;min-height:200px;object-fit:cover;" />
+    ${caption ? `<div style="background:#f8fafc;padding:10px 20px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:10px;color:#94a3b8;line-height:1.5;font-style:italic;">${caption}</div>
     </div>` : ''}
   </div>`;
 }
@@ -459,17 +464,25 @@ Return JSON:
       commodity_fields: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=560&q=85',
     };
 
-    // ── Fetch all chart data in parallel ──────────────────────────────────────
+    // ── Fetch chart data only for the SINGLE best chart section ──────────────
+    // Find first section with a chart_config
+    const chartSectionIdx = sections.findIndex(s => s.chart_config?.yahoo_symbol);
     const chartDataMap = {};
-    await Promise.all(
-      sections.map(async (s, i) => {
-        if (!s.chart_config?.yahoo_symbol) return;
+    if (chartSectionIdx >= 0) {
+      const sym = sections[chartSectionIdx].chart_config.yahoo_symbol;
+      // Try primary symbol, fall back to ^GSPC if fetch fails
+      let d = null;
+      for (const trySymbol of [sym, '^GSPC']) {
         try {
-          const d = await fetchIntradayData(s.chart_config.yahoo_symbol);
-          if (d) chartDataMap[i] = d;
-        } catch (_) { /* skip */ }
-      })
-    );
+          d = await fetchIntradayData(trySymbol);
+          if (d) break;
+        } catch (_) { /* try next */ }
+      }
+      if (d) chartDataMap[chartSectionIdx] = d;
+    }
+
+    // ── Find the SINGLE best image section (first with image_topic, not the chart section) ──
+    const imageSectionIdx = sections.findIndex((s, i) => i !== chartSectionIdx && s.image_topic && IMAGE_MAP[s.image_topic]);
 
     // ── Build section HTML blocks ─────────────────────────────────────────────
     let sectionBlocks = '';
@@ -477,11 +490,11 @@ Return JSON:
       const s = sections[i];
       const accent = ACCENTS[i % ACCENTS.length];
 
-      // Chart
+      // Chart — only for the one chosen section
       let chartHtml = '';
-      if (s.chart_config && chartDataMap[i]) {
+      if (i === chartSectionIdx && chartDataMap[i]) {
         const d = chartDataMap[i];
-        const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 220 });
+        const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 260 });
         if (url) {
           chartHtml = chartCardHtml({
             title: s.chart_config.title,
@@ -494,18 +507,16 @@ Return JSON:
             low: d.low,
             changePct: d.changePct,
             isUp: d.isUp,
-            color: accent,
           });
         }
       }
 
-      // Image
+      // Image — only for the one chosen section
       let imageHtml = '';
-      if (!chartHtml && s.image_topic && IMAGE_MAP[s.image_topic]) {
+      if (i === imageSectionIdx) {
         imageHtml = imageBlockHtml({
           imageUrl: IMAGE_MAP[s.image_topic],
-          caption: `${s.label} — contextual reference image`,
-          accent,
+          caption: `${s.label} — contextual illustration`,
         });
       }
 
@@ -532,13 +543,13 @@ Return JSON:
     return Response.json({
       message: 'Test edition sent to kaicard05@gmail.com',
       subject,
-      charts_generated: Object.keys(chartDataMap).length,
+      chart_section: chartSectionIdx >= 0 ? sections[chartSectionIdx]?.label : 'none',
+      image_section: imageSectionIdx >= 0 ? sections[imageSectionIdx]?.label : 'none',
       sections: sections.map((s, i) => ({
         label: s.label,
         headline: s.headline,
-        has_chart: !!chartDataMap[i],
-        has_image: !chartDataMap[i] && !!s.image_topic,
-        image_topic: s.image_topic || null,
+        has_chart: i === chartSectionIdx && !!chartDataMap[i],
+        has_image: i === imageSectionIdx,
       }))
     });
 
