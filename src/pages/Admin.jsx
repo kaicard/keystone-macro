@@ -146,7 +146,7 @@ export default function Admin() {
         base44.entities.NewsletterSubscription.list('-created_date', 100),
       ]);
       const freeList = (free || []).map(s => ({ ...s, type: 'free' }));
-      const paidList = (paid || []).map(s => ({ ...s, type: 'premium' }));
+      const paidList = (paid || []).filter(s => s.status !== 'pending').map(s => ({ ...s, type: 'premium' }));
       return [...paidList, ...freeList].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     }
   });
