@@ -275,33 +275,38 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
   const headerGradient = 'background:linear-gradient(90deg,#3b82f6,#6366f1,#818cf8);';
   const editionColor = '#6366f1';
 
-  // Render snapshot as a 2-row grid (3 top, 2 bottom centred) — mobile safe, no overflow
+  // Snapshot as clean horizontal rows — one instrument per row, fully readable on mobile
   const snap = (marketSnapshot || []).slice(0, 5);
 
-  function snapCell(m, isLast) {
-    const raw = String(m.change || '');
+  function snapRow(m, isLast) {
+    const raw = String(m.change || '').trim();
     const isPos = raw.startsWith('+');
     const isNeg = raw.startsWith('-');
-    const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#94a3b8';
-    const arrow = isPos ? '▲' : isNeg ? '▼' : '';
-    return `<td style="padding:0 ${isLast ? '0' : '8px'} 0 0;vertical-align:top;width:20%;">
-      <div style="background:#1e293b;border:1px solid #1e293b;border-top:2px solid ${changeColor};border-radius:10px;padding:14px 10px 13px;">
-        <div style="font-size:7px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#475569;margin-bottom:8px;white-space:nowrap;overflow:hidden;">${m.label}</div>
-        <div style="font-size:15px;font-weight:800;color:#f8fafc;margin-bottom:5px;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;">${m.value}</div>
-        <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow}${arrow ? ' ' : ''}${m.change}</div>
-      </div>
-    </td>`;
+    const isNA = !raw || raw === 'N/A' || raw === '0' || raw === '0%';
+    const changeColor = isNA ? '#475569' : isPos ? '#10b981' : '#ef4444';
+    const changeBg   = isNA ? '#1a2436' : isPos ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+    const arrow = isNA ? '' : isPos ? '▲' : '▼';
+    const displayChange = isNA ? '—' : `${arrow} ${raw}`;
+    const borderBottom = isLast ? '' : 'border-bottom:1px solid #1e293b;';
+    return `<tr>
+      <td style="${borderBottom}padding:13px 0;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="vertical-align:middle;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.5px;color:#94a3b8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.label}</div>
+            </td>
+            <td style="text-align:right;vertical-align:middle;">
+              <span style="font-size:16px;font-weight:800;color:#f8fafc;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
+              &nbsp;&nbsp;
+              <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;">${displayChange}</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
   }
 
-  const snapshotRows = snap.length > 0 ? `
-    <tr>${snap.slice(0, 3).map((m, i) => snapCell(m, i === 2)).join('')}${snap.length < 3 ? '<td></td><td></td>' : snap.length < 4 ? '<td></td>' : ''}</tr>
-    ${snap.length > 3 ? `<tr><td colspan="1" style="height:8px;"></td></tr>
-    <tr>
-      <td style="width:10%;"></td>
-      ${snap.slice(3).map((m, i) => snapCell(m, i === snap.slice(3).length - 1)).join('')}
-      <td style="width:10%;"></td>
-    </tr>` : ''}
-  ` : '';
+  const snapshotRows = snap.map((m, i) => snapRow(m, i === snap.length - 1)).join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -350,7 +355,7 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
   <tr><td style="background:#0f172a;" class="snap-pad">
     <div style="padding:0 32px 26px;">
       <div style="font-size:7px;letter-spacing:2.5px;color:#334155;text-transform:uppercase;font-weight:800;margin-bottom:14px;padding-top:2px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">&#x25CF;&nbsp; Live Market Snapshot</div>
-      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
         ${snapshotRows}
       </table>
     </div>
