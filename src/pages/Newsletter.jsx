@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import {
   Mail, CheckCircle, ArrowRight, Lock, Sparkles, Sun, Moon,
-  BookOpen, BarChart2, Globe, TrendingUp, Zap, Shield, X
+  BookOpen, BarChart2, Globe, TrendingUp, Zap, Shield, X,
+  Calendar, ArrowUpRight
 } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
+import EditionCard from '@/components/newsletter/EditionCard';
 
 const FREE_FEATURES = [
   'Weekly digest every Friday at 10pm',
@@ -111,6 +114,15 @@ export default function Newsletter() {
   // Check for ?subscribed=true from Stripe redirect
   const urlParams = new URLSearchParams(window.location.search);
   const justSubscribed = urlParams.get('subscribed') === 'true';
+
+  // Editions archive
+  const { data: editions = [] } = useQuery({
+    queryKey: ['newsletter-editions'],
+    queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 20),
+  });
+
+  const weeklyEditions = editions.filter(e => e.edition_type === 'evening' && e.status === 'published');
+  const premiumEditions = editions.filter(e => e.edition_type === 'morning' && e.status === 'published');
 
   const handleFreeSignup = async (e) => {
     e.preventDefault();
@@ -274,7 +286,7 @@ export default function Newsletter() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handlePaidSignup} className="space-y-3 mb-4">
+            <form onSubmit={handlePaidSignup} className="space-y-3 mb-4" data-paid>
               <Input
                 placeholder="Your name (optional)"
                 value={paidName}
@@ -303,6 +315,76 @@ export default function Newsletter() {
               </div>
             ))}
           </div>
+        </motion.div>
+
+        {/* ── FREE ARCHIVE ── */}
+        {weeklyEditions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+            className="mb-6"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <h3 className="text-sm font-semibold">Recent Weekly Digests</h3>
+              <span className="text-xs text-muted-foreground ml-auto">{weeklyEditions.length} edition{weeklyEditions.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="space-y-3">
+              {weeklyEditions.slice(0, 4).map((edition, i) => (
+                <EditionCard key={edition.id} edition={edition} index={i} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── PREMIUM ARCHIVE ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <h3 className="text-sm font-semibold">Premium Edition Archive</h3>
+            {justSubscribed && premiumEditions.length > 0 && (
+              <span className="text-xs text-muted-foreground ml-auto">{premiumEditions.length} edition{premiumEditions.length !== 1 ? 's' : ''}</span>
+            )}
+          </div>
+
+          {justSubscribed ? (
+            <div className="space-y-3">
+              {premiumEditions.slice(0, 5).map((edition, i) => (
+                <EditionCard key={edition.id} edition={edition} index={i} />
+              ))}
+              {premiumEditions.length === 0 && (
+                <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
+                  No premium editions published yet — check back soon.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="relative">
+              {/* Blurred preview */}
+              <div className="space-y-3 select-none pointer-events-none" style={{ filter: 'blur(4px)', opacity: 0.4 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-5 h-24" />
+                ))}
+              </div>
+              {/* Lock overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-primary" />
+                </div>
+                <p className="text-sm font-semibold">Premium subscribers only</p>
+                <p className="text-xs text-muted-foreground text-center max-w-xs">Subscribe for £9.99/month to unlock the full archive of morning briefs and evening wraps.</p>
+                <Button
+                  size="sm"
+                  className="gap-1.5 rounded-full mt-1"
+                  onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Subscribe to unlock
+                </Button>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* ── CANCEL / MANAGE ── */}
