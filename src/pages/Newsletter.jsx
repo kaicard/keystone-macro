@@ -328,32 +328,22 @@ export default function Newsletter() {
             )}
           </>
         ) : (
-          <div className="relative overflow-hidden rounded-2xl">
-            {/* Blurred placeholder grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 select-none pointer-events-none" style={{ filter: 'blur(8px)', opacity: 0.25 }}>
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-2xl border border-border/25 bg-card/50 p-5 h-36" />
-              ))}
+          <div className="rounded-2xl border border-border/40 bg-card/40 p-10 flex flex-col items-center justify-center text-center gap-5 min-h-[260px]">
+            <div className="w-12 h-12 rounded-xl bg-card border border-border/50 flex items-center justify-center shadow-sm">
+              <Lock className="w-5 h-5 text-muted-foreground" />
             </div>
-            {/* Lock overlay */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/30 backdrop-blur-[2px] rounded-2xl">
-              <div className="w-11 h-11 rounded-full bg-card border border-border/40 flex items-center justify-center shadow-sm">
-                <Lock className="w-4.5 h-4.5 text-muted-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-foreground mb-1">Premium subscribers only</p>
-                <p className="text-xs text-muted-foreground/60 max-w-[260px]">
-                  {user ? 'Your account is not on an active premium plan.' : 'Subscribe to unlock the full archive.'}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                className="gap-1.5 rounded-full h-8 px-4 text-xs mt-1"
-                onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Sparkles className="w-3 h-3" /> Subscribe — £9.99/month
-              </Button>
+            <div>
+              <p className="font-semibold text-base mb-1">Premium Editions</p>
+              <p className="text-sm text-muted-foreground max-w-[300px] leading-relaxed">
+                Subscribe to access the complete archive of every edition, including full market analysis, trade ideas, and desk commentary.
+              </p>
             </div>
+            <Button
+              className="gap-1.5 rounded-full px-6"
+              onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <Sparkles className="w-3.5 h-3.5" /> View Subscription Plans
+            </Button>
           </div>
         )}
       </motion.div>
