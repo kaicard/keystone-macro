@@ -134,8 +134,10 @@ export default function Newsletter() {
   const isPaidSubscriber = justSubscribed || paidSubs.length > 0;
 
   const premiumEditions = editions.filter(e => e.status === 'published');
-  const [showAll, setShowAll] = useState(false);
-  const visibleEditions = showAll ? premiumEditions : premiumEditions.slice(0, 6);
+  const [visibleCount, setVisibleCount] = useState(6);
+  const visibleEditions = premiumEditions.slice(0, visibleCount);
+  const hasMore = visibleCount < premiumEditions.length;
+  const canCollapse = visibleCount > 6;
 
   const handleFreeSignup = async (e) => {
     e.preventDefault();
@@ -174,7 +176,7 @@ export default function Newsletter() {
   return (
     <div className="pt-20 lg:pt-24 pb-24 min-h-screen relative">
       <PageBackground />
-      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6" id="top-content">
 
         {/* Hero */}
         <motion.div
@@ -330,73 +332,83 @@ export default function Newsletter() {
           </div>
         </motion.div>
 
-        {/* ── RECENT EDITIONS ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-          className="mb-8"
-        >
-          <div className="mb-6">
-            <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
-            <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
-          </div>
+      </div>
 
-          {isPaidSubscriber ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {visibleEditions.map((edition, i) => (
-                  <EditionCard key={edition.id} edition={edition} index={i} />
-                ))}
+      {/* ── RECENT EDITIONS — full width section ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-12"
+      >
+        <div className="mb-8">
+          <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
+          <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
+        </div>
+
+        {isPaidSubscriber ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {visibleEditions.map((edition, i) => (
+                <EditionCard key={edition.id} edition={edition} index={i} />
+              ))}
+            </div>
+            {premiumEditions.length === 0 && (
+              <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
+                No editions published yet — check back soon.
               </div>
-              {premiumEditions.length === 0 && (
-                <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm col-span-2">
-                  No editions published yet — check back soon.
-                </div>
-              )}
-              {!showAll && premiumEditions.length > 6 && (
+            )}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              {hasMore && (
                 <button
-                  className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setShowAll(true)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-4 rounded-full border border-border/40 hover:border-border/70"
+                  onClick={() => setVisibleCount(c => c + 6)}
                 >
-                  View {premiumEditions.length - 6} more editions
+                  View {Math.min(6, premiumEditions.length - visibleCount)} more editions
                 </button>
               )}
-            </>
-          ) : (
-            <div className="relative">
-              {/* Blurred 2-col grid preview */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 select-none pointer-events-none" style={{ filter: 'blur(5px)', opacity: 0.35 }}>
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-5 h-36" />
-                ))}
-              </div>
-              {/* Lock overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-primary" />
-                </div>
-                <p className="text-base font-semibold">Premium subscribers only</p>
-                <p className="text-xs text-muted-foreground text-center max-w-xs">
-                  {user ? 'Your account is not on an active premium subscription.' : 'Sign in with a premium account, or subscribe below.'}
-                </p>
-                <Button
-                  size="sm"
-                  className="gap-1.5 rounded-full mt-1"
-                  onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+              {canCollapse && (
+                <button
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-4 rounded-full border border-border/40 hover:border-border/70"
+                  onClick={() => setVisibleCount(6)}
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Subscribe — £9.99/month
-                </Button>
-              </div>
+                  Show less
+                </button>
+              )}
             </div>
-          )}
-        </motion.div>
+          </>
+        ) : (
+          <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 select-none pointer-events-none" style={{ filter: 'blur(6px)', opacity: 0.3 }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-6 h-40" />
+              ))}
+            </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-primary" />
+              </div>
+              <p className="text-base font-semibold">Premium subscribers only</p>
+              <p className="text-xs text-muted-foreground text-center max-w-xs">
+                {user ? 'Your account does not have an active premium subscription.' : 'Sign in with a premium account, or subscribe below.'}
+              </p>
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-full mt-1"
+                onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Subscribe — £9.99/month
+              </Button>
+            </div>
+          </div>
+        )}
+      </motion.div>
 
-        {/* ── CANCEL / MANAGE ── */}
+      {/* ── CANCEL / MANAGE ── */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pb-8">
         <motion.div
           id="manage"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
-          {/* Cancel Free */}
           <CancelBox
             title="Cancel Free Digest"
             description="Unsubscribe from the weekly free newsletter."
@@ -404,7 +416,6 @@ export default function Newsletter() {
             badgeColor="emerald"
             type="free"
           />
-          {/* Cancel Paid */}
           <CancelBox
             title="Cancel Premium"
             description="Cancel your £9.99/month paid subscription."
@@ -413,8 +424,8 @@ export default function Newsletter() {
             type="paid"
           />
         </motion.div>
-
       </div>
+
     </div>
   );
 }
