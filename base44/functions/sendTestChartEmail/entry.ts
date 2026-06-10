@@ -423,9 +423,20 @@ Deno.serve(async (req) => {
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead macro analyst at Keystone Macro. Today is ${dateStr} (${isoDate}).
-Return JSON with today's REAL, VERIFIED closing/current data:
+Return JSON with today's REAL, VERIFIED closing/current data sourced from live financial markets.
+CRITICAL: Every field must have a real value — no nulls, no "N/A", no "0", no empty strings.
+
 - subject_line: the single most important market story today in one punchy line (max 70 chars, no emojis, no clickbait)
-- market_snapshot: exactly 5 objects with label/value/change for: S&P 500 (^GSPC), 10Y UST Yield (^TNX), DXY (DX-Y.NYB), Gold (GC=F), Brent Crude (BZ=F). Values must be today's real numbers.
+- market_snapshot: exactly 5 objects for these instruments. Each MUST have:
+    - label: instrument name (e.g. "S&P 500", "10Y UST Yield", "DXY", "Gold", "Brent Crude")
+    - value: today's real closing/current price or level as a formatted string (e.g. "5,283.40", "4.52%", "104.23", "$3,285.10", "$73.45")
+    - change: today's real change with sign and percentage, formatted as e.g. "▲ +1.2%" or "▼ -0.8%" or "▲ +12.50 (+0.24%)" — MUST be non-empty for all 5 instruments
+  Instruments (use these exact sources):
+    1. S&P 500 — current index level + % change from prior close
+    2. 10Y UST Yield — current yield in % + change in basis points (e.g. "▲ +4.2 bps")
+    3. DXY Index — current level + % change from prior close
+    4. Gold (spot or front-month futures) — current price in USD + % change
+    5. Brent Crude (front-month futures) — current price in USD + % change
 - footer_note: one sharp closing insight about today's session. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
