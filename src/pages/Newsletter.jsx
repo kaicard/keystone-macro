@@ -176,7 +176,7 @@ export default function Newsletter() {
   return (
     <div className="pt-20 lg:pt-24 pb-24 min-h-screen relative">
       <PageBackground />
-      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6" id="top-content">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Hero */}
         <motion.div
@@ -196,69 +196,9 @@ export default function Newsletter() {
           </p>
         </motion.div>
 
-        {/* ── FREE TIER ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="glass rounded-2xl border border-border/50 p-6 sm:p-8 mb-6"
-        >
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-xs font-semibold text-emerald-500">Free</span>
-              </div>
-              <h2 className="font-display text-2xl font-semibold">Weekly Digest</h2>
-              <p className="text-muted-foreground text-sm mt-1">Every Friday at 10pm</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-3xl font-bold">£0</span>
-              <div className="text-xs text-muted-foreground">always free</div>
-            </div>
-          </div>
-
-          <ul className="space-y-2.5 mb-6">
-            {FREE_FEATURES.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-sm">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span className="text-muted-foreground">{f}</span>
-              </li>
-            ))}
-          </ul>
-
-          {freeSuccess ? (
-            <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
-              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold">You're on the list.</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Check your inbox — first edition arrives this Friday at 10pm.</p>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleFreeSignup} className="space-y-3">
-              <Input
-                placeholder="Your name (optional)"
-                value={freeName}
-                onChange={(e) => setFreeName(e.target.value)}
-                className="h-11"
-              />
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={freeEmail}
-                onChange={(e) => setFreeEmail(e.target.value)}
-                required
-                className="h-11"
-              />
-              <Button type="submit" variant="outline" className="w-full h-11 gap-2" disabled={freeLoading || !freeEmail}>
-                {freeLoading ? 'Signing up…' : <><Mail className="w-4 h-4" /> Sign Up Free</>}
-              </Button>
-            </form>
-          )}
-        </motion.div>
-
         {/* ── PREMIUM TIER ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="rounded-2xl border-2 border-primary/40 bg-card p-6 sm:p-8 mb-6 relative overflow-hidden glow-primary"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-amber-400 to-primary" />
@@ -278,7 +218,7 @@ export default function Newsletter() {
             </div>
           </div>
 
-          <div className="space-y-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-6">
             {PREMIUM_FEATURES.map(({ icon: Icon, label, desc }) => (
               <div key={label} className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -301,12 +241,12 @@ export default function Newsletter() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handlePaidSignup} className="space-y-3 mb-4" data-paid>
+            <form onSubmit={handlePaidSignup} className="flex flex-col sm:flex-row gap-3 mb-4" data-paid>
               <Input
                 placeholder="Your name (optional)"
                 value={paidName}
                 onChange={(e) => setPaidName(e.target.value)}
-                className="h-11"
+                className="h-11 sm:flex-1"
               />
               <Input
                 type="email"
@@ -314,17 +254,17 @@ export default function Newsletter() {
                 value={paidEmail}
                 onChange={(e) => setPaidEmail(e.target.value)}
                 required
-                className="h-11"
+                className="h-11 sm:flex-1"
               />
-              <Button type="submit" className="w-full h-11 gap-2 text-base" disabled={paidLoading || !paidEmail}>
-                {paidLoading ? 'Redirecting to checkout…' : <>Subscribe — £9.99/month <ArrowRight className="w-4 h-4" /></>}
+              <Button type="submit" className="h-11 gap-2 whitespace-nowrap px-6" disabled={paidLoading || !paidEmail}>
+                {paidLoading ? 'Redirecting…' : <>Subscribe — £9.99/mo <ArrowRight className="w-4 h-4" /></>}
               </Button>
             </form>
           )}
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-x-6 gap-y-1.5">
             {['Secure payment via Stripe', 'Cancel anytime — no questions asked', 'No setup fees or hidden charges'].map((t) => (
-              <div key={t} className="flex items-center gap-2 text-xs text-muted-foreground/70">
+              <div key={t} className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 {t}
               </div>
@@ -337,7 +277,7 @@ export default function Newsletter() {
       {/* ── RECENT EDITIONS — full width section ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-14"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-10"
       >
         {/* Section header */}
         <div className="flex items-end justify-between mb-7">
@@ -418,11 +358,73 @@ export default function Newsletter() {
         )}
       </motion.div>
 
+      {/* ── FREE TIER ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-10"
+      >
+        <div className="glass rounded-2xl border border-border/50 p-6 sm:p-8">
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 mb-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-xs font-semibold text-emerald-500">Free</span>
+              </div>
+              <h2 className="font-display text-2xl font-semibold">Weekly Digest</h2>
+              <p className="text-muted-foreground text-sm mt-1">Every Friday at 10pm</p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-3xl font-bold">£0</span>
+              <div className="text-xs text-muted-foreground">always free</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6">
+            {FREE_FEATURES.map((f) => (
+              <div key={f} className="flex items-start gap-2.5 text-sm">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">{f}</span>
+              </div>
+            ))}
+          </div>
+
+          {freeSuccess ? (
+            <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
+              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold">You're on the list.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Check your inbox — first edition arrives this Friday at 10pm.</p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleFreeSignup} className="flex flex-col sm:flex-row gap-3">
+              <Input
+                placeholder="Your name (optional)"
+                value={freeName}
+                onChange={(e) => setFreeName(e.target.value)}
+                className="h-11 sm:flex-1"
+              />
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={freeEmail}
+                onChange={(e) => setFreeEmail(e.target.value)}
+                required
+                className="h-11 sm:flex-1"
+              />
+              <Button type="submit" variant="outline" className="h-11 gap-2 whitespace-nowrap px-6" disabled={freeLoading || !freeEmail}>
+                {freeLoading ? 'Signing up…' : <><Mail className="w-4 h-4" /> Sign Up Free</>}
+              </Button>
+            </form>
+          )}
+        </div>
+      </motion.div>
+
       {/* ── CANCEL / MANAGE ── */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pb-8">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <motion.div
           id="manage"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           <CancelBox
