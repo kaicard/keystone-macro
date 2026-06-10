@@ -25,7 +25,7 @@ async function sendCancellationEmail(base44, email, name) {
     <div style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:24px;margin-bottom:24px;">
       <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">One quick question, if you don't mind:</div>
       <div style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:16px;">What made you decide to cancel? Your feedback helps us improve — even a sentence means a lot.</div>
-      <a href="mailto:feedback@keystonemacro.com?subject=Cancellation%20Feedback" style="display:inline-block;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:11px 22px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Reply with Feedback</a>
+      <a href="mailto:hello@keystonemacro.com?subject=Cancellation%20Feedback" style="display:inline-block;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:11px 22px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Reply with Feedback</a>
     </div>
     <div style="font-size:14px;color:#475569;line-height:1.8;margin-bottom:8px;">If you ever want to come back, we'll be here.</div>
     <a href="https://keystonemacro.com/Newsletter" style="font-size:13px;color:#d97706;text-decoration:none;font-weight:600;">Resubscribe at any time &rarr;</a>
