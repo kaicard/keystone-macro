@@ -337,65 +337,81 @@ export default function Newsletter() {
       {/* ── RECENT EDITIONS — full width section ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-12"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-14"
       >
-        <div className="mb-8">
-          <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
-          <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
+        {/* Section header */}
+        <div className="flex items-end justify-between mb-7">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">Archive</p>
+            <h2 className="font-display text-2xl font-semibold text-foreground">Recent Editions</h2>
+          </div>
+          {isPaidSubscriber && premiumEditions.length > 0 && (
+            <span className="text-xs text-muted-foreground/50 font-medium tabular-nums">
+              {visibleEditions.length} of {premiumEditions.length}
+            </span>
+          )}
         </div>
 
         {isPaidSubscriber ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {visibleEditions.map((edition, i) => (
-                <EditionCard key={edition.id} edition={edition} index={i} />
-              ))}
-            </div>
-            {premiumEditions.length === 0 && (
-              <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
-                No editions published yet — check back soon.
+            {premiumEditions.length === 0 ? (
+              <div className="rounded-2xl border border-border/25 bg-card/40 p-12 text-center">
+                <p className="text-sm text-muted-foreground/50">No editions published yet — check back soon.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {visibleEditions.map((edition, i) => (
+                  <EditionCard key={edition.id} edition={edition} index={i} />
+                ))}
               </div>
             )}
-            <div className="flex items-center justify-center gap-4 mt-6">
-              {hasMore && (
-                <button
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-4 rounded-full border border-border/40 hover:border-border/70"
-                  onClick={() => setVisibleCount(c => c + 6)}
-                >
-                  View {Math.min(6, premiumEditions.length - visibleCount)} more editions
-                </button>
-              )}
-              {canCollapse && (
-                <button
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-4 rounded-full border border-border/40 hover:border-border/70"
-                  onClick={() => setVisibleCount(6)}
-                >
-                  Show less
-                </button>
-              )}
-            </div>
+
+            {(hasMore || canCollapse) && (
+              <div className="flex items-center justify-center gap-3 mt-6">
+                {hasMore && (
+                  <button
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-5 rounded-full border border-border/30 hover:border-border/60 bg-card/40 hover:bg-card/70"
+                    onClick={() => setVisibleCount(c => c + 6)}
+                  >
+                    Load {Math.min(6, premiumEditions.length - visibleCount)} more
+                  </button>
+                )}
+                {canCollapse && (
+                  <button
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-5 rounded-full border border-border/30 hover:border-border/60 bg-card/40 hover:bg-card/70"
+                    onClick={() => setVisibleCount(6)}
+                  >
+                    Show less
+                  </button>
+                )}
+              </div>
+            )}
           </>
         ) : (
-          <div className="relative">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 select-none pointer-events-none" style={{ filter: 'blur(6px)', opacity: 0.3 }}>
+          <div className="relative overflow-hidden rounded-2xl">
+            {/* Blurred placeholder grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 select-none pointer-events-none" style={{ filter: 'blur(8px)', opacity: 0.25 }}>
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-6 h-40" />
+                <div key={i} className="rounded-2xl border border-border/25 bg-card/50 p-5 h-36" />
               ))}
             </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-primary" />
+            {/* Lock overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/30 backdrop-blur-[2px] rounded-2xl">
+              <div className="w-11 h-11 rounded-full bg-card border border-border/40 flex items-center justify-center shadow-sm">
+                <Lock className="w-4.5 h-4.5 text-muted-foreground" />
               </div>
-              <p className="text-base font-semibold">Premium subscribers only</p>
-              <p className="text-xs text-muted-foreground text-center max-w-xs">
-                {user ? 'Your account does not have an active premium subscription.' : 'Sign in with a premium account, or subscribe below.'}
-              </p>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-foreground mb-1">Premium subscribers only</p>
+                <p className="text-xs text-muted-foreground/60 max-w-[260px]">
+                  {user ? 'Your account is not on an active premium plan.' : 'Subscribe to unlock the full archive.'}
+                </p>
+              </div>
               <Button
                 size="sm"
-                className="gap-1.5 rounded-full mt-1"
+                className="gap-1.5 rounded-full h-8 px-4 text-xs mt-1"
                 onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                <Sparkles className="w-3.5 h-3.5" /> Subscribe — £9.99/month
+                <Sparkles className="w-3 h-3" /> Subscribe — £9.99/month
               </Button>
             </div>
           </div>
