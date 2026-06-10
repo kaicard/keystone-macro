@@ -37,7 +37,6 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
         tension: 0.3,
         pointRadius: 0,
         borderWidth: 2.5,
-        label: '',
       }]
     },
     options: {
@@ -457,18 +456,18 @@ Return JSON:
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
 
-    // ── Image topic → Unsplash URL map ────────────────────────────────────────
+    // ── Image topic → Unsplash URL map (high quality, tightly correlated) ─────
     const IMAGE_MAP = {
-      oil_refinery:     'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=560&q=85',
-      federal_reserve:  'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=560&q=85',
-      stock_exchange:   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=560&q=85',
-      gold_bars:        'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=560&q=85',
-      currency_trading: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=560&q=85',
-      world_diplomacy:  'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=560&q=85',
-      tech_industry:    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=560&q=85',
-      emerging_city:    'https://images.unsplash.com/photo-1569025743873-ea3a9ade89f9?w=560&q=85',
-      bond_market:      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=560&q=85',
-      commodity_fields: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=560&q=85',
+      oil_refinery:     'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=700&q=90&fit=crop',  // oil refinery at dusk
+      federal_reserve:  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=700&q=90&fit=crop',  // Federal Reserve building
+      stock_exchange:   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=700&q=90&fit=crop',  // trader at screens
+      gold_bars:        'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=700&q=90&fit=crop',  // gold bullion bars
+      currency_trading: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=700&q=90&fit=crop',  // currency/FX desk
+      world_diplomacy:  'https://images.unsplash.com/photo-1554734867-bf3c00a49371?w=700&q=90&fit=crop',     // UN / diplomacy hall
+      tech_industry:    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=700&q=90&fit=crop',  // circuit board / tech
+      emerging_city:    'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=700&q=90&fit=crop',  // emerging market skyline
+      bond_market:      'https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?w=700&q=90&fit=crop',     // treasury / bond paperwork desk
+      commodity_fields: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=700&q=90&fit=crop',  // wheat fields / commodities
     };
 
     // ── Fetch chart data only for the SINGLE best chart section ──────────────
@@ -523,7 +522,7 @@ Return JSON:
       if (i === imageSectionIdx) {
         imageHtml = imageBlockHtml({
           imageUrl: IMAGE_MAP[s.image_topic],
-          caption: `${s.label} — contextual illustration`,
+          caption: s.label,
         });
       }
 
