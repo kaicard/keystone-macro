@@ -136,6 +136,7 @@ export default function Admin() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscriberFilter, setSubscriberFilter] = useState('all');
 
   const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
   const { data: subscribersData = [] } = useQuery({
@@ -202,6 +203,15 @@ export default function Admin() {
     setEditingNote(null);
   };
 
+  const getFilteredSubscribers = () => {
+    if (subscriberFilter === 'all') return subscribersData;
+    const [status, type] = subscriberFilter.split('-');
+    return subscribersData.filter(s => 
+      (status === 'any' || s.status === status) &&
+      (type === 'any' || s.type === type)
+    );
+  };
+
   return (
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -258,9 +268,25 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="subscribers">
-            <h2 className="font-semibold mb-6">{subscribersData.length} Subscribers</h2>
+            <div className="mb-6">
+              <h2 className="font-semibold mb-4">{subscribersData.length} Subscribers</h2>
+              <Select value={subscriberFilter} onValueChange={setSubscriberFilter}>
+                <SelectTrigger className="w-64">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subscribers</SelectItem>
+                  <SelectItem value="active-any">Active (All)</SelectItem>
+                  <SelectItem value="active-free">Active Free Users</SelectItem>
+                  <SelectItem value="active-premium">Active Premium Users</SelectItem>
+                  <SelectItem value="unsubscribed-any">Unsubscribed (All)</SelectItem>
+                  <SelectItem value="unsubscribed-free">Unsubscribed Free Users</SelectItem>
+                  <SelectItem value="unsubscribed-premium">Unsubscribed Premium Users</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
-              {subscribersData.map(sub => (
+              {getFilteredSubscribers().map(sub => (
                 <div key={sub.id} className="glass rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <p className="font-medium text-sm">{sub.email}</p>
@@ -274,7 +300,7 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
-              {subscribersData.length === 0 && <p className="text-center py-12 text-muted-foreground">No subscribers yet.</p>}
+              {getFilteredSubscribers().length === 0 && <p className="text-center py-12 text-muted-foreground">No subscribers match this filter.</p>}
             </div>
           </TabsContent>
 
