@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing email' }, { status: 400 });
     }
 
-    const firstName = name ? name.split(' ')[0] : 'there';
+    const firstName = name ? name.split(' ')[0] : null;
     const isPaid = type === 'paid';
 
     const subject = isPaid
@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
   <tr><td style="height:4px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></td></tr>
   <tr><td style="padding:40px 40px 32px;">
     <div style="font-size:10px;letter-spacing:3px;color:#d97706;text-transform:uppercase;font-weight:700;margin-bottom:24px;">Keystone Macro · Premium</div>
-    <div style="font-size:26px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:16px;font-family:Georgia,'Times New Roman',serif;">Welcome, ${firstName}.</div>
+    <div style="font-size:26px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:16px;font-family:Georgia,'Times New Roman',serif;">${firstName ? `Welcome, ${firstName}.` : 'Welcome.'}</div>
     <div style="font-size:15px;color:#475569;line-height:1.8;margin-bottom:24px;">
       Your Keystone Macro Premium subscription is now active. Here's what you have access to:
     </div>
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
   <tr><td style="height:4px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></td></tr>
   <tr><td style="padding:40px 40px 32px;">
     <div style="font-size:10px;letter-spacing:3px;color:#d97706;text-transform:uppercase;font-weight:700;margin-bottom:24px;">Keystone Macro Weekly</div>
-    <div style="font-size:26px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:16px;font-family:Georgia,'Times New Roman',serif;">You're on the list, ${firstName}.</div>
+    <div style="font-size:26px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:16px;font-family:Georgia,'Times New Roman',serif;">${firstName ? `You're on the list, ${firstName}.` : `You're on the list!`}</div>
     <div style="font-size:15px;color:#475569;line-height:1.8;margin-bottom:24px;">
       Every Friday at 10pm, you'll receive the Keystone Macro Weekly — a free digest covering the biggest market themes of the week, delivered straight to your inbox.
     </div>
