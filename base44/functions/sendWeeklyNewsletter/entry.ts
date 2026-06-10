@@ -144,7 +144,9 @@ function buildWeeklyEmailHtml({ subject, dateStr, weekRange, marketSnapshot, sec
       <span style="font-size:11px;color:#94a3b8;line-height:2;">
         The Keystone Macro Weekly &nbsp;·&nbsp; Free Edition<br/>
         You are receiving this because you subscribed to the Keystone Macro mailing list.<br/>
-        <a href="https://keystonemacro.com/Newsletter" style="color:#d97706;text-decoration:none;font-weight:600;">Manage subscription</a>
+        <a href="https://keystonemacro.com/Newsletter#manage" style="color:#d97706;text-decoration:none;font-weight:600;">Unsubscribe</a>
+        &nbsp;·&nbsp;
+        <a href="https://keystonemacro.com/Newsletter" style="color:#94a3b8;text-decoration:none;">keystonemacro.com</a>
       </span>
     </div>
   </td></tr>
