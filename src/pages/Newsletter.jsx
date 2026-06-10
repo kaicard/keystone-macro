@@ -26,6 +26,74 @@ const PREMIUM_FEATURES = [
   { icon: Globe,     label: 'Full Archive',              desc: 'Every edition ever published, searchable and categorised' },
 ];
 
+function CancelBox({ title, description, badge, badgeColor, type }) {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null); // 'done' | 'not_found' | 'error'
+
+  const badgeClasses = badgeColor === 'emerald'
+    ? 'bg-emerald-400/10 border-emerald-400/20 text-emerald-500'
+    : 'bg-primary/10 border-primary/20 text-primary';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    setStatus(null);
+    const res = await base44.functions.invoke('manageSubscription', { action: 'cancel', email });
+    if (res?.data?.success) {
+      setStatus('done');
+    } else if (res?.data?.error?.includes('No subscription')) {
+      setStatus('not_found');
+    } else {
+      setStatus('error');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="glass rounded-2xl border border-border/50 p-6 flex flex-col">
+      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border self-start mb-3 ${badgeClasses}`}>
+        <span className="text-xs font-semibold">{badge}</span>
+      </div>
+      <h3 className="font-semibold text-base mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-4 flex-1">{description}</p>
+
+      {status === 'done' ? (
+        <div className="flex items-center gap-2 bg-muted/40 rounded-xl px-3 py-2.5">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="text-xs text-muted-foreground">Done. Confirmation email on its way.</span>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-2.5">
+          <Input
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setStatus(null); }}
+            required
+            className="h-10"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            className="w-full h-10 gap-2 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive text-sm"
+            disabled={loading || !email}
+          >
+            {loading ? 'Processing…' : <><X className="w-3.5 h-3.5" /> Cancel</>}
+          </Button>
+          {status === 'not_found' && (
+            <p className="text-xs text-destructive">No active subscription found for that email.</p>
+          )}
+          {status === 'error' && (
+            <p className="text-xs text-destructive">Something went wrong. Please try again.</p>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}
+
 export default function Newsletter() {
   // Free signup
   const [freeEmail, setFreeEmail] = useState('');
@@ -38,10 +106,7 @@ export default function Newsletter() {
   const [paidName, setPaidName] = useState('');
   const [paidLoading, setPaidLoading] = useState(false);
 
-  // Cancel
-  const [cancelEmail, setCancelEmail] = useState('');
-  const [cancelLoading, setCancelLoading] = useState(false);
-  const [cancelStatus, setCancelStatus] = useState(null); // 'done' | 'not_found' | 'error'
+  // (cancel state is handled per-box in CancelBox component below)
 
   // Check for ?subscribed=true from Stripe redirect
   const urlParams = new URLSearchParams(window.location.search);
@@ -79,21 +144,7 @@ export default function Newsletter() {
     setPaidLoading(false);
   };
 
-  const handleCancel = async (e) => {
-    e.preventDefault();
-    if (!cancelEmail) return;
-    setCancelLoading(true);
-    setCancelStatus(null);
-    const res = await base44.functions.invoke('manageSubscription', { action: 'cancel', email: cancelEmail });
-    if (res?.data?.success) {
-      setCancelStatus('done');
-    } else if (res?.data?.error?.includes('No subscription')) {
-      setCancelStatus('not_found');
-    } else {
-      setCancelStatus('error');
-    }
-    setCancelLoading(false);
-  };
+
 
   return (
     <div className="pt-20 lg:pt-24 pb-24 min-h-screen relative">
@@ -258,44 +309,24 @@ export default function Newsletter() {
         <motion.div
           id="manage"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="glass rounded-2xl border border-border/50 p-6 sm:p-8"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
-          <h2 className="font-semibold text-base mb-1">Manage subscription</h2>
-          <p className="text-sm text-muted-foreground mb-5">
-            To cancel your free or paid subscription, enter your email below. We'll process it immediately and send a confirmation.
-          </p>
-
-          {cancelStatus === 'done' ? (
-            <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-3">
-              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-sm text-muted-foreground">Unsubscribed. You'll receive a confirmation email shortly.</span>
-            </div>
-          ) : (
-            <form onSubmit={handleCancel} className="space-y-3">
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={cancelEmail}
-                onChange={(e) => { setCancelEmail(e.target.value); setCancelStatus(null); }}
-                required
-                className="h-11"
-              />
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full h-11 gap-2 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive"
-                disabled={cancelLoading || !cancelEmail}
-              >
-                {cancelLoading ? 'Processing…' : <><X className="w-4 h-4" /> Cancel Subscription</>}
-              </Button>
-              {cancelStatus === 'not_found' && (
-                <p className="text-xs text-destructive">No active subscription found for that email address.</p>
-              )}
-              {cancelStatus === 'error' && (
-                <p className="text-xs text-destructive">Something went wrong. Please try again or reply to any newsletter email.</p>
-              )}
-            </form>
-          )}
+          {/* Cancel Free */}
+          <CancelBox
+            title="Cancel Free Digest"
+            description="Unsubscribe from the weekly free newsletter."
+            badge="Free"
+            badgeColor="emerald"
+            type="free"
+          />
+          {/* Cancel Paid */}
+          <CancelBox
+            title="Cancel Premium"
+            description="Cancel your £9.99/month paid subscription."
+            badge="Premium"
+            badgeColor="amber"
+            type="paid"
+          />
         </motion.div>
 
       </div>
