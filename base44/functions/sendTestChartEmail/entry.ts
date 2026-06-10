@@ -291,18 +291,17 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
     const marginBottom = isLast ? '0' : '8px';
     return `<tr>
       <td style="padding-bottom:${marginBottom};">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:3px solid ${accentBar};border-radius:8px;overflow:hidden;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:4px solid ${accentBar};border-radius:10px;overflow:hidden;">
           <tr>
-            <td style="padding:11px 12px;">
+            <td style="padding:13px 16px 13px 14px;">
+              <div style="font-size:10px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#64748b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin-bottom:6px;">${m.label}</div>
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td style="vertical-align:middle;width:40%;">
-                    <div style="font-size:11px;font-weight:600;color:#94a3b8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;">${m.label}</div>
+                  <td style="vertical-align:middle;">
+                    <span style="font-size:18px;font-weight:800;color:#f1f5f9;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
                   </td>
-                  <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
-                    <span style="font-size:15px;font-weight:800;color:#f8fafc;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
-                    &nbsp;
-                    <span style="display:inline-block;background:${changeBg};border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;">${displayChange}</span>
+                  <td style="text-align:right;vertical-align:middle;">
+                    <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.2px;">${displayChange}</span>
                   </td>
                 </tr>
               </table>
