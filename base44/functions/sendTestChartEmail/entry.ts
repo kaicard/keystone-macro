@@ -1,153 +1,283 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// Yahoo Finance chart image endpoint — returns a clean PNG, no branding visible
-// Range: 1d, 5d, 1mo, 3mo, 6mo, 1y | Interval: 1m, 5m, 15m, 1h, 1d
-function yahooChartUrl(symbol, range = '1d', interval = '5m', width = 520, height = 200) {
-  return `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=div%2Csplit`;
-}
+// ─── Chart builder — high quality, clean, properly spaced ──────────────────────
+function buildChartUrl({ labels, data, color, symbol, isUp, height = 220 }) {
+  // Tight Y-axis range for meaningful visual movement
+  const validData = data.filter(d => d != null && !isNaN(d));
+  if (validData.length < 3) return null;
 
-// We'll use a sparkline-style chart via quickchart.io which gives clean, unbranded charts
-function sparklineChartUrl({ labels, data, label, color = '#d97706', width = 520, height = 160 }) {
+  const minVal = Math.min(...validData);
+  const maxVal = Math.max(...validData);
+  const range = maxVal - minVal;
+  const padding = range * 0.15 || minVal * 0.002;
+  const yMin = parseFloat((minVal - padding).toFixed(4));
+  const yMax = parseFloat((maxVal + padding).toFixed(4));
+
+  // Determine decimal places from data magnitude
+  const magnitude = Math.abs(validData[0]);
+  const decimalPlaces = magnitude > 1000 ? 0 : magnitude > 10 ? 2 : magnitude > 1 ? 4 : 5;
+
+  const fillColor = isUp ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+  const lineColor = isUp ? '#10b981' : '#ef4444';
+  const finalColor = color || lineColor;
+  const finalFill = color ? (color + '12') : fillColor;
+
   const chartConfig = {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        label,
         data,
-        borderColor: color,
-        backgroundColor: color + '18',
+        borderColor: finalColor,
+        backgroundColor: finalFill,
         fill: true,
-        tension: 0.4,
+        tension: 0.35,
         pointRadius: 0,
-        borderWidth: 2.5,
+        pointHoverRadius: 0,
+        borderWidth: 2,
       }]
     },
     options: {
+      layout: { padding: { left: 8, right: 16, top: 16, bottom: 8 } },
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: false }
       },
       scales: {
         x: {
-          grid: { color: '#e2e8f0', borderColor: '#e2e8f0' },
+          grid: { color: 'rgba(148,163,184,0.12)', borderColor: 'rgba(148,163,184,0.2)' },
+          border: { color: 'rgba(148,163,184,0.2)' },
           ticks: {
-            font: { size: 9, family: 'sans-serif' },
+            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif", weight: '500' },
             color: '#94a3b8',
             maxRotation: 0,
-            maxTicksLimit: 6,
+            maxTicksLimit: 7,
+            padding: 6,
           }
         },
         y: {
-          grid: { color: '#e2e8f0', borderColor: '#e2e8f0' },
+          min: yMin,
+          max: yMax,
+          position: 'right',
+          grid: { color: 'rgba(148,163,184,0.12)', borderColor: 'rgba(148,163,184,0.2)' },
+          border: { color: 'rgba(148,163,184,0.2)', dash: [3, 3] },
           ticks: {
-            font: { size: 9, family: 'sans-serif' },
-            color: '#94a3b8',
-            maxTicksLimit: 5,
+            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif", weight: '600' },
+            color: '#64748b',
+            maxTicksLimit: 6,
+            padding: 8,
+            callback: `function(val) { return val.toFixed(${decimalPlaces}); }`
           }
         }
       }
     }
   };
 
-  return `https://quickchart.io/chart?w=${width}&h=${height}&bkg=white&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+  const encoded = encodeURIComponent(JSON.stringify(chartConfig));
+  return `https://quickchart.io/chart?w=520&h=${height}&bkg=%23f8fafc&c=${encoded}`;
 }
 
-// Build inline chart block for email HTML
-function chartBlock({ title, chartUrl, caption, color = '#d97706' }) {
+// ─── Fetch live intraday data from Yahoo Finance ───────────────────────────────
+async function fetchIntradayData(symbol) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=5m&includePrePost=false`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Accept': 'application/json',
+    }
+  });
+  const json = await res.json();
+  const result = json?.chart?.result?.[0];
+  if (!result) return null;
+
+  const timestamps = result.timestamp || [];
+  const closes = result.indicators?.quote?.[0]?.close || [];
+  const meta = result.meta || {};
+
+  // Filter out null closes and sample to ~22 points
+  const pairs = timestamps
+    .map((t, i) => ({ t, c: closes[i] }))
+    .filter(p => p.c != null && !isNaN(p.c));
+
+  if (pairs.length < 3) return null;
+
+  const step = Math.max(1, Math.floor(pairs.length / 22));
+  const sampled = [];
+  for (let j = 0; j < pairs.length; j += step) sampled.push(pairs[j]);
+  // Always include last point
+  if (sampled[sampled.length - 1] !== pairs[pairs.length - 1]) {
+    sampled.push(pairs[pairs.length - 1]);
+  }
+
+  const labels = sampled.map(p => {
+    const d = new Date(p.t * 1000);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' });
+  });
+  const data = sampled.map(p => parseFloat(p.c.toFixed(6)));
+
+  const open = data[0];
+  const close = data[data.length - 1];
+  const high = Math.max(...data);
+  const low = Math.min(...data);
+  const changeAbs = close - open;
+  const changePct = ((changeAbs / open) * 100).toFixed(2);
+  const isUp = changeAbs >= 0;
+
+  return { labels, data, open, close, high, low, changeAbs, changePct, isUp, currency: meta.currency || '', symbol };
+}
+
+// ─── Unsplash free image — contextual, clean, no copyright issues ──────────────
+// Using Unsplash Source API (free, no API key needed, returns actual images)
+// We pick specific photo IDs that are highly relevant to finance topics
+const UNSPLASH_TOPICS = {
+  equities:     'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80',   // stock market screens
+  stocks:       'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80',
+  nasdaq:       'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=600&q=80',   // NYSE trading floor
+  sp500:        'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&q=80',   // financial charts
+  bonds:        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80',       // financial documents
+  'fixed income': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80',
+  rates:        'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=600&q=80',       // Federal Reserve
+  'central banks': 'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=600&q=80',
+  fed:          'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=600&q=80',
+  oil:          'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=600&q=80',   // oil refinery
+  commodities:  'https://images.unsplash.com/photo-1590650046871-92c887180603?w=600&q=80',   // commodities/gold
+  gold:         'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=600&q=80',   // gold bars
+  fx:           'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=600&q=80',   // currency/forex
+  currency:     'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=600&q=80',
+  geopolitics:  'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&q=80',   // world map / diplomacy
+  macro:        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',       // data/analytics
+  'macro data': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',
+  credit:       'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80',   // credit cards/finance
+  tech:         'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80',   // technology
+  technology:   'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80',
+  'emerging markets': 'https://images.unsplash.com/photo-1569025743873-ea3a9ade89f9?w=600&q=80', // emerging market city
+};
+
+function getContextualImage(label, headline) {
+  const combined = (label + ' ' + headline).toLowerCase();
+  for (const [keyword, url] of Object.entries(UNSPLASH_TOPICS)) {
+    if (combined.includes(keyword)) return url;
+  }
+  return null;
+}
+
+// ─── Chart card HTML ───────────────────────────────────────────────────────────
+function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, low, changePct, isUp, color }) {
+  const changeColor = isUp ? '#10b981' : '#ef4444';
+  const arrow = isUp ? '▲' : '▼';
+  const sign = isUp ? '+' : '';
+
+  return `
+  <div style="margin-bottom:8px;border-radius:14px;border:1px solid #e2e8f0;background:#ffffff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <!-- Chart header -->
+    <div style="background:#f8fafc;padding:16px 20px 14px;border-bottom:1px solid #f1f5f9;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="vertical-align:middle;">
+            <div style="font-size:8px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;">Intraday Chart · NYSE Session</div>
+            <div style="font-size:16px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">${title}</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:2px;">${symbol}</div>
+          </td>
+          <td style="vertical-align:middle;text-align:right;">
+            <div style="font-size:22px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;">${typeof close === 'number' ? close.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'}</div>
+            <div style="font-size:13px;font-weight:700;color:${changeColor};margin-top:2px;">${arrow} ${sign}${changePct}% today</div>
+          </td>
+        </tr>
+      </table>
+      <!-- OHLC row -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
+        <tr>
+          ${[['Open', open], ['High', high], ['Low', low], ['Close', close]].map(([lbl, val]) => `
+          <td style="text-align:center;padding:8px 4px;background:#f1f5f9;border-radius:6px;">
+            <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;">${lbl}</div>
+            <div style="font-size:12px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${typeof val === 'number' ? val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'}</div>
+          </td>`).join('<td style="width:6px;"></td>')}
+        </tr>
+      </table>
+    </div>
+    <!-- Chart image -->
+    <div style="background:#f8fafc;padding:4px 0 0 0;">
+      <img src="${chartUrl}" width="520" alt="${title} intraday chart" style="display:block;width:100%;max-width:520px;border:none;" />
+    </div>
+    <!-- Caption -->
+    ${caption ? `<div style="padding:12px 20px 14px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:11.5px;color:#64748b;line-height:1.65;font-style:italic;">${caption}</div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ─── Image block HTML ──────────────────────────────────────────────────────────
+function imageBlockHtml({ imageUrl, caption, accent }) {
+  return `
+  <div style="margin-bottom:8px;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <img src="${imageUrl}" width="560" alt="" style="display:block;width:100%;max-width:560px;height:220px;object-fit:cover;" />
+    ${caption ? `<div style="background:#f8fafc;padding:10px 18px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.5;font-style:italic;">↑ ${caption}</div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ─── Section card HTML ─────────────────────────────────────────────────────────
+function sectionCardHtml({ label, headline, body, callout, accent, chartHtml, imageHtml }) {
+  const cleanBody = (body || '')
+    .replace(/\s*\(https?:\/\/[^\)]+\)/g, '')
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/\s*\[[^\]]*\]\s*\(https?:\/\/[^\)]+\)/g, '');
+  const bodyHtml = cleanBody.replace(/\n/g, '<br/>');
+
   return `
   <tr><td style="padding-bottom:16px;">
-    <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;">
-      <div style="height:3px;background:${color};"></div>
-      <div style="padding:20px 28px 22px;">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};margin-bottom:14px;">${title}</div>
-        <img src="${chartUrl}" width="520" alt="${title}" style="display:block;width:100%;max-width:520px;border-radius:6px;border:1px solid #f1f5f9;" />
-        ${caption ? `<div style="font-size:11px;color:#94a3b8;margin-top:10px;font-style:italic;line-height:1.6;">${caption}</div>` : ''}
+    <div style="border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+      <div style="height:3px;background:${accent};"></div>
+      <div style="padding:24px 28px 26px;">
+        <!-- Label -->
+        <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+          <tr>
+            <td style="padding-right:8px;vertical-align:middle;">
+              <div style="width:7px;height:7px;background:${accent};border-radius:50%;"></div>
+            </td>
+            <td style="vertical-align:middle;">
+              <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};">${label || ''}</span>
+            </td>
+          </tr>
+        </table>
+        <!-- Headline -->
+        <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${headline}</div>
+        <!-- Body -->
+        <div style="font-size:14px;color:#475569;line-height:1.9;margin-bottom:${callout ? '18px' : '0'};">${bodyHtml}</div>
+        <!-- Callout -->
+        ${callout ? `<div style="border-radius:8px;background:#f8fafc;border-left:3px solid ${accent};padding:14px 18px;">
+          <div style="font-size:13px;color:#374151;line-height:1.7;font-style:italic;">${callout}</div>
+        </div>` : ''}
       </div>
     </div>
-  </td></tr>`;
+  </td></tr>
+  ${chartHtml ? `<tr><td style="padding-bottom:16px;">${chartHtml}</td></tr>` : ''}
+  ${imageHtml ? `<tr><td style="padding-bottom:16px;">${imageHtml}</td></tr>` : ''}`;
 }
 
-function buildTestEmailHtml({ subject, dateStr, marketSnapshot, sections, charts, footerNote }) {
-
-  const headerAccent = 'background:linear-gradient(90deg,#3b82f6,#6366f1,#60a5fa);';
-  const editionColor = '#3b82f6';
+// ─── Full email HTML ───────────────────────────────────────────────────────────
+function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, footerNote }) {
+  const headerGradient = 'background:linear-gradient(90deg,#3b82f6,#6366f1,#818cf8);';
+  const editionColor = '#6366f1';
 
   function snapCard(m) {
-    const isPos = String(m.change).startsWith('+');
-    const isNeg = String(m.change).startsWith('-');
+    const raw = String(m.change || '');
+    const isPos = raw.startsWith('+');
+    const isNeg = raw.startsWith('-');
     const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#9ca3af';
     const arrow = isPos ? '▲' : isNeg ? '▼' : '–';
-    return `<table width="152" cellpadding="0" cellspacing="0" border="0" style="width:152px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
-      <tr><td width="152" style="padding:14px 12px;vertical-align:top;height:88px;">
-        <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">${m.label}</div>
-        <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:8px;font-variant-numeric:tabular-nums;">${m.value}</div>
-        <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow}&nbsp;${m.change}</div>
-      </td></tr>
-    </table>`;
+    return `
+    <td style="padding:0 6px 0 0;vertical-align:top;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 12px;min-width:88px;">
+        <div style="font-size:7px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#64748b;margin-bottom:7px;white-space:nowrap;">${m.label}</div>
+        <div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:5px;font-variant-numeric:tabular-nums;white-space:nowrap;">${m.value}</div>
+        <div style="font-size:10px;font-weight:700;color:${changeColor};white-space:nowrap;">${arrow} ${m.change}</div>
+      </div>
+    </td>`;
   }
 
   const snap = (marketSnapshot || []).slice(0, 5);
-  const snapshotHtml = `
-    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
-      <tr>
-        <td style="padding:0 4px 8px 0;">${snapCard(snap[0] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 4px 8px 4px;">${snapCard(snap[1] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 0 8px 4px;">${snapCard(snap[2] || {label:'–',value:'–',change:'–'})}</td>
-      </tr>
-      <tr>
-        <td style="padding:0 4px 0 0;">${snapCard(snap[3] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 4px 0 4px;">${snapCard(snap[4] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0;"></td>
-      </tr>
-    </table>`;
-
-  const ACCENTS = ['#d97706','#3b82f6','#8b5cf6','#10b981','#f43f5e','#06b6d4'];
-
-  const sectionBlocks = sections.map((s, i) => {
-    const accent = ACCENTS[i % ACCENTS.length];
-    const cleanBody = (s.body || '')
-      .replace(/\s*\(https?:\/\/[^\)]+\)/g, '')
-      .replace(/https?:\/\/\S+/g, '')
-      .replace(/\s*\[[^\]]*\]\s*\(https?:\/\/[^\)]+\)/g, '');
-    const bodyHtml = cleanBody.replace(/\n/g, '<br/>');
-
-    // Inject chart after a specific section if one is mapped
-    const sectionChart = charts.find(c => c.afterSection === i);
-    const chartHtml = sectionChart ? chartBlock({
-      title: sectionChart.title,
-      chartUrl: sectionChart.url,
-      caption: sectionChart.caption,
-      color: accent,
-    }) : '';
-
-    return `
-    <tr><td style="padding-bottom:16px;">
-      <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;">
-        <div style="height:3px;${headerAccent}opacity:0.6;"></div>
-        <div style="padding:24px 28px 28px;">
-          ${s.label ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;border-collapse:collapse;">
-            <tr>
-              <td width="8" height="9" style="padding:0 8px 0 0;vertical-align:middle;line-height:9px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="8" height="8" style="border-radius:50%;overflow:hidden;">
-                  <tr><td width="8" height="8" bgcolor="${accent}" style="width:8px;height:8px;min-width:8px;min-height:8px;border-radius:50%;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
-                </table>
-              </td>
-              <td style="vertical-align:middle;line-height:9px;">
-                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};line-height:9px;display:inline-block;">${s.label}</span>
-              </td>
-            </tr>
-          </table>` : ''}
-          <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${s.headline}</div>
-          <div style="font-size:14px;color:#475569;line-height:1.85;margin-bottom:${s.callout ? '18px' : '0'};">${bodyHtml}</div>
-          ${s.callout ? `<div style="border-radius:8px;background:#f8fafc;border-left:3px solid ${accent};padding:14px 18px;">
-            <div style="font-size:13px;color:#374151;line-height:1.7;font-style:italic;">${s.callout}</div>
-          </div>` : ''}
-        </div>
-      </div>
-    </td></tr>
-    ${chartHtml ? `<tr><td>${chartHtml.replace(/^<tr><td[^>]*>|<\/td><\/tr>$/g,'')}</td></tr>` : ''}`;
-  }).join('');
+  const snapshotRow = snap.map(m => snapCard(m)).join('') + '<td></td>';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -156,54 +286,65 @@ function buildTestEmailHtml({ subject, dateStr, marketSnapshot, sections, charts
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>${subject}</title>
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;">
-<tr><td align="center" style="padding:32px 16px;">
-<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+<tr><td align="center" style="padding:32px 12px 40px;">
+<table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;">
 
-  <tr><td style="padding-bottom:18px;text-align:center;">
-    <span style="font-size:10px;letter-spacing:4px;color:#94a3b8;text-transform:uppercase;font-weight:700;">The Keystone Macro Brief</span>
+  <!-- Wordmark -->
+  <tr><td style="padding-bottom:20px;text-align:center;">
+    <span style="font-size:9px;letter-spacing:5px;color:#94a3b8;text-transform:uppercase;font-weight:800;">The Keystone Macro Brief</span>
   </td></tr>
 
+  <!-- Hero -->
   <tr><td style="background:#0f172a;border-radius:16px 16px 0 0;overflow:hidden;">
-    <div style="height:4px;${headerAccent}"></div>
-    <div style="padding:36px 40px 32px;">
-      <div style="font-size:10px;letter-spacing:2.5px;color:${editionColor};text-transform:uppercase;font-weight:800;margin-bottom:12px;">Evening Wrap &nbsp;·&nbsp; ${dateStr}</div>
-      <div style="font-size:28px;font-weight:800;color:#f8fafc;line-height:1.25;font-family:Georgia,'Times New Roman',serif;">${subject}</div>
-      <div style="margin-top:10px;display:inline-block;background:#1e3a5f;border:1px solid #3b82f6;border-radius:6px;padding:4px 10px;">
-        <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#60a5fa;">Premium Edition — Charts Included</span>
+    <div style="height:4px;${headerGradient}"></div>
+    <div style="padding:36px 36px 32px;">
+      <div style="font-size:9px;letter-spacing:3px;color:${editionColor};text-transform:uppercase;font-weight:800;margin-bottom:10px;">Evening Wrap &nbsp;·&nbsp; ${dateStr}</div>
+      <div style="font-size:26px;font-weight:800;color:#f8fafc;line-height:1.25;font-family:Georgia,'Times New Roman',serif;margin-bottom:16px;">${subject}</div>
+      <div style="display:inline-block;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);border-radius:6px;padding:4px 10px;">
+        <span style="font-size:8px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#a5b4fc;">Premium Edition &nbsp;·&nbsp; Charts &amp; Analysis</span>
       </div>
     </div>
   </td></tr>
 
-  <tr><td style="background:#1e293b;padding:0 40px 28px;">
-    <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;padding-top:4px;margin-bottom:12px;">Market Snapshot</div>
-    ${snapshotHtml}
+  <!-- Market Snapshot -->
+  <tr><td style="background:#0f172a;border-bottom:1px solid #1e293b;padding:0 36px 28px;">
+    <div style="font-size:8px;letter-spacing:2.5px;color:#475569;text-transform:uppercase;font-weight:800;margin-bottom:14px;">Live Market Snapshot</div>
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+      <tr>${snapshotRow}</tr>
+    </table>
   </td></tr>
 
-  <tr><td style="height:8px;background:#f1f5f9;"></td></tr>
+  <!-- Divider -->
+  <tr><td style="height:10px;background:#f1f5f9;"></td></tr>
 
-  <tr><td style="background:#f1f5f9;padding:0 0 4px;">
+  <!-- Sections -->
+  <tr><td style="background:#f1f5f9;padding:0;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       ${sectionBlocks}
     </table>
   </td></tr>
 
-  <tr><td style="background:#ffffff;border:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
-    <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Read Full Edition Online</a>
+  <!-- CTA -->
+  <tr><td style="background:#0f172a;border-radius:12px;padding:28px 36px;text-align:center;margin-top:4px;">
+    <div style="font-size:11px;color:#64748b;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:16px;">Continue reading online</div>
+    <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#3b82f6);color:#ffffff;font-size:13px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Open Full Edition →</a>
   </td></tr>
 
-  <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;">
-    <div style="font-size:12px;color:#64748b;line-height:1.8;margin-bottom:12px;font-style:italic;">${footerNote}</div>
-    <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:4px;">
-      <span style="font-size:11px;color:#94a3b8;line-height:2;">
-        The Keystone Macro Brief &nbsp;·&nbsp; Charts are for illustrative purposes only.<br/>
-        <a href="https://keystonemacro.com/Newsletter#manage" style="color:${editionColor};text-decoration:none;font-weight:600;">Manage or cancel subscription</a>
+  <!-- Footer -->
+  <tr><td style="padding:24px 36px;text-align:center;">
+    <div style="font-size:12px;color:#64748b;line-height:1.8;font-style:italic;margin-bottom:14px;">${footerNote}</div>
+    <div style="border-top:1px solid #e2e8f0;padding-top:14px;">
+      <span style="font-size:10px;color:#94a3b8;line-height:2.2;">
+        The Keystone Macro Brief &nbsp;·&nbsp; Institutional Research &amp; Market Intelligence<br/>
+        Charts sourced from live market data and are for illustrative purposes only.<br/>
+        <a href="https://keystonemacro.com/Newsletter#manage" style="color:${editionColor};text-decoration:none;font-weight:600;">Manage subscription</a>
       </span>
     </div>
   </td></tr>
 
-  <tr><td style="height:32px;"></td></tr>
+  <tr><td style="height:24px;"></td></tr>
 </table>
 </td></tr>
 </table>
@@ -220,14 +361,16 @@ Deno.serve(async (req) => {
     const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const isoDate = now.toISOString().split('T')[0];
 
-    // Generate content with LLM — ask it to flag which 2-3 sections have the most chart-worthy price action
+    const ACCENTS = ['#6366f1', '#d97706', '#10b981', '#f43f5e', '#06b6d4', '#8b5cf6'];
+
+    // ── Two parallel LLM calls ────────────────────────────────────────────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro. Today is ${dateStr} (${isoDate}). This is a hypothetical Evening Wrap test edition.
-Return JSON with:
-- subject_line: punchy specific subject line (max 72 chars), no emojis
-- market_snapshot: array of 5 objects {label, value, change} — S&P 500, 10Y UST, DXY, Gold, Brent — with today's real levels
-- footer_note: sharp 1-line closing observation about today's markets, no emojis`,
+        prompt: `You are the lead macro analyst at Keystone Macro. Today is ${dateStr} (${isoDate}).
+Return JSON with today's REAL, VERIFIED closing/current data:
+- subject_line: the single most important market story today in one punchy line (max 70 chars, no emojis, no clickbait)
+- market_snapshot: exactly 5 objects with label/value/change for: S&P 500 (^GSPC), 10Y UST Yield (^TNX), DXY (DX-Y.NYB), Gold (GC=F), Brent Crude (BZ=F). Values must be today's real numbers.
+- footer_note: one sharp closing insight about today's session. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -239,23 +382,34 @@ Return JSON with:
         }
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing a hypothetical Evening Wrap test edition for ${dateStr} (${isoDate}).
+        prompt: `You are the lead macro analyst at Keystone Macro writing the Evening Wrap for ${dateStr} (${isoDate}).
 
-RULES: No URLs, no source citations, no emojis. Today's real data only.
+STRICT RULES:
+1. Every figure, price, % move, name, and event MUST be real and verified from today (${isoDate}). No fabrication.
+2. No URLs, hyperlinks, source citations, footnotes. Pure prose.
+3. No emojis.
+4. Write like a senior sell-side analyst — sharp, specific, authoritative.
 
-Write 4 analytical sections. For exactly 2 of those sections (the ones with the most interesting intraday price action today), also return a chart_config object so we can visualise the movement.
+Write EXACTLY 4 sections. Choose the 4 most important market-moving themes from today.
+
+For EXACTLY 2 sections — the ones with the most significant, chart-worthy intraday price movement today — provide a chart_config.
+For EXACTLY 2 sections — where context, geopolitics, or macro narrative matters more than price action — provide an image_topic instead.
+
+Do NOT provide both chart_config and image_topic for the same section.
 
 Return JSON:
-- sections: array of 4 objects each with:
-  - label: category (e.g. Equities, Fixed Income, FX, Commodities)
-  - headline: punchy specific headline
-  - body: 4 dense sentences with exact levels/tickers/percentages
-  - callout: 1 forward-looking sentence
-  - chart_config: (only for the 2 most chart-worthy sections) object with:
-    - yahoo_symbol: the main ticker symbol relevant to this section (e.g. "^GSPC", "GC=F", "DX-Y.NYB", "^TNX", "CL=F", "EURUSD=X")
-    - title: short chart title (e.g. "S&P 500 — Intraday")
-    - caption: 1 sentence describing what the chart shows and why it matters today
-    - color: hex color (#d97706 for equities, #3b82f6 for rates/bonds, #8b5cf6 for FX, #10b981 for commodities)`,
+- sections: array of 4 objects, each with:
+  - label: category tag (Equities / Fixed Income / FX / Commodities / Macro / Geopolitics / Central Banks / M&A / Credit / Emerging Markets)
+  - headline: specific punchy headline anchored to today's real event
+  - body: 4 dense sentences with exact tickers, levels, % moves, named people/companies
+  - callout: 1 forward-looking sentence — a specific upcoming catalyst
+  - chart_config (ONLY for 2 sections with most price movement): {
+      yahoo_symbol: exact Yahoo Finance ticker (e.g. "^GSPC" for S&P, "GC=F" for Gold, "^TNX" for 10Y yield, "CL=F" for WTI, "EURUSD=X" for EUR/USD, "^NDX" for Nasdaq 100),
+      title: instrument display name (e.g. "S&P 500", "Gold Spot", "EUR/USD"),
+      caption: one sentence explaining what the intraday chart reveals about today's session
+    }
+  - image_topic (ONLY for 2 sections where narrative > price action): one of these exact strings based on what fits best:
+      "oil_refinery" | "federal_reserve" | "stock_exchange" | "gold_bars" | "currency_trading" | "world_diplomacy" | "tech_industry" | "emerging_city" | "bond_market" | "commodity_fields"`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -274,10 +428,10 @@ Return JSON:
                     properties: {
                       yahoo_symbol: { type: 'string' },
                       title: { type: 'string' },
-                      caption: { type: 'string' },
-                      color: { type: 'string' }
+                      caption: { type: 'string' }
                     }
-                  }
+                  },
+                  image_topic: { type: 'string' }
                 }
               }
             }
@@ -291,60 +445,83 @@ Return JSON:
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
 
-    // Build chart configs — fetch intraday data from Yahoo Finance for each chart_config section
-    const charts = [];
+    // ── Image topic → Unsplash URL map ────────────────────────────────────────
+    const IMAGE_MAP = {
+      oil_refinery:     'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=560&q=85',
+      federal_reserve:  'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=560&q=85',
+      stock_exchange:   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=560&q=85',
+      gold_bars:        'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=560&q=85',
+      currency_trading: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=560&q=85',
+      world_diplomacy:  'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=560&q=85',
+      tech_industry:    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=560&q=85',
+      emerging_city:    'https://images.unsplash.com/photo-1569025743873-ea3a9ade89f9?w=560&q=85',
+      bond_market:      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=560&q=85',
+      commodity_fields: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=560&q=85',
+    };
+
+    // ── Fetch all chart data in parallel ──────────────────────────────────────
+    const chartDataMap = {};
+    await Promise.all(
+      sections.map(async (s, i) => {
+        if (!s.chart_config?.yahoo_symbol) return;
+        try {
+          const d = await fetchIntradayData(s.chart_config.yahoo_symbol);
+          if (d) chartDataMap[i] = d;
+        } catch (_) { /* skip */ }
+      })
+    );
+
+    // ── Build section HTML blocks ─────────────────────────────────────────────
+    let sectionBlocks = '';
     for (let i = 0; i < sections.length; i++) {
       const s = sections[i];
-      if (!s.chart_config?.yahoo_symbol) continue;
+      const accent = ACCENTS[i % ACCENTS.length];
 
-      const { yahoo_symbol, title, caption, color } = s.chart_config;
-
-      // Fetch intraday data from Yahoo Finance
-      let chartUrl = null;
-      try {
-        const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahoo_symbol)}?range=1d&interval=5m&includePrePost=false`;
-        const yfRes = await fetch(yfUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
-        });
-        const yfData = await yfRes.json();
-        const result = yfData?.chart?.result?.[0];
-        const timestamps = result?.timestamp || [];
-        const closes = result?.indicators?.quote?.[0]?.close || [];
-
-        if (timestamps.length > 0 && closes.length > 0) {
-          // Sample down to ~20 points max for readability
-          const step = Math.max(1, Math.floor(closes.length / 20));
-          const sampledLabels = [];
-          const sampledData = [];
-          for (let j = 0; j < closes.length; j += step) {
-            if (closes[j] == null) continue;
-            const t = new Date(timestamps[j] * 1000);
-            sampledLabels.push(t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' }));
-            sampledData.push(parseFloat(closes[j].toFixed(4)));
-          }
-
-          const isUp = sampledData[sampledData.length - 1] >= sampledData[0];
-          const finalColor = color || (isUp ? '#10b981' : '#ef4444');
-
-          chartUrl = sparklineChartUrl({
-            labels: sampledLabels,
-            data: sampledData,
-            label: title,
-            color: finalColor,
+      // Chart
+      let chartHtml = '';
+      if (s.chart_config && chartDataMap[i]) {
+        const d = chartDataMap[i];
+        const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 220 });
+        if (url) {
+          chartHtml = chartCardHtml({
+            title: s.chart_config.title,
+            symbol: s.chart_config.yahoo_symbol,
+            chartUrl: url,
+            caption: s.chart_config.caption,
+            open: d.open,
+            close: d.close,
+            high: d.high,
+            low: d.low,
+            changePct: d.changePct,
+            isUp: d.isUp,
+            color: accent,
           });
         }
-      } catch (_) {
-        // If Yahoo fetch fails, skip chart for this section
       }
 
-      if (chartUrl) {
-        charts.push({ afterSection: i, title, url: chartUrl, caption, color: color || '#d97706' });
+      // Image
+      let imageHtml = '';
+      if (!chartHtml && s.image_topic && IMAGE_MAP[s.image_topic]) {
+        imageHtml = imageBlockHtml({
+          imageUrl: IMAGE_MAP[s.image_topic],
+          caption: `${s.label} — contextual reference image`,
+          accent,
+        });
       }
+
+      sectionBlocks += sectionCardHtml({
+        label: s.label,
+        headline: s.headline,
+        body: s.body,
+        callout: s.callout,
+        accent,
+        chartHtml,
+        imageHtml,
+      });
     }
 
-    const htmlBody = buildTestEmailHtml({ subject, dateStr, marketSnapshot, sections, charts, footerNote });
+    const htmlBody = buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, footerNote });
 
-    // Send ONLY to test address
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: 'kaicard05@gmail.com',
       subject: `[TEST] The Keystone Macro Brief — Evening Wrap — ${dateStr}`,
@@ -353,10 +530,16 @@ Return JSON:
     });
 
     return Response.json({
-      message: 'Test edition with charts sent to kaicard05@gmail.com',
+      message: 'Test edition sent to kaicard05@gmail.com',
       subject,
-      charts_generated: charts.length,
-      sections: sections.map(s => ({ label: s.label, headline: s.headline, has_chart: !!s.chart_config }))
+      charts_generated: Object.keys(chartDataMap).length,
+      sections: sections.map((s, i) => ({
+        label: s.label,
+        headline: s.headline,
+        has_chart: !!chartDataMap[i],
+        has_image: !chartDataMap[i] && !!s.image_topic,
+        image_topic: s.image_topic || null,
+      }))
     });
 
   } catch (error) {
