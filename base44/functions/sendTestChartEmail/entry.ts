@@ -34,13 +34,13 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
         borderColor: lineColor,
         backgroundColor: fillColor,
         fill: true,
-        tension: 0.3,
+        tension: 0.35,
         pointRadius: 0,
-        borderWidth: 2.5,
+        borderWidth: 2,
       }]
     },
     options: {
-      layout: { padding: { left: 4, right: 20, top: 8, bottom: 4 } },
+      layout: { padding: { left: 8, right: 24, top: 16, bottom: 8 } },
       legend: { display: false },
       plugins: {
         legend: { display: false },
@@ -48,27 +48,30 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
       },
       scales: {
         x: {
-          grid: { color: 'rgba(148,163,184,0.1)' },
+          grid: { color: 'rgba(226,232,240,0.6)', lineWidth: 1 },
           ticks: {
-            font: { size: 11, family: 'Arial,sans-serif' },
+            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif" },
             color: '#94a3b8',
             maxRotation: 0,
-            autoSkip: false,
-            padding: 8,
-          }
+            autoSkip: true,
+            maxTicksLimit: 8,
+            padding: 10,
+          },
+          border: { display: false },
         },
         y: {
           min: yMin,
           max: yMax,
           position: 'right',
-          grid: { color: 'rgba(148,163,184,0.1)' },
+          grid: { color: 'rgba(226,232,240,0.6)', lineWidth: 1 },
           ticks: {
-            font: { size: 11, family: 'Arial,sans-serif' },
-            color: '#64748b',
+            font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif" },
+            color: '#94a3b8',
             maxTicksLimit: 6,
-            padding: 10,
-            callback: `function(v){return v.toFixed(${dp});}`
-          }
+            padding: 12,
+            callback: `function(v){return v.toLocaleString('en-US',{minimumFractionDigits:${dp},maximumFractionDigits:${dp}});}`
+          },
+          border: { display: false },
         }
       }
     }
@@ -459,7 +462,7 @@ Return JSON:
 
     // ── Image topic → Unsplash URL map (high quality, tightly correlated) ─────
     const IMAGE_MAP = {
-      oil_refinery:     'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=700&q=90&fit=crop',  // oil refinery at dusk
+      oil_refinery:     'https://images.unsplash.com/photo-1574018856533-3e5c20f8c3c4?w=700&q=90&fit=crop',  // oil refinery / industrial pipes
       federal_reserve:  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=700&q=90&fit=crop',  // Federal Reserve building
       stock_exchange:   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=700&q=90&fit=crop',  // trader at screens
       gold_bars:        'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=700&q=90&fit=crop',  // gold bullion bars
@@ -468,7 +471,7 @@ Return JSON:
       tech_industry:    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=700&q=90&fit=crop',  // circuit board / tech
       emerging_city:    'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=700&q=90&fit=crop',  // emerging market skyline
       bond_market:      'https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?w=700&q=90&fit=crop',     // treasury / bond paperwork desk
-      commodity_fields: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=700&q=90&fit=crop',  // wheat fields / commodities
+      commodity_fields: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=700&q=90&fit=crop',  // oil barrels / energy storage
     };
 
     // ── Fetch chart data only for the SINGLE best chart section ──────────────
