@@ -37,11 +37,15 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
         tension: 0.3,
         pointRadius: 0,
         borderWidth: 2.5,
+        label: '',
       }]
     },
     options: {
       layout: { padding: { left: 4, right: 20, top: 20, bottom: 4 } },
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false },
+      },
       scales: {
         x: {
           grid: { color: 'rgba(148,163,184,0.1)' },
@@ -71,7 +75,7 @@ function buildChartUrl({ labels, data, isUp, height = 260 }) {
   };
 
   const encoded = encodeURIComponent(JSON.stringify(chartConfig));
-  return `https://quickchart.io/chart?w=540&h=${height}&bkg=%23f8fafc&c=${encoded}`;
+  return `https://quickchart.io/chart?w=560&h=${height}&bkg=%23ffffff&c=${encoded}`;
 }
 
 // ─── Fetch live intraday data from Yahoo Finance ───────────────────────────────
@@ -158,6 +162,11 @@ function getContextualImage(label, headline) {
   return null;
 }
 
+// ─── Wrap a visual block (chart or image) in the same outer <tr><td> as section cards ──
+function visualRowHtml(innerHtml) {
+  return `<tr><td style="padding:0 0 16px 0;">${innerHtml}</td></tr>`;
+}
+
 // ─── Chart card HTML ───────────────────────────────────────────────────────────
 function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, low, changePct, isUp }) {
   const changeColor = isUp ? '#10b981' : '#ef4444';
@@ -202,7 +211,7 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
       </tr>
     </table>
     <!-- Chart — full bleed -->
-    <img src="${chartUrl}" width="560" alt="${title} intraday" style="display:block;width:560px;max-width:100%;border:none;" />
+    <img src="${chartUrl}" alt="${title} intraday" style="display:block;width:100%;max-width:100%;border:none;" />
     <!-- Caption -->
     ${caption ? `<div style="padding:12px 22px 14px;border-top:1px solid #eef2f7;">
       <div style="font-size:11px;color:#64748b;line-height:1.65;font-style:italic;">${caption}</div>
@@ -214,7 +223,7 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
 function imageBlockHtml({ imageUrl, caption }) {
   return `
   <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-    <img src="${imageUrl}" width="560" alt="" style="display:block;width:560px;max-width:100%;height:auto;min-height:200px;object-fit:cover;" />
+    <img src="${imageUrl}" alt="" style="display:block;width:100%;max-width:100%;height:auto;min-height:200px;object-fit:cover;border:none;" />
     ${caption ? `<div style="background:#f8fafc;padding:10px 20px;border-top:1px solid #f1f5f9;">
       <div style="font-size:10px;color:#94a3b8;line-height:1.5;font-style:italic;">${caption}</div>
     </div>` : ''}
@@ -222,7 +231,7 @@ function imageBlockHtml({ imageUrl, caption }) {
 }
 
 // ─── Section card HTML ─────────────────────────────────────────────────────────
-function sectionCardHtml({ label, headline, body, callout, accent, chartHtml, imageHtml }) {
+function sectionCardHtml({ label, headline, body, callout, accent }) {
   const cleanBody = (body || '')
     .replace(/\s*\(https?:\/\/[^\)]+\)/g, '')
     .replace(/https?:\/\/\S+/g, '')
@@ -230,7 +239,7 @@ function sectionCardHtml({ label, headline, body, callout, accent, chartHtml, im
   const bodyHtml = cleanBody.replace(/\n/g, '<br/>');
 
   return `
-  <tr><td style="padding-bottom:16px;">
+  <tr><td style="padding:0 0 16px 0;">
     <div style="border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
       <div style="height:3px;background:${accent};"></div>
       <div style="padding:24px 28px 26px;">
@@ -255,9 +264,7 @@ function sectionCardHtml({ label, headline, body, callout, accent, chartHtml, im
         </div>` : ''}
       </div>
     </div>
-  </td></tr>
-  ${chartHtml ? `<tr><td style="padding-bottom:16px;">${chartHtml}</td></tr>` : ''}
-  ${imageHtml ? `<tr><td style="padding-bottom:16px;">${imageHtml}</td></tr>` : ''}`;
+  </td></tr>`;
 }
 
 // ─── Full email HTML ───────────────────────────────────────────────────────────
@@ -526,9 +533,9 @@ Return JSON:
         body: s.body,
         callout: s.callout,
         accent,
-        chartHtml,
-        imageHtml,
       });
+      if (chartHtml) sectionBlocks += visualRowHtml(chartHtml);
+      if (imageHtml) sectionBlocks += visualRowHtml(imageHtml);
     }
 
     const htmlBody = buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, footerNote });
