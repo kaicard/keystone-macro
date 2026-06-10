@@ -339,10 +339,10 @@ export default function Newsletter() {
               </p>
             </div>
             <Button
-              className="gap-1.5 rounded-full px-6"
-              onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+              className="gap-2 px-6"
+              onClick={() => document.querySelector('form[data-paid]')?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
             >
-              <Sparkles className="w-3.5 h-3.5" /> View Subscription Plans
+              Subscribe — £9.99/month
             </Button>
           </div>
         )}
