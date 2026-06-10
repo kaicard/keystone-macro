@@ -279,10 +279,14 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
   const snap = (marketSnapshot || []).slice(0, 5);
 
   function snapRow(m, isLast) {
-    const raw = String(m.change || '').trim();
-    const isPos = raw.startsWith('+');
-    const isNeg = raw.startsWith('-');
-    const isNA = !raw || raw === 'N/A' || raw === '0' || raw === '0%';
+    // Strip any leading arrows/triangles the LLM may have already included
+    const rawFull = String(m.change || '').trim();
+    const raw = rawFull.replace(/^[▲▼↑↓\+\-\s]+/, '').trim();
+    const originalLower = rawFull.toLowerCase();
+    const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '—';
+    // Determine direction from the original string
+    const isPos = !isNA && (rawFull.startsWith('▲') || rawFull.startsWith('+') || originalLower.includes('+'));
+    const isNeg = !isNA && (rawFull.startsWith('▼') || rawFull.startsWith('-') || (!isPos && originalLower.includes('-')));
     const changeColor = isNA ? '#64748b' : isPos ? '#10b981' : '#f87171';
     const changeBg   = isNA ? 'rgba(100,116,139,0.15)' : isPos ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)';
     const accentBar  = isNA ? '#334155' : isPos ? '#10b981' : '#f87171';
@@ -300,8 +304,8 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
                   <td style="vertical-align:middle;">
                     <span style="font-size:18px;font-weight:800;color:#f1f5f9;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
                   </td>
-                  <td style="text-align:right;vertical-align:middle;">
-                    <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.2px;">${displayChange}</span>
+                  <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
+                    <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:4px 8px;font-size:10.5px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.1px;white-space:nowrap;line-height:1.2;">${displayChange}</span>
                   </td>
                 </tr>
               </table>
