@@ -293,16 +293,16 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
       <td style="padding-bottom:${marginBottom};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:3px solid ${accentBar};border-radius:8px;overflow:hidden;">
           <tr>
-            <td style="padding:12px 14px;">
+            <td style="padding:11px 12px;">
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td style="vertical-align:middle;">
-                    <div style="font-size:12px;font-weight:700;color:#cbd5e1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.2px;">${m.label}</div>
+                  <td style="vertical-align:middle;width:40%;">
+                    <div style="font-size:11px;font-weight:600;color:#94a3b8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;">${m.label}</div>
                   </td>
                   <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
-                    <span style="font-size:17px;font-weight:800;color:#f8fafc;font-variant-numeric:tabular-nums;letter-spacing:-0.4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
+                    <span style="font-size:15px;font-weight:800;color:#f8fafc;font-variant-numeric:tabular-nums;letter-spacing:-0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
                     &nbsp;
-                    <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:3px 9px;font-size:11px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${displayChange}</span>
+                    <span style="display:inline-block;background:${changeBg};border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;">${displayChange}</span>
                   </td>
                 </tr>
               </table>
@@ -360,7 +360,7 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
 
   <!-- Market Snapshot -->
   <tr><td style="background:#0f172a;" class="snap-pad">
-    <div style="padding:0 32px 26px;">
+    <div style="padding:0 28px 24px;">
       <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;margin-bottom:14px;padding-top:2px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">&#x25A0;&nbsp; Live Market Snapshot</div>
       <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
         ${snapshotRows}
