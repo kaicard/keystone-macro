@@ -1,84 +1,85 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-function buildWeeklyEmailHtml({ subject, dateStr, weekRange, marketSnapshot, sections, premiumTeaser }) {
+// ─── Snapshot row (same premium dark style) ────────────────────────────────────
+function snapRow(m, isLast) {
+  const rawFull = String(m.change || '').trim();
+  const raw = rawFull.replace(/^[▲▼↑↓\+\-\s]+/, '').trim();
+  const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '—';
+  const isPos = !isNA && (rawFull.startsWith('▲') || rawFull.startsWith('+') || rawFull.toLowerCase().includes('+'));
+  const changeColor = isNA ? '#64748b' : isPos ? '#10b981' : '#f87171';
+  const changeBg   = isNA ? 'rgba(100,116,139,0.15)' : isPos ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)';
+  const accentBar  = isNA ? '#334155' : isPos ? '#10b981' : '#f87171';
+  const arrow = isNA ? '' : isPos ? '▲' : '▼';
+  const displayChange = isNA ? '—' : `${arrow} ${raw}`;
+  return `<tr>
+    <td style="padding-bottom:${isLast ? '0' : '8px'};">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:4px solid ${accentBar};border-radius:10px;overflow:hidden;">
+        <tr>
+          <td style="padding:13px 16px 13px 14px;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#64748b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin-bottom:6px;">${m.label}</div>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="vertical-align:middle;width:55%;">
+                  <span style="font-size:18px;font-weight:800;color:#f1f5f9;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${m.value}</span>
+                </td>
+                <td style="text-align:right;vertical-align:middle;width:45%;white-space:nowrap;">
+                  <span style="display:inline-block;background:${changeBg};border-radius:5px;padding:4px 8px;font-size:10.5px;font-weight:700;color:${changeColor};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;line-height:1.2;">${displayChange}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>`;
+}
 
-  function snapCard(m) {
-    const isPos = String(m.change).startsWith('+');
-    const isNeg = String(m.change).startsWith('-');
-    const changeColor = isPos ? '#10b981' : isNeg ? '#ef4444' : '#9ca3af';
-    const arrow = isPos ? '▲' : isNeg ? '▼' : '–';
-    return `<table width="152" cellpadding="0" cellspacing="0" border="0" style="width:152px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
-      <tr><td width="152" style="padding:14px 12px;vertical-align:top;height:88px;">
-        <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">${m.label}</div>
-        <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:8px;font-variant-numeric:tabular-nums;">${m.value}</div>
-        <div style="font-size:11px;font-weight:700;color:${changeColor};">${arrow}&nbsp;${m.change}</div>
-      </td></tr>
-    </table>`;
-  }
-
-  const snap = (marketSnapshot || []).slice(0, 5);
-  const snapshotHtml = `
-    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
-      <tr>
-        <td style="padding:0 4px 8px 0;">${snapCard(snap[0] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 4px 8px 4px;">${snapCard(snap[1] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 0 8px 4px;">${snapCard(snap[2] || {label:'–',value:'–',change:'–'})}</td>
-      </tr>
-      <tr>
-        <td style="padding:0 4px 0 0;">${snapCard(snap[3] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0 4px 0 4px;">${snapCard(snap[4] || {label:'–',value:'–',change:'–'})}</td>
-        <td style="padding:0;"></td>
-      </tr>
-    </table>`;
-
+function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumTeaser }) {
   const ACCENTS = ['#d97706','#3b82f6','#8b5cf6','#10b981','#f43f5e'];
+  const snap = (marketSnapshot || []).slice(0, 5);
+  const snapshotRows = snap.map((m, i) => snapRow(m, i === snap.length - 1)).join('');
+
   const sectionBlocks = sections.map((s, i) => {
     const accent = ACCENTS[i % ACCENTS.length];
     const bodyHtml = (s.body || '').replace(/\n/g, '<br/>');
-    return `
-    <tr><td style="padding-bottom:16px;">
-      <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;">
-        <div style="height:3px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);opacity:0.6;"></div>
-        <div style="padding:24px 28px 28px;">
-          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;border-collapse:collapse;">
+    return `<tr><td style="padding:0 0 16px 0;">
+      <div style="border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;background:#ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="height:3px;background:${accent};"></div>
+        <div style="padding:24px 28px 26px;">
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
             <tr>
-              <td width="8" height="9" style="padding:0 8px 0 0;vertical-align:middle;line-height:9px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="8" height="8" style="border-radius:50%;overflow:hidden;">
-                  <tr><td width="8" height="8" bgcolor="${accent}" style="width:8px;height:8px;min-width:8px;min-height:8px;border-radius:50%;font-size:0;line-height:0;">&nbsp;</td></tr>
-                </table>
-              </td>
-              <td style="vertical-align:middle;line-height:9px;">
-                <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};line-height:9px;display:inline-block;">${s.label}</span>
-              </td>
+              <td style="padding-right:8px;vertical-align:middle;"><div style="width:7px;height:7px;background:${accent};border-radius:50%;"></div></td>
+              <td style="vertical-align:middle;"><span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};">${s.label}</span></td>
             </tr>
           </table>
           <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">${s.headline}</div>
-          <div style="font-size:14px;color:#475569;line-height:1.85;">${bodyHtml}</div>
+          <div style="font-size:14px;color:#475569;line-height:1.9;">${bodyHtml}</div>
         </div>
       </div>
     </td></tr>`;
   }).join('');
 
-  // Premium teaser block
-  const premiumTeaserHtml = `
-  <tr><td style="padding-bottom:16px;">
-    <div style="border-radius:12px;border:2px solid #d97706;overflow:hidden;background:#fffbeb;">
-      <div style="height:4px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></div>
-      <div style="padding:28px 32px;">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#d97706;margin-bottom:12px;">Premium Members This Week</div>
-        <div style="font-size:18px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">
-          What our paid subscribers read this week — that you didn't
-        </div>
-        <div style="font-size:14px;color:#475569;line-height:1.85;margin-bottom:16px;">
+  const premiumTeaserHtml = `<tr><td style="padding:0 0 16px 0;">
+    <div style="border-radius:14px;border:2px solid #d97706;overflow:hidden;background:#fffbeb;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+      <div style="height:3px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></div>
+      <div style="padding:26px 28px 28px;">
+        <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+          <tr>
+            <td style="padding-right:8px;vertical-align:middle;"><div style="width:7px;height:7px;background:#d97706;border-radius:50%;"></div></td>
+            <td style="vertical-align:middle;"><span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#d97706;">Premium This Week</span></td>
+          </tr>
+        </table>
+        <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">What our paid subscribers read this week — that you didn't</div>
+        <div style="margin-bottom:16px;">
           ${(premiumTeaser.items || []).map(item => `<div style="margin-bottom:10px;padding-left:14px;border-left:3px solid #d97706;">
-            <div style="font-weight:600;color:#0f172a;margin-bottom:2px;">${item.title}</div>
-            <div style="font-size:13px;color:#64748b;">${item.teaser}</div>
+            <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:2px;">${item.title}</div>
+            <div style="font-size:13px;color:#64748b;line-height:1.6;">${item.teaser}</div>
           </div>`).join('')}
         </div>
-        <div style="font-size:13px;color:#92400e;background:#fef3c7;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-style:italic;">
-          ${premiumTeaser.fomo_line}
+        <div style="border-radius:8px;background:#fef3c7;border-left:3px solid #d97706;padding:14px 18px;margin-bottom:20px;">
+          <div style="font-size:13px;color:#92400e;line-height:1.7;font-style:italic;">${premiumTeaser.fomo_line}</div>
         </div>
-        <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:#d97706;color:#ffffff;font-size:12px;font-weight:800;padding:13px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Upgrade to Premium &rarr;</a>
+        <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Upgrade to Premium →</a>
       </div>
     </div>
   </td></tr>`;
@@ -89,70 +90,88 @@ function buildWeeklyEmailHtml({ subject, dateStr, weekRange, marketSnapshot, sec
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>${subject}</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .outer-wrap{padding:16px 8px 32px!important;}
+      .main-table{width:100%!important;}
+      .hero-pad{padding:28px 20px 24px!important;}
+      .snap-pad{padding:0 20px 24px!important;}
+      .hero-title{font-size:20px!important;}
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;mso-line-height-rule:exactly;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f7;">
+<tr><td align="center" class="outer-wrap" style="padding:28px 16px 40px;">
+<table class="main-table" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;">
-<tr><td align="center" style="padding:32px 16px;">
-<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
-
-  <!-- WORDMARK -->
-  <tr><td style="padding-bottom:18px;text-align:center;">
-    <span style="font-size:10px;letter-spacing:4px;color:#94a3b8;text-transform:uppercase;font-weight:700;">The Keystone Macro Weekly</span>
+  <!-- Wordmark -->
+  <tr><td style="padding-bottom:14px;text-align:center;">
+    <span style="font-size:8px;letter-spacing:5px;color:#94a3b8;text-transform:uppercase;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">The Keystone Macro Weekly</span>
   </td></tr>
 
-  <!-- FREE BADGE -->
-  <tr><td style="padding-bottom:12px;text-align:center;">
-    <span style="display:inline-block;background:#f0fdf4;border:1px solid #86efac;color:#15803d;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 14px;border-radius:20px;">Free Weekly Digest</span>
+  <!-- Free badge -->
+  <tr><td style="padding-bottom:16px;text-align:center;">
+    <span style="display:inline-block;background:#f0fdf4;border:1px solid #86efac;color:#15803d;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Free Weekly Digest</span>
   </td></tr>
 
-  <!-- HERO HEADER -->
-  <tr><td style="background:#0f172a;border-radius:16px 16px 0 0;overflow:hidden;">
-    <div style="height:4px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></div>
-    <div style="padding:36px 40px 32px;">
-      <div style="font-size:10px;letter-spacing:2.5px;color:#d97706;text-transform:uppercase;font-weight:800;margin-bottom:12px;">Weekly Wrap &nbsp;&nbsp;·&nbsp;&nbsp; ${weekRange}</div>
-      <div style="font-size:28px;font-weight:800;color:#f8fafc;line-height:1.25;font-family:Georgia,'Times New Roman',serif;">${subject}</div>
+  <!-- Hero -->
+  <tr><td style="background:#0f172a;border-radius:14px 14px 0 0;overflow:hidden;">
+    <div style="height:3px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></div>
+    <div class="hero-pad" style="padding:32px 32px 28px;">
+      <div style="font-size:9px;letter-spacing:2.5px;color:#d97706;text-transform:uppercase;font-weight:700;margin-bottom:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Weekly Wrap &nbsp;·&nbsp; ${weekRange}</div>
+      <div class="hero-title" style="font-size:24px;font-weight:800;color:#f8fafc;line-height:1.3;font-family:Georgia,'Times New Roman',serif;margin-bottom:18px;">${subject}</div>
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="background:rgba(217,119,6,0.15);border:1px solid rgba(217,119,6,0.35);border-radius:5px;padding:4px 10px;">
+          <span style="font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fcd34d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Free Edition &nbsp;·&nbsp; Weekly Recap</span>
+        </td></tr>
+      </table>
     </div>
   </td></tr>
 
-  <!-- MARKET SNAPSHOT -->
-  <tr><td style="background:#1e293b;padding:0 40px 28px;">
-    <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;padding-top:4px;margin-bottom:12px;">Weekly Market Snapshot</div>
-    ${snapshotHtml}
+  <!-- Market Snapshot -->
+  <tr><td style="background:#0f172a;" class="snap-pad">
+    <div style="padding:0 28px 24px;">
+      <div style="font-size:9px;letter-spacing:2px;color:#64748b;text-transform:uppercase;font-weight:700;margin-bottom:14px;padding-top:2px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">&#x25A0;&nbsp; Weekly Market Snapshot</div>
+      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+        ${snapshotRows}
+      </table>
+    </div>
   </td></tr>
 
-  <!-- DIVIDER -->
-  <tr><td style="height:8px;background:#f1f5f9;"></td></tr>
+  <!-- Gap -->
+  <tr><td style="height:12px;background:#eef2f7;"></td></tr>
 
-  <!-- SECTIONS -->
-  <tr><td style="background:#f1f5f9;padding:0 0 4px;">
+  <!-- Sections -->
+  <tr><td style="background:#eef2f7;padding:0;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       ${sectionBlocks}
       ${premiumTeaserHtml}
     </table>
   </td></tr>
 
+  <!-- Gap -->
+  <tr><td style="height:4px;"></td></tr>
+
   <!-- CTA -->
-  <tr><td style="background:#ffffff;border:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
-    <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;margin-right:12px;">Read Online</a>
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fkeystonemacro.com%2FNewsletter" style="display:inline-block;background:#0a66c2;color:#ffffff;font-size:12px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">Share on LinkedIn</a>
+  <tr><td style="background:#0f172a;border-radius:12px;overflow:hidden;">
+    <div style="padding:28px 36px;text-align:center;">
+      <div style="font-size:10px;color:#475569;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Read online or upgrade</div>
+      <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;font-size:13px;font-weight:700;padding:12px 30px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">View on Keystone Macro →</a>
+    </div>
   </td></tr>
 
-  <!-- FOOTER -->
-  <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;">
-    <div style="border-top:1px solid #e2e8f0;padding-top:16px;">
-      <span style="font-size:11px;color:#94a3b8;line-height:2;">
+  <!-- Footer -->
+  <tr><td style="padding:22px 32px;text-align:center;">
+    <div style="border-top:1px solid #e2e8f0;padding-top:14px;">
+      <span style="font-size:10px;color:#94a3b8;line-height:2.2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
         The Keystone Macro Weekly &nbsp;·&nbsp; Free Edition<br/>
-        You are receiving this because you subscribed to the Keystone Macro mailing list.<br/>
         <a href="https://keystonemacro.com/Newsletter#manage" style="color:#d97706;text-decoration:none;font-weight:600;">Unsubscribe</a>
-        &nbsp;·&nbsp;
-        <a href="https://keystonemacro.com/Newsletter" style="color:#94a3b8;text-decoration:none;">keystonemacro.com</a>
       </span>
     </div>
   </td></tr>
 
-  <tr><td style="height:32px;"></td></tr>
-
+  <tr><td style="height:20px;"></td></tr>
 </table>
 </td></tr>
 </table>
@@ -251,7 +270,7 @@ Return JSON:
     const sections = sectionsRes.sections || [];
     const premiumTeaser = premiumRes || { items: [], fomo_line: '' };
 
-    const htmlBody = buildWeeklyEmailHtml({ subject, dateStr, weekRange, marketSnapshot, sections, premiumTeaser });
+    const htmlBody = buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumTeaser });
 
     let sent = 0;
     for (const recipient of recipients) {
