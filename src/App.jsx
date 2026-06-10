@@ -22,6 +22,11 @@ import Terms from '@/pages/Terms';
 import Newsletter from '@/pages/Newsletter';                   // Upgraded to paid subscription
 import NewsletterEdition from '@/pages/NewsletterEdition';     // NEW — individual edition archive
 import KeystoneAI from '@/pages/KeystoneAI';                  // NEW — dedicated AI chat page
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // WealthCases still importable if needed but nav entry removed
 import WealthCases from '@/pages/WealthCases';
@@ -51,6 +56,12 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      {/* Auth routes — unprotected */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
       <Route element={<AppLayout />}>
         {/* Core */}
         <Route path="/" element={<Navigate to="/Home" replace />} />
