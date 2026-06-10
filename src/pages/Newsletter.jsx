@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
 import EditionCard from '@/components/newsletter/EditionCard';
+import { useAuth } from '@/lib/AuthContext';
 
 const FREE_FEATURES = [
   'Weekly digest every Friday at 10pm',
@@ -98,6 +99,8 @@ function CancelBox({ title, description, badge, badgeColor, type }) {
 }
 
 export default function Newsletter() {
+  const { user } = useAuth();
+
   // Free signup
   const [freeEmail, setFreeEmail] = useState('');
   const [freeName, setFreeName] = useState('');
@@ -109,8 +112,6 @@ export default function Newsletter() {
   const [paidName, setPaidName] = useState('');
   const [paidLoading, setPaidLoading] = useState(false);
 
-  // (cancel state is handled per-box in CancelBox component below)
-
   // Check for ?subscribed=true from Stripe redirect
   const urlParams = new URLSearchParams(window.location.search);
   const justSubscribed = urlParams.get('subscribed') === 'true';
@@ -121,25 +122,20 @@ export default function Newsletter() {
     queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 50),
   });
 
-  // Check paid status — look up active subscription by email
-  const [checkEmail, setCheckEmail] = useState('');
-  const [verifyEmail, setVerifyEmail] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
-  const [isPaidSubscriber, setIsPaidSubscriber] = useState(justSubscribed);
+  // Check paid status using logged-in user's email
+  const { data: paidSubs = [] } = useQuery({
+    queryKey: ['paid-sub-check', user?.email],
+    queryFn: () => user?.email
+      ? base44.entities.NewsletterSubscription.filter({ email: user.email, status: 'active' })
+      : Promise.resolve([]),
+    enabled: !!user?.email,
+  });
 
-  const handleVerifyEmail = async (e) => {
-    e.preventDefault();
-    if (!checkEmail) return;
-    setVerifyLoading(true);
-    const subs = await base44.entities.NewsletterSubscription.filter({ email: checkEmail, status: 'active' });
-    setIsPaidSubscriber(subs?.length > 0);
-    setVerifyEmail(checkEmail);
-    setVerifyLoading(false);
-  };
+  const isPaidSubscriber = justSubscribed || paidSubs.length > 0;
 
-  const allEditions = editions.filter(e => e.status === 'published');
-  const freeEditions = allEditions.filter(e => e.edition_type === 'evening');
-  const premiumEditions = allEditions.filter(e => e.edition_type === 'morning');
+  const premiumEditions = editions.filter(e => e.status === 'published');
+  const [showAll, setShowAll] = useState(false);
+  const visibleEditions = showAll ? premiumEditions : premiumEditions.slice(0, 6);
 
   const handleFreeSignup = async (e) => {
     e.preventDefault();
@@ -335,91 +331,64 @@ export default function Newsletter() {
         </motion.div>
 
         {/* ── RECENT EDITIONS ── */}
-        {allEditions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-            className="mb-8"
-          >
-            <div className="mb-6">
-              <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
-              <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+          className="mb-8"
+        >
+          <div className="mb-6">
+            <h2 className="font-display text-2xl font-semibold mb-1">Recent Editions</h2>
+            <p className="text-sm text-muted-foreground">Latest market analysis and research insights</p>
+          </div>
 
-            {/* FREE — Weekly Digests */}
-            {freeEditions.length > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">Weekly Digest</span>
-                  <span className="text-xs text-muted-foreground">— Free</span>
-                </div>
-                <div className="space-y-3">
-                  {freeEditions.map((edition, i) => (
-                    <EditionCard key={edition.id} edition={edition} index={i} />
-                  ))}
-                </div>
+          {isPaidSubscriber ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {visibleEditions.map((edition, i) => (
+                  <EditionCard key={edition.id} edition={edition} index={i} />
+                ))}
               </div>
-            )}
-
-            {/* PREMIUM — Morning Briefs */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">Morning Brief & Evening Wrap</span>
-                <span className="text-xs text-muted-foreground">— Premium</span>
-              </div>
-
-              {isPaidSubscriber ? (
-                <div className="space-y-3">
-                  {premiumEditions.map((edition, i) => (
-                    <EditionCard key={edition.id} edition={edition} index={i} />
-                  ))}
-                  {premiumEditions.length === 0 && (
-                    <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm">
-                      No premium editions published yet — check back soon.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="glass rounded-2xl border border-primary/20 p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                      <Lock className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold mb-1">Premium subscribers only</p>
-                      <p className="text-xs text-muted-foreground mb-4">
-                        Enter your subscriber email to verify access, or subscribe below for £9.99/month.
-                      </p>
-                      {verifyEmail && !isPaidSubscriber ? (
-                        <p className="text-xs text-destructive mb-3">No active premium subscription found for {verifyEmail}.</p>
-                      ) : null}
-                      <form onSubmit={handleVerifyEmail} className="flex gap-2">
-                        <Input
-                          type="email"
-                          placeholder="subscriber@email.com"
-                          value={checkEmail}
-                          onChange={(e) => setCheckEmail(e.target.value)}
-                          required
-                          className="h-9 text-sm"
-                        />
-                        <Button type="submit" size="sm" variant="outline" disabled={verifyLoading || !checkEmail} className="shrink-0">
-                          {verifyLoading ? '…' : 'Verify'}
-                        </Button>
-                      </form>
-                      <button
-                        className="text-xs text-primary underline-offset-2 hover:underline mt-3 block"
-                        onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
-                      >
-                        Not subscribed yet? Subscribe for £9.99/month →
-                      </button>
-                    </div>
-                  </div>
+              {premiumEditions.length === 0 && (
+                <div className="glass rounded-2xl border border-border/50 p-8 text-center text-muted-foreground text-sm col-span-2">
+                  No editions published yet — check back soon.
                 </div>
               )}
+              {!showAll && premiumEditions.length > 6 && (
+                <button
+                  className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                  onClick={() => setShowAll(true)}
+                >
+                  View {premiumEditions.length - 6} more editions
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="relative">
+              {/* Blurred 2-col grid preview */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 select-none pointer-events-none" style={{ filter: 'blur(5px)', opacity: 0.35 }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="rounded-2xl border border-border/30 bg-card/60 p-5 h-36" />
+                ))}
+              </div>
+              {/* Lock overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-base font-semibold">Premium subscribers only</p>
+                <p className="text-xs text-muted-foreground text-center max-w-xs">
+                  {user ? 'Your account is not on an active premium subscription.' : 'Sign in with a premium account, or subscribe below.'}
+                </p>
+                <Button
+                  size="sm"
+                  className="gap-1.5 rounded-full mt-1"
+                  onClick={() => document.querySelector('form[data-paid]')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Subscribe — £9.99/month
+                </Button>
+              </div>
             </div>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
 
         {/* ── CANCEL / MANAGE ── */}
         <motion.div
