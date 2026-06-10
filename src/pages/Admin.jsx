@@ -138,7 +138,18 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
-  const { data: subscribers = [] } = useQuery({ queryKey: ['admin-subs'], queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 100) });
+  const { data: subscribersData = [] } = useQuery({
+    queryKey: ['admin-subs'],
+    queryFn: async () => {
+      const [free, paid] = await Promise.all([
+        base44.entities.NewsletterSubscriber.list('-created_date', 100),
+        base44.entities.NewsletterSubscription.list('-created_date', 100),
+      ]);
+      const freeList = (free || []).map(s => ({ ...s, type: 'free' }));
+      const paidList = (paid || []).map(s => ({ ...s, type: 'premium' }));
+      return [...paidList, ...freeList].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    }
+  });
   const { data: messages = [] } = useQuery({ queryKey: ['admin-msgs'], queryFn: () => base44.entities.ContactMessage.list('-created_date', 100) });
 
   const createNote = useMutation({
@@ -247,18 +258,23 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="subscribers">
-            <h2 className="font-semibold mb-6">{subscribers.length} Subscribers</h2>
+            <h2 className="font-semibold mb-6">{subscribersData.length} Subscribers</h2>
             <div className="space-y-2">
-              {subscribers.map(sub => (
+              {subscribersData.map(sub => (
                 <div key={sub.id} className="glass rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <p className="font-medium text-sm">{sub.email}</p>
                     <p className="text-xs text-muted-foreground">{new Date(sub.created_date).toLocaleDateString()}</p>
                   </div>
-                  <Badge variant={sub.status === 'active' ? 'default' : 'secondary'}>{sub.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={sub.type === 'premium' ? 'default' : 'outline'} className="text-xs">
+                      {sub.type === 'premium' ? '💎 Premium' : 'Free'}
+                    </Badge>
+                    <Badge variant={sub.status === 'active' ? 'default' : 'secondary'}>{sub.status}</Badge>
+                  </div>
                 </div>
               ))}
-              {subscribers.length === 0 && <p className="text-center py-12 text-muted-foreground">No subscribers yet.</p>}
+              {subscribersData.length === 0 && <p className="text-center py-12 text-muted-foreground">No subscribers yet.</p>}
             </div>
           </TabsContent>
 
