@@ -44,12 +44,16 @@ function CancelBox({ title, description, badge, badgeColor, type }) {
     if (!email) return;
     setLoading(true);
     setStatus(null);
-    const res = await base44.functions.invoke('manageSubscription', { action: 'cancel', email });
-    if (res?.data?.success) {
-      setStatus('done');
-    } else if (res?.data?.error?.includes('No subscription')) {
-      setStatus('not_found');
-    } else {
+    try {
+      const res = await base44.functions.invoke('manageSubscription', { action: 'cancel', email });
+      if (res?.data?.success) {
+        setStatus('done');
+      } else if (res?.data?.error?.includes('No subscription')) {
+        setStatus('not_found');
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
       setStatus('error');
     }
     setLoading(false);
@@ -200,6 +204,7 @@ export default function Newsletter() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="rounded-2xl border-2 border-primary/40 bg-card p-6 sm:p-8 mb-6 relative overflow-hidden glow-primary"
+          data-premium-tier
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-amber-400 to-primary" />
 
@@ -295,7 +300,7 @@ export default function Newsletter() {
         {isPaidSubscriber ? (
           <>
             {premiumEditions.length === 0 ? (
-              <div className="rounded-2xl border border-border/25 bg-card/40 p-12 text-center">
+              <div className="glass rounded-2xl border border-border/50 p-12 text-center">
                 <p className="text-sm text-muted-foreground/50">No editions published yet — check back soon.</p>
               </div>
             ) : (
@@ -328,7 +333,7 @@ export default function Newsletter() {
             )}
           </>
         ) : (
-          <div className="rounded-2xl border border-border/40 bg-card/40 p-10 flex flex-col items-center justify-center text-center gap-5 min-h-[260px]">
+          <div className="glass rounded-2xl border border-border/50 p-10 flex flex-col items-center justify-center text-center gap-5 min-h-[260px]">
             <div className="w-12 h-12 rounded-xl bg-card border border-border/50 flex items-center justify-center shadow-sm">
               <Lock className="w-5 h-5 text-muted-foreground" />
             </div>
@@ -340,7 +345,10 @@ export default function Newsletter() {
             </div>
             <Button
               className="gap-2 px-6"
-              onClick={() => document.querySelector('form[data-paid]')?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              onClick={() => {
+                const elem = document.querySelector('[data-premium-tier]');
+                if (elem) elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
             >
               Subscribe — £9.99/month
             </Button>
