@@ -18,7 +18,7 @@ const FREE_FEATURES = [
   'Weekly digest every Friday at 10pm',
   'Top 4 macro & market themes of the week',
   'Weekly market snapshot (equities, rates, FX, commodities)',
-  'Premium content teaser — see what you\'re missing',
+  'Premium content teaser, so you can see what you\'re missing',
 ];
 
 const PREMIUM_FEATURES = [

@@ -37,7 +37,7 @@ export default function AILabPreview() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold mb-0.5">Analyst Chat</p>
-                  <p className="text-xs text-muted-foreground">Ask macro questions, get institutional-grade views on markets, policy, and positioning — conversationally.</p>
+                  <p className="text-xs text-muted-foreground">Ask macro questions, get institutional-grade views on markets, policy, and positioning, delivered conversationally.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/40 border border-border/40">

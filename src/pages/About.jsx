@@ -9,7 +9,7 @@ const principles = [
   { icon: Shield, title: 'Process Over Noise', description: 'Systematic thinking and disciplined frameworks cut through market noise. Rigour and repeatability outperform reactive decision-making.' },
   { icon: Eye, title: 'Risk Before Return', description: 'Understanding tail risks, drawdown dynamics, and correlation regimes is the foundation of any serious portfolio construction process.' },
   { icon: TrendingUp, title: 'Macro Drives Everything', description: 'Regime identification shapes asset allocation across every cycle. Central bank policy, fiscal impulse, and growth inflections set the context.' },
-  { icon: Users, title: 'Suitability First', description: 'The right portfolio is defined by the investor\'s objectives, constraints, and behavioural profile — not by the market environment alone.' },
+  { icon: Users, title: 'Suitability First', description: 'The right portfolio is defined by the investor\'s objectives, constraints, and behavioural profile, not by the market environment alone.' },
   { icon: BookOpen, title: 'First-Principles Thinking', description: 'Challenging consensus views and building investment theses from the ground up produces differentiated, high-conviction research.' },
   { icon: Target, title: 'Clarity of Thought', description: 'Institutional-quality ideas demand precise communication. If a framework cannot be explained clearly, it is not yet fully understood.' },
 ];
@@ -61,7 +61,7 @@ export default function About() {
             </p>
             <p>
               The platform integrates live market data, AI-assisted portfolio construction, institutional 
-              wealth case studies, and original macro research — reflecting the full analytical toolkit 
+              wealth case studies, and original macro research, reflecting the full analytical toolkit 
               used by asset managers and multi-asset teams.
             </p>
             <p>
@@ -70,8 +70,7 @@ export default function About() {
               objectives, constraints, and behavioural realities — not just market conditions.
             </p>
             <p>
-              Every section of this platform reflects a practitioner's approach to investment research — 
-              process-driven, risk-aware, and grounded in real-world portfolio construction thinking.
+              Every section of this platform reflects a practitioner's approach to investment research: process-driven, risk-aware, and grounded in real-world portfolio construction thinking.
             </p>
           </div>
         </motion.div>

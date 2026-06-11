@@ -57,7 +57,7 @@ export default function Footer() {
               <span className="font-display text-base font-semibold tracking-tight text-foreground/90">Keystone Macro</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mb-6">
-              Professional macro research, multi-asset portfolio intelligence, and wealth strategy — built for serious investors.
+              Professional macro research, multi-asset portfolio intelligence, and wealth strategy, built for serious investors.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer"

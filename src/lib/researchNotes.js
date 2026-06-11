@@ -6,7 +6,7 @@ export const sampleNotes = [
   {
     id: 25,
     title: 'A Week That Rewrote the Macro Playbook: FOMC Dissent, GDP Rebound, and the Warsh Fed',
-    subtitle: 'Five days of watershed macro data and central bank decisions that will define markets for the rest of 2026',
+    subtitle: 'Five days of watershed macro data and central bank decisions that will define markets for the rest of 2026.',
     category: 'Macro',
     tags: ['FOMC', 'GDP', 'Fed', 'Kevin Warsh', 'BOJ', 'ECB', 'Magnificent Seven', 'AI'],
     publish_date: '2026-05-02',
@@ -106,7 +106,7 @@ This week crystallised three themes that will dominate the remainder of 2026:
   {
     id: 24,
     title: 'Dollar Weakness: Structural Shift or Tactical Opportunity?',
-    subtitle: 'The DXY tests multi-year lows — drivers, duration, and cross-asset implications',
+    subtitle: 'The DXY tests multi-year lows: drivers, duration, and cross-asset implications',
     category: 'Macro',
     tags: ['USD', 'DXY', 'FX', 'Dollar', 'Global Macro'],
     publish_date: '2026-04-24',
@@ -151,7 +151,7 @@ We think yes — with the caveat that the FOMC fracture and Warsh appointment (s
   {
     id: 23,
     title: 'Tariff Impact: Q1 Earnings Season Reality Check',
-    subtitle: 'What corporate America is actually saying about tariff costs — and what it means for the rest of 2026',
+    subtitle: 'What corporate America is actually saying about tariff costs, and what it means for the rest of 2026',
     category: 'Equities',
     tags: ['Earnings', 'Tariffs', 'US Equities', 'Corporate', 'Margins'],
     publish_date: '2026-04-17',
@@ -198,7 +198,7 @@ If any of these assumptions prove too optimistic — which Q2 earnings will reve
   {
     id: 22,
     title: 'Q1 2026 Earnings: The AI Capex Supercycle Delivers',
-    subtitle: 'Magnificent Seven results, tariff resilience, and what $6 trillion of equity value creation tells us',
+    subtitle: 'Magnificent Seven results, tariff resilience, and what $6 trillion in equity value creation tells us',
     category: 'Equities',
     tags: ['Earnings', 'AI', 'Magnificent Seven', 'Capex', 'S&P 500'],
     publish_date: '2026-04-30',
@@ -255,7 +255,7 @@ Apple navigated tariff exposure through pre-tariff inventory building and India 
   {
     id: 21,
     title: 'Recession Risk: How to Read the Signals in Real Time',
-    subtitle: 'A framework for monitoring recession probability across the indicators that matter',
+    subtitle: 'A framework for monitoring recession probability across the indicators that matter.',
     category: 'Macro',
     tags: ['Recession', 'Leading Indicators', 'US Economy', 'Risk', 'Framework'],
     publish_date: '2026-04-03',
@@ -307,7 +307,7 @@ The wild card that no historical model can adequately price is the tariff trajec
   {
     id: 20,
     title: 'Germany\'s Fiscal Pivot: What the €500bn Package Means for Europe',
-    subtitle: 'The biggest shift in German economic policy in a generation — and why it matters for every European asset class',
+    subtitle: 'The biggest shift in German economic policy in a generation, and why it matters for every European asset class',
     category: 'Macro',
     tags: ['Germany', 'Fiscal Policy', 'Euro', 'European Equities', 'Bunds'],
     publish_date: '2026-03-27',
@@ -346,7 +346,7 @@ This is not just a German story — it is a European story. Germany's political 
   {
     id: 19,
     title: 'Tariff Uncertainty and the Portfolio Response',
-    subtitle: 'How to position when US trade policy is the dominant market variable',
+    subtitle: 'How to position when US trade policy is the dominant market variable.',
     category: 'Macro',
     tags: ['Tariffs', 'US Trade', 'Supply Chains', 'Inflation', 'Portfolio'],
     publish_date: '2026-03-24',
@@ -382,7 +382,7 @@ The broader risk: US trading partners (EU, China, Canada, Mexico) are preparing 
   {
     id: 18,
     title: 'UK Budget 2026: Investment Implications',
-    subtitle: 'Assessing the fiscal impact and portfolio consequences of the Spring Statement',
+    subtitle: 'Assessing the fiscal impact and portfolio consequences of the Spring Statement.',
     category: 'Macro',
     tags: ['UK', 'Budget', 'Gilts', 'Sterling', 'Fiscal Policy'],
     publish_date: '2026-03-20',
@@ -414,7 +414,7 @@ FTSE 100 continues to trade at a significant discount to global peers (11x PE vs
   {
     id: 17,
     title: 'FOMC March 2026: Dots, Forecasts, and the Path Ahead',
-    subtitle: 'Reading between the lines of the March Fed decision',
+    subtitle: 'Reading between the lines of the March Fed decision.',
     category: 'Fixed Income',
     tags: ['Fed', 'FOMC', 'Rates', 'Dot Plot', 'Treasuries'],
     publish_date: '2026-03-19',
@@ -455,7 +455,7 @@ This is a Fed on hold until it sees the tariff picture more clearly. June remain
   {
     id: 1,
     title: 'The Rate Regime Shift: Navigating Higher-for-Longer',
-    subtitle: 'Implications for multi-asset allocation in a persistently restrictive environment',
+    subtitle: 'Implications for multi-asset allocation in a persistently restrictive environment.',
     category: 'Macro',
     tags: ['Rates', 'Duration', 'Central Banks', 'Multi-Asset'],
     publish_date: '2026-03-15',
@@ -492,7 +492,7 @@ The US 2Y/10Y spread has been inverted for over 18 months. Historically, uninver
   {
     id: 2,
     title: 'Strategic vs Tactical: When to Deviate from SAA',
-    subtitle: 'A framework for determining when tactical tilts are warranted',
+    subtitle: 'A framework for determining when tactical tilts are warranted.',
     category: 'Multi-Asset',
     tags: ['SAA', 'TAA', 'Risk Budget', 'Framework'],
     publish_date: '2026-03-12',
@@ -543,7 +543,7 @@ When all three signals align, we implement a full tilt. When two of three align,
   {
     id: 3,
     title: 'Concentration Risk in US Equities',
-    subtitle: 'Portfolio diversification challenges in a narrow market',
+    subtitle: 'Portfolio diversification challenges in a narrow market.',
     category: 'Equities',
     tags: ['US Equity', 'Diversification', 'Tech', 'Concentration'],
     publish_date: '2026-03-10',
@@ -583,7 +583,7 @@ For investors who want to maintain core US equity exposure but reduce concentrat
   {
     id: 4,
     title: 'Tax-Efficient Accumulation Strategies for UK Investors',
-    subtitle: 'ISA, SIPP, GIA — how to structure for long-term wealth',
+    subtitle: 'ISA, SIPP, GIA: how to structure for long-term wealth',
     category: 'Wealth Strategy',
     tags: ['Tax', 'ISA', 'SIPP', 'UK', 'Pension'],
     publish_date: '2026-03-08',
@@ -625,7 +625,7 @@ A General Investment Account should only hold assets that are ISA/SIPP ineligibl
   {
     id: 5,
     title: 'Gold in a Multi-Asset Context',
-    subtitle: 'Hedge, store of value, or tactical trade?',
+    subtitle: 'Hedge, store of value, or tactical trade.',
     category: 'Commodities',
     tags: ['Gold', 'Inflation', 'Hedge', 'Portfolio Construction'],
     publish_date: '2026-03-05',
@@ -669,7 +669,7 @@ Academic optimisation suggests a gold weight of 5-15% in a diversified portfolio
   {
     id: 6,
     title: 'Behavioural Biases in Drawdowns',
-    subtitle: 'Managing cognitive errors when markets turn against you',
+    subtitle: 'Managing cognitive errors when markets turn against you.',
     category: 'Behavioural Finance',
     tags: ['Psychology', 'Drawdown', 'Risk', 'Decision-Making'],
     publish_date: '2026-03-02',
@@ -713,7 +713,7 @@ The solution is not to eliminate emotion — that is impossible — but to build
   {
     id: 7,
     title: 'Fixed Income in the New Regime: Opportunities and Traps',
-    subtitle: 'Navigating bonds when yields are finally investable again',
+    subtitle: 'Navigating bonds when yields are finally investable again.',
     category: 'Fixed Income',
     tags: ['Bonds', 'Credit', 'Duration', 'Yields'],
     publish_date: '2026-02-28',
@@ -749,7 +749,7 @@ Short-end government yields (2Y Treasuries: ~4.7%; 2Y Gilts: ~4.5%) offer near-e
   {
     id: 8,
     title: 'Sizing Positions Under Uncertainty: The Kelly Framework',
-    subtitle: 'Practical position sizing for asymmetric return distributions',
+    subtitle: 'Practical position sizing for asymmetric return distributions.',
     category: 'Risk Management',
     tags: ['Position Sizing', 'Kelly Criterion', 'Risk', 'Portfolio Construction'],
     publish_date: '2026-02-22',
@@ -798,7 +798,7 @@ Kelly ignores liquidity. A 25% allocation to an illiquid asset that drops 50% is
   {
     id: 9,
     title: 'Private Markets: Illiquidity Premium or Illiquidity Trap?',
-    subtitle: 'What the return evidence really says about private equity and private credit',
+    subtitle: 'What the return evidence really says about private equity and private credit.',
     category: 'Multi-Asset',
     tags: ['Private Equity', 'Private Credit', 'Alternatives', 'Illiquidity'],
     publish_date: '2026-02-18',
@@ -843,7 +843,7 @@ They do not make sense for:
   {
     id: 10,
     title: 'The China Question: Structural Decline or Deep Value?',
-    subtitle: 'Assessing the case for Chinese equities in a global multi-asset portfolio',
+    subtitle: 'Assessing the case for Chinese equities in a global multi-asset portfolio.',
     category: 'Equities',
     tags: ['China', 'EM', 'Equities', 'Geopolitics', 'Valuation'],
     publish_date: '2026-02-14',
@@ -879,7 +879,7 @@ The China question is ultimately a question about whether markets can function w
   {
     id: 11,
     title: 'Currency Hedging: When Does It Add Value?',
-    subtitle: 'The case for and against FX hedging in international portfolios',
+    subtitle: 'The case for and against FX hedging in international portfolios.',
     category: 'Risk Management',
     tags: ['FX', 'Currency', 'Hedging', 'International'],
     publish_date: '2026-02-10',
@@ -919,7 +919,7 @@ The hedge ratio should increase when: (1) the investor's functional currency is 
   {
     id: 12,
     title: 'Sector Rotation: Reading the Economic Cycle',
-    subtitle: 'Which sectors lead and lag across economic regimes',
+    subtitle: 'Which sectors lead and lag across economic regimes.',
     category: 'Equities',
     tags: ['Sectors', 'Rotation', 'Economic Cycle', 'TAA'],
     publish_date: '2026-02-05',
@@ -958,7 +958,7 @@ Use sector rotation as a risk management overlay, not a primary strategy:
   {
     id: 13,
     title: 'The AI Capex Supercycle: Who Actually Wins?',
-    subtitle: 'Mapping the investment opportunity across the AI value chain',
+    subtitle: 'Mapping the investment opportunity across the AI value chain.',
     category: 'Equities',
     tags: ['AI', 'Technology', 'Capex', 'Semiconductors', 'Infrastructure'],
     publish_date: '2026-01-30',
@@ -995,7 +995,7 @@ NVIDIA's current valuation prices in sustained dominance for 5+ years. That is p
   {
     id: 14,
     title: 'Inflation: Structural or Cyclical? The 2026 Reassessment',
-    subtitle: 'Revisiting the inflation debate as the cycle matures',
+    subtitle: 'Revisiting the inflation debate as the cycle matures.',
     category: 'Macro',
     tags: ['Inflation', 'Central Banks', 'CPI', 'Rates', 'Macro'],
     publish_date: '2026-01-20',
@@ -1043,7 +1043,7 @@ We lean toward a **sticky-but-not-structural** view: inflation will settle above
   {
     id: 15,
     title: 'Rebalancing: The Overlooked Alpha Source',
-    subtitle: 'How disciplined rebalancing systematically harvests volatility premium',
+    subtitle: 'How disciplined rebalancing systematically harvests the volatility premium.',
     category: 'Risk Management',
     tags: ['Rebalancing', 'Portfolio Construction', 'Volatility', 'Alpha', 'Systematic'],
     publish_date: '2026-01-12',
