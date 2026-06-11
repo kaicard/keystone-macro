@@ -12,7 +12,7 @@ const footerLinks = [
     links: [
       { label: 'Research', path: '/Research' },
       { label: 'Portfolios', path: '/Portfolios' },
-      { label: 'AI Portfolio Lab', path: '/AIPortfolioLab' },
+      { label: 'Keystone AI', path: '/AI' },
       { label: 'Market Pulse', path: '/MarketPulse' },
     ]
   },
