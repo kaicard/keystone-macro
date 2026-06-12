@@ -490,8 +490,9 @@ Return JSON:
     const resendKey = Deno.env.get('RESEND_API_KEY');
 
     let sent = 0;
+    const errors = [];
     for (const subscriber of subscribers) {
-      await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendKey}`,
@@ -504,7 +505,12 @@ Return JSON:
           html: htmlBody,
         }),
       });
-      sent++;
+      const resBody = await res.json();
+      if (!res.ok) {
+        errors.push({ email: subscriber.email, status: res.status, body: resBody });
+      } else {
+        sent++;
+      }
     }
 
     // ── Persist as a NewsletterEdition record (upsert) ───────────────────────
@@ -532,7 +538,7 @@ Return JSON:
       await base44.asServiceRole.entities.NewsletterEdition.create(editionData);
     }
 
-    return Response.json({ message: `The Keystone Macro Brief — ${editionLabel} sent successfully`, sent, subject });
+    return Response.json({ message: `The Keystone Macro Brief — ${editionLabel} sent successfully`, sent, subject, errors: errors.length > 0 ? errors : undefined });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

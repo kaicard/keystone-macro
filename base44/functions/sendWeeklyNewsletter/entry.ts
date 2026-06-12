@@ -347,8 +347,9 @@ Return JSON:
     const resendKey = Deno.env.get('RESEND_API_KEY');
 
     let sent = 0;
+    const errors = [];
     for (const recipient of recipients) {
-      await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendKey}`,
@@ -361,10 +362,15 @@ Return JSON:
           html: htmlBody,
         }),
       });
-      sent++;
+      const resBody = await res.json();
+      if (!res.ok) {
+        errors.push({ email: recipient.email, status: res.status, body: resBody });
+      } else {
+        sent++;
+      }
     }
 
-    return Response.json({ message: `Weekly newsletter sent`, sent, subject, weekRange, test: !!testEmail });
+    return Response.json({ message: `Weekly newsletter sent`, sent, subject, weekRange, test: !!testEmail, errors: errors.length > 0 ? errors : undefined });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
