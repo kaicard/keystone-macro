@@ -300,7 +300,7 @@ Return JSON:
 REAL MARKET DATA (current live levels — do NOT fabricate any price, level, or percentage):
 ${snapshotSummary}
 
-Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. Each section should give a good summary but deliberately stop short of deep analysis — free readers get the WHAT, not the WHY or the trade.
+Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. This week, if relevant, include a section on the SpaceX Nasdaq listing — give free readers a taste of the story (valuation context, market reaction, what it means for tech sentiment) but stop well short of a trade view or deep positioning analysis — that's reserved for premium.
 
 No URLs, no emojis. Write authoritatively but accessibly — not as dense as a premium note. Each body is 3-4 sentences. Use the real data above for any specific numbers.
 
