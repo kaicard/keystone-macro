@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Mail, CheckCircle, ArrowRight, Lock, Sparkles, Sun, Moon,
   BookOpen, BarChart2, Globe, TrendingUp, Zap, Shield, X,
-  Calendar, ArrowUpRight
+  Calendar, ArrowUpRight, UserPlus
 } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
 import EditionCard from '@/components/newsletter/EditionCard';
@@ -237,6 +237,19 @@ export default function Newsletter() {
             ))}
           </div>
 
+          <div className="flex items-start gap-3 bg-accent/5 border border-accent/20 rounded-xl px-4 py-3 mb-4">
+            <UserPlus className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold">Account required for email delivery</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                To receive editions by email, you also need a platform account.{' '}
+                <Link to="/register" className="text-accent underline underline-offset-2 font-medium">
+                  Create one in 30 seconds →
+                </Link>
+              </p>
+            </div>
+          </div>
+
           {justSubscribed ? (
             <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
               <CheckCircle className="w-5 h-5 text-primary shrink-0" />
@@ -386,6 +399,21 @@ export default function Newsletter() {
             ))}
           </div>
 
+          {!user && (
+            <div className="flex items-start gap-3 bg-accent/5 border border-accent/20 rounded-xl px-4 py-3 mb-4">
+              <UserPlus className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold">Account required for email delivery</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  You'll also need a free platform account to receive editions by email.{' '}
+                  <Link to="/register" className="text-accent underline underline-offset-2 font-medium">
+                    Create one now →
+                  </Link>
+                </p>
+              </div>
+            </div>
+          )}
+
           {freeSuccess ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
@@ -395,18 +423,20 @@ export default function Newsletter() {
                   <p className="text-xs text-muted-foreground mt-0.5">First edition arrives this Friday at 10pm.</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 bg-card border border-border/50 rounded-xl px-4 py-3">
-                <Zap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold">For guaranteed delivery</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Create a free account to ensure every edition reaches your inbox.{' '}
-                    <Link to="/register" className="text-primary underline underline-offset-2 font-medium">
-                      Sign up in 30 seconds →
-                    </Link>
-                  </p>
+              {!user && (
+                <div className="flex items-start gap-3 bg-card border border-border/50 rounded-xl px-4 py-3">
+                  <Zap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold">For guaranteed delivery</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Create a free account to ensure every edition reaches your inbox.{' '}
+                      <Link to="/register" className="text-primary underline underline-offset-2 font-medium">
+                        Sign up in 30 seconds →
+                      </Link>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleFreeSignup} className="flex flex-col sm:flex-row gap-3">
