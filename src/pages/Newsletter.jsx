@@ -387,11 +387,25 @@ export default function Newsletter() {
           </div>
 
           {freeSuccess ? (
-            <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
-              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold">You're on the list.</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Check your inbox — first edition arrives this Friday at 10pm.</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
+                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold">You're on the list.</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">First edition arrives this Friday at 10pm.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-card border border-border/50 rounded-xl px-4 py-3">
+                <Zap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold">For guaranteed delivery</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Create a free account to ensure every edition reaches your inbox.{' '}
+                    <Link to="/register" className="text-primary underline underline-offset-2 font-medium">
+                      Sign up in 30 seconds →
+                    </Link>
+                  </p>
+                </div>
               </div>
             </div>
           ) : (

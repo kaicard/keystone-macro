@@ -344,33 +344,24 @@ Return JSON:
 
     const htmlBody = buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumTeaser });
 
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-
     let sent = 0;
-    const errors = [];
+    const skipped = [];
     for (const recipient of recipients) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Keystone Macro <hello@keystonemacro.com>',
-          to: [recipient.email],
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: recipient.email,
+          from_name: 'Keystone Macro',
           subject: `Keystone Macro Weekly — ${subject}`,
-          html: htmlBody,
-        }),
-      });
-      const resBody = await res.json();
-      if (!res.ok) {
-        errors.push({ email: recipient.email, status: res.status, body: resBody });
-      } else {
+          body: htmlBody,
+        });
         sent++;
+      } catch (_) {
+        // Non-registered users can't receive via SendEmail — they'll read on-site
+        skipped.push(recipient.email);
       }
     }
 
-    return Response.json({ message: `Weekly newsletter sent`, sent, subject, weekRange, test: !!testEmail, errors: errors.length > 0 ? errors : undefined });
+    return Response.json({ message: `Weekly newsletter sent`, sent, skipped: skipped.length, subject, weekRange, test: !!testEmail });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
