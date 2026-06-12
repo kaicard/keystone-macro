@@ -1,5 +1,67 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+// ─── Fetch real snapshot data via v8 chart endpoint ────────────────────────────
+async function fetchSnapshotData() {
+  const instruments = [
+    { sym: '^GSPC', name: 'S&P 500' },
+    { sym: '^TNX', name: 'US 10Y Yield' },
+    { sym: 'DX-Y.NYB', name: 'DXY Index' },
+    { sym: 'GC=F', name: 'Gold Futures' },
+    { sym: 'BZ=F', name: 'Brent Crude' },
+  ];
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Referer': 'https://finance.yahoo.com/',
+    'Origin': 'https://finance.yahoo.com',
+  };
+  const results = await Promise.allSettled(instruments.map(async (inst) => {
+    for (const host of ['query1', 'query2']) {
+      try {
+        const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(inst.sym)}?interval=1m&range=1d&includePrePost=false`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) continue;
+        const json = await res.json();
+        const meta = json?.chart?.result?.[0]?.meta;
+        if (!meta) continue;
+        const price = meta.regularMarketPrice;
+        const prev = meta.previousClose ?? meta.chartPreviousClose;
+        if (price == null || prev == null || price <= 0 || prev <= 0) continue;
+        return { name: inst.name, sym: inst.sym, price, prev };
+      } catch (_) {}
+    }
+    return null;
+  }));
+  const snapshot = [];
+  for (const r of results) {
+    if (r.status !== 'fulfilled' || !r.value) continue;
+    const { name, sym, price, prev } = r.value;
+    const changePct = ((price - prev) / prev) * 100;
+    const isUp = changePct >= 0;
+    const arrow = isUp ? '▲' : '▼';
+    const sign = changePct >= 0 ? '+' : '';
+    let formattedValue;
+    if (sym === '^TNX') {
+      formattedValue = `${price.toFixed(2)}%`;
+    } else if (sym === 'GC=F' || sym === 'BZ=F') {
+      formattedValue = `$${price.toFixed(2)}`;
+    } else if (sym === '^GSPC') {
+      formattedValue = price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else if (sym === 'DX-Y.NYB') {
+      formattedValue = price.toFixed(2);
+    } else {
+      formattedValue = String(price);
+    }
+    snapshot.push({
+      label: name,
+      value: formattedValue,
+      change: `${arrow} ${sign}${Math.abs(changePct).toFixed(2)}%`
+    });
+  }
+  return snapshot;
+}
+
 // ─── Snapshot row (same premium dark style) ────────────────────────────────────
 function snapRow(m, isLast) {
   const rawFull = String(m.change || '').trim();
@@ -208,29 +270,39 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'No recipients', sent: 0 });
     }
 
+    // ── Fetch real market snapshot ───────────────────────────────────────────
+    const realSnapshot = await fetchSnapshotData();
+    const snapshotSummary = realSnapshot.length > 0
+      ? realSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' | ')
+      : 'Market data temporarily unavailable — describe direction and trends only, do NOT fabricate specific prices or levels.';
+
     // Generate weekly content via LLM
     const [metaRes, sectionsRes, premiumRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week: ${weekRange}.
 
+REAL MARKET DATA (just fetched — current levels):
+${snapshotSummary}
+
 Return JSON:
-- subject_line: Punchy weekly subject line referencing the single biggest story of this week (max 72 chars). No emojis.
-- market_snapshot: array of 5 objects {label, value, change} — S&P 500 (weekly change), 10Y UST, DXY, Gold, Brent — with real weekly closing levels.`,
+- subject_line: Punchy weekly subject line referencing the single biggest story of this week (max 72 chars). No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
           properties: {
-            subject_line: { type: 'string' },
-            market_snapshot: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'string' }, change: { type: 'string' } } } }
+            subject_line: { type: 'string' }
           }
         }
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week covered: ${weekRange}.
 
+REAL MARKET DATA (current live levels — do NOT fabricate any price, level, or percentage):
+${snapshotSummary}
+
 Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. Each section should give a good summary but deliberately stop short of deep analysis — free readers get the WHAT, not the WHY or the trade.
 
-No URLs, no emojis. Write authoritatively but accessibly — not as dense as a premium note. Each body is 3-4 sentences.
+No URLs, no emojis. Write authoritatively but accessibly — not as dense as a premium note. Each body is 3-4 sentences. Use the real data above for any specific numbers.
 
 Return JSON:
 - sections: array of 4 objects each with: label, headline (specific to this week), body (3-4 sentences, weekly recap)`,
@@ -266,7 +338,7 @@ Return JSON:
     ]);
 
     const subject = metaRes.subject_line || `Keystone Macro Weekly — ${weekRange}`;
-    const marketSnapshot = metaRes.market_snapshot || [];
+    const marketSnapshot = realSnapshot;
     const sections = sectionsRes.sections || [];
     const premiumTeaser = premiumRes || { items: [], fomo_line: '' };
 

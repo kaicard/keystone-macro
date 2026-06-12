@@ -69,6 +69,68 @@ async function fetchIntradayData(symbol) {
   return { labels, data, open, close, high, low, changeAbs, changePct, isUp, symbol };
 }
 
+// ─── Fetch real snapshot data via v8 chart endpoint ────────────────────────────
+async function fetchSnapshotData() {
+  const instruments = [
+    { sym: '^GSPC', name: 'S&P 500' },
+    { sym: '^TNX', name: 'US 10Y Yield' },
+    { sym: 'DX-Y.NYB', name: 'DXY Index' },
+    { sym: 'GC=F', name: 'Gold Futures' },
+    { sym: 'BZ=F', name: 'Brent Crude' },
+  ];
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Referer': 'https://finance.yahoo.com/',
+    'Origin': 'https://finance.yahoo.com',
+  };
+  const results = await Promise.allSettled(instruments.map(async (inst) => {
+    for (const host of ['query1', 'query2']) {
+      try {
+        const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(inst.sym)}?interval=1m&range=1d&includePrePost=false`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) continue;
+        const json = await res.json();
+        const meta = json?.chart?.result?.[0]?.meta;
+        if (!meta) continue;
+        const price = meta.regularMarketPrice;
+        const prev = meta.previousClose ?? meta.chartPreviousClose;
+        if (price == null || prev == null || price <= 0 || prev <= 0) continue;
+        return { name: inst.name, sym: inst.sym, price, prev };
+      } catch (_) {}
+    }
+    return null;
+  }));
+  const snapshot = [];
+  for (const r of results) {
+    if (r.status !== 'fulfilled' || !r.value) continue;
+    const { name, sym, price, prev } = r.value;
+    const changePct = ((price - prev) / prev) * 100;
+    const isUp = changePct >= 0;
+    const arrow = isUp ? '▲' : '▼';
+    const sign = changePct >= 0 ? '+' : '';
+    let formattedValue;
+    if (sym === '^TNX') {
+      formattedValue = `${price.toFixed(2)}%`;
+    } else if (sym === 'GC=F' || sym === 'BZ=F') {
+      formattedValue = `$${price.toFixed(2)}`;
+    } else if (sym === '^GSPC') {
+      formattedValue = price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else if (sym === 'DX-Y.NYB') {
+      formattedValue = price.toFixed(2);
+    } else {
+      formattedValue = String(price);
+    }
+    snapshot.push({
+      label: name,
+      value: formattedValue,
+      change: `${arrow} ${sign}${Math.abs(changePct).toFixed(2)}%`
+    });
+  }
+  return snapshot;
+}
+
 const IMAGE_MAP = {
   oil_refinery:     'https://images.unsplash.com/photo-1574018856533-3e5c20f8c3c4?w=700&q=90&fit=crop',
   federal_reserve:  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=700&q=90&fit=crop',
@@ -319,25 +381,28 @@ Deno.serve(async (req) => {
       ? `\n\nPREVIOUS EDITIONS — do NOT repeat these subjects or angles:\n${recentEditions.map(e => `- [${e.publish_date}] "${e.title}"`).join('\n')}\nTake a FRESH ANGLE even on recurring themes.`
       : '';
 
+    // ── Fetch real market snapshot ───────────────────────────────────────────
+    const realSnapshot = await fetchSnapshotData();
+    const snapshotSummary = realSnapshot.length > 0
+      ? realSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' | ')
+      : 'Market data temporarily unavailable — describe direction and trends only, do NOT fabricate specific prices or levels.';
+
     // ── Two parallel LLM calls ───────────────────────────────────────────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.${recentContext}
 
-Return JSON with today's REAL, VERIFIED data sourced from live financial markets. No nulls, no N/A.
-- subject_line: punchy unique subject line (max 72 chars), no emojis
-- market_snapshot: exactly 5 objects, each with:
-    - label: instrument name
-    - value: real current price/level as formatted string
-    - change: real change with sign e.g. "▲ +1.2%" or "▼ -0.8%" — MUST be non-empty for ALL 5
-  Instruments: S&P 500, 10Y UST Yield, DXY Index, Gold, Brent Crude
+REAL MARKET DATA (just fetched from live feeds — use as context):
+${snapshotSummary}
+
+Return JSON:
+- subject_line: punchy unique subject line referencing today's real market moves (max 72 chars), no emojis
 - footer_note: sharp 1-line closing observation. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
           properties: {
             subject_line: { type: 'string' },
-            market_snapshot: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'string' }, change: { type: 'string' } } } },
             footer_note: { type: 'string' }
           }
         }
@@ -345,8 +410,11 @@ Return JSON with today's REAL, VERIFIED data sourced from live financial markets
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the ${editionLabel} for ${dateStr} (${isoDate}) — a ${timeContext}.${recentContext}
 
+REAL MARKET DATA (all prices below are from live feeds — do NOT fabricate any number):
+${snapshotSummary}
+
 STRICT RULES:
-1. Every fact, figure, price, and event MUST be from TODAY (${isoDate}). No fabrication.
+1. Every fact, figure, price, and event MUST be from TODAY (${isoDate}). Use the real data above. No fabrication of any price, level, or percentage.
 2. No URLs, hyperlinks, citations. Pure prose only.
 3. No emojis.
 4. Write like a senior Goldman Sachs analyst — sharp, specific, authoritative.
@@ -385,7 +453,7 @@ Return JSON:
     ]);
 
     const subject = metaRes.subject_line || `The Keystone Macro Brief — ${editionLabel} — ${dateStr}`;
-    const marketSnapshot = metaRes.market_snapshot || [];
+    const marketSnapshot = realSnapshot;
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
 
