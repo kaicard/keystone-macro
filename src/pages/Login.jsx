@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
@@ -37,6 +38,15 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      {/* Back arrow */}
+      <button
+        onClick={() => window.history.back()}
+        className="absolute top-6 left-6 p-2 rounded-full hover:bg-muted transition-colors"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+      </button>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl font-semibold mb-2">Sign in</h1>
@@ -65,14 +75,25 @@ export default function Login() {
 
           <div>
             <label className="block text-sm font-medium mb-2">Password</label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
