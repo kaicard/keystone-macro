@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -25,6 +25,15 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      {/* Back arrow */}
+      <button
+        onClick={() => window.history.back()}
+        className="absolute top-6 left-6 p-2 rounded-full hover:bg-muted transition-colors"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+      </button>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl font-semibold mb-2">Reset password</h1>
