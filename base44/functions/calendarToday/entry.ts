@@ -18,23 +18,7 @@ Deno.serve(async (req) => {
     const source = body.source ?? 'mql5';
     const range  = body.range  ?? 'today';
 
-    const cacheKey = `calendar_${source}_${range}`;
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-    // Check cache first
-    const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: cacheKey });
-    if (cached?.length > 0) {
-      const entry = cached[0];
-      const cachedAt = new Date(entry.fetched_at).getTime();
-      const ageMs = Date.now() - cachedAt;
-      // Cache for 15 minutes only so actuals update throughout the day
-      if (ageMs < 15 * 60 * 1000) {
-        const events = JSON.parse(entry.payload);
-        return Response.json({ events, source, range, cached: true });
-      }
-    }
-
-    // Fetch fresh from jblanked
+    // Fetch fresh from jblanked — no caching to avoid payload size limits
     const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
     const url = range === 'week' ? sourceMap.week : sourceMap.today;
     const apiKey = Deno.env.get('JBLANKED_API_KEY');
@@ -50,15 +34,6 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     const events = data.map((item, idx) => normalise(item, idx));
-
-    // Save to cache
-    const payload = JSON.stringify(events);
-    const fetched_at = new Date().toISOString();
-    if (cached?.length > 0) {
-      await base44.asServiceRole.entities.MarketCache.update(cached[0].id, { payload, fetched_at });
-    } else {
-      await base44.asServiceRole.entities.MarketCache.create({ key: cacheKey, payload, fetched_at });
-    }
 
     return Response.json({ events, source, range, cached: false });
   } catch (err) {
