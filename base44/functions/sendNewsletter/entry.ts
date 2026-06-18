@@ -487,29 +487,19 @@ Return JSON:
     const htmlBody = buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectionBlocks, footerNote, isMorning: editionType === 'morning' });
 
     // ── Send to all active subscribers ──────────────────────────────────────
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-
     let sent = 0;
     const errors = [];
     for (const subscriber of subscribers) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'The Keystone Macro Brief <hello@keystonemacro.com>',
-          to: [subscriber.email],
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: subscriber.email,
+          from_name: 'Keystone Macro',
           subject: `The Keystone Macro Brief — ${subject}`,
-          html: htmlBody,
-        }),
-      });
-      const resBody = await res.json();
-      if (!res.ok) {
-        errors.push({ email: subscriber.email, status: res.status, body: resBody });
-      } else {
+          body: htmlBody,
+        });
         sent++;
+      } catch (err) {
+        errors.push({ email: subscriber.email, error: err.message });
       }
     }
 
