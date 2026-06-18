@@ -396,7 +396,7 @@ REAL MARKET DATA (just fetched from live feeds — use as context):
 ${snapshotSummary}
 
 Return JSON:
-- subject_line: punchy unique subject line referencing today's real market moves (max 72 chars), no emojis
+- subject_line: punchy unique subject line referencing the SINGLE biggest or most interesting development today across ANY category — M&A, geopolitics, commodities, central banks, FX, tech, bonds, or equities. Choose whatever genuinely dominates the session. Never default to equities or the S&P 500 unless it's actually the biggest story. Max 72 chars. No emojis.
 - footer_note: sharp 1-line closing observation. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
@@ -419,7 +419,7 @@ STRICT RULES:
 3. No emojis.
 4. Write like a senior Goldman Sachs analyst — sharp, specific, authoritative.
 
-Write EXACTLY 6 sections. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) provide image_topic. The remaining 2 have neither.
+Write EXACTLY 6 sections covering the most important stories today. Pick from DIVERSE categories — never more than 1 section per category, and avoid defaulting to equities as the lead. M&A, geopolitics, commodities, central bank decisions, FX moves, tech regulation, credit, emerging markets — whatever genuinely matters today. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) provide image_topic. The remaining 2 have neither.
 
 Return JSON:
 - sections: array of 6 objects, each with:
