@@ -25,23 +25,9 @@ Deno.serve(async (req) => {
     }));
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are a senior macro strategist at a top investment bank. Today is ${today}.
+      prompt: `Senior macro strategist. Today is ${today}. For each event return key, verdict, analysis (exactly 2 sentences: what happened + market implication), and key_points (max 2 bullets). Verdict: "beat"/"miss"/"in_line"/"pending" for data; "delivered"/"scheduled"/"in_progress" for speeches. Use only the numbers provided. No fabrication.
 
-Analyse each economic calendar event below. For EACH event return:
-- key: the exact key provided
-- verdict: For data releases with an actual value — "beat" (better than forecast), "miss" (worse), "in_line" (close to forecast), or "pending" (no actual yet). For speeches — "delivered" (finished), "scheduled" (upcoming), or "in_progress" (happening now).
-- analysis: 2-3 sharp sentences. For released data: what the number means, what drove any surprise, and the immediate market reaction. For speeches: the core message and market reaction. For upcoming: what markets will be watching for.
-- key_points: 2-4 concise bullet points. For speeches: specific quotes, policy shifts, or tone changes. For data: components that drove the headline or context for the beat/miss. For upcoming: what to watch for.
-
-Rules:
-- Use real numbers from the event data and from web search. NEVER fabricate.
-- For speeches, search the web to find what was actually said. If the speech hasn't happened yet, describe what markets expect.
-- Be concise, specific, and authoritative. No filler.
-
-Events (JSON):
-${JSON.stringify(eventList)}`,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
+Events: ${JSON.stringify(eventList)}`,
       response_json_schema: {
         type: 'object',
         properties: {
