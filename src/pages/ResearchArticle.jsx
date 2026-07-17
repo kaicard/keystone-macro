@@ -30,6 +30,21 @@ function generateSlug(title) {
   return title?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim() || '';
 }
 
+// Normalize LLM-generated markdown: ensures ## headings start on their own line
+// and splits "## Heading. Body text..." into proper heading + paragraph blocks
+function normalizeMarkdownBody(body) {
+  if (!body) return body;
+  // Step 1: Ensure ## headings start on a new line (insert blank line before if inline)
+  let result = body.replace(/([^\n])(\s*)(?=## )/g, '$1\n\n');
+  // Step 2: Split "## Heading. Body text" on the same line into "## Heading\n\nBody text"
+  // Matches heading followed by ". " and a capital letter (start of body paragraph)
+  result = result.replace(/^(## [^\n]+?)\. ([A-Z][^\n]*)$/gm, (match, heading, rest) => {
+    if (heading.length < 120) return `${heading}.\n\n${rest}`;
+    return match;
+  });
+  return result;
+}
+
 const bodyComponents = {
   h2: ({ children }) => (
     <h2 className="font-display text-xl sm:text-2xl font-semibold text-foreground mt-10 mb-4 leading-snug">{children}</h2>
@@ -213,7 +228,7 @@ export default function ResearchArticle() {
                 <div className="h-px w-full bg-gradient-to-r from-border/60 via-border/20 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <ReactMarkdown components={bodyComponents} remarkPlugins={[remarkGfm]}>
-                    {note.body}
+                    {normalizeMarkdownBody(note.body)}
                   </ReactMarkdown>
                 </div>
               </div>

@@ -44,7 +44,15 @@ Format:
 - category: One of: Macro, Equities, Fixed Income, Multi-Asset, Commodities, Wealth Strategy, Behavioural Finance, Risk Management, Trade Reviews
 - tags: 4-6 relevant tags as array
 - executive_summary: 2-3 sentences, institutional tone
-- body: Full article in markdown. Include: ## H2 headers, bold key terms, specific data/levels. Minimum 600 words. 4-6 substantive sections.
+- body: Full article in PROPER markdown. CRITICAL FORMATTING RULES:
+    1. Each ## heading MUST be on its own line, followed by a blank line, then the body paragraph on the next line.
+    2. Example of CORRECT format:
+       ## The Power Wall and Capital Allocation
+
+       Our analysis suggests that major hyperscalers...
+    3. NEVER put the heading and body text on the same line. NEVER write "## Heading. Body text..."
+    4. Use **bold** for key terms, include specific data/levels.
+    5. Minimum 600 words. 4-6 substantive sections.
 - key_risks: Key risks paragraph
 - takeaway: Concise actionable takeaway (2-4 sentences)
 - what_would_change_mind: What evidence would alter this view
