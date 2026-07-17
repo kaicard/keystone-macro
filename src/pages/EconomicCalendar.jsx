@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, BarChart2, AlertTriangle,
   Activity, Filter, CheckCircle2, Loader2, RefreshCw
 } from 'lucide-react';
+import EnrichedAnalysis from '@/components/calendar/EnrichedAnalysis';
 
 const CATEGORY_COLORS = {
   'Central Bank': 'text-amber-400 bg-amber-400/10',
@@ -155,7 +156,7 @@ function ActualBadge({ actual, forecast, dateStr, utcTime }) {
   );
 }
 
-function ExpandedPanel({ event }) {
+function ExpandedPanel({ event, enrichment, enriching }) {
   const impl      = CATEGORY_IMPLICATIONS[event.category] || null;
   const released  = isReleased(event.date, event.utcTime);
   const localTime = toLocalTime(event.date, event.utcTime);
@@ -173,11 +174,15 @@ function ExpandedPanel({ event }) {
     <div className="border-t border-border/10 bg-muted/5 px-4 py-4 space-y-4">
       <div className="flex gap-2.5">
         <Activity className="w-3.5 h-3.5 text-primary/70 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-1">
-            {released && event.actual ? 'Desk View' : 'Preview'}
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold mb-2">
+            {released && event.actual ? 'Analysis' : 'Preview'}
           </p>
-          <p className="text-xs text-muted-foreground leading-relaxed">{preview}</p>
+          {enrichment || enriching ? (
+            <EnrichedAnalysis enrichment={enrichment} enriching={enriching} />
+          ) : (
+            <p className="text-xs text-muted-foreground leading-relaxed">{preview}</p>
+          )}
         </div>
       </div>
       {impl && (
@@ -223,11 +228,13 @@ function ExpandedPanel({ event }) {
   );
 }
 
-function EventRow({ event, today }) {
+function EventRow({ event, today, enrichments, enriching }) {
   const [open, setOpen] = useState(false);
   const isToday  = event.date === today;
   const isHigh   = event.importance === 'high';
   const catStyle = CATEGORY_COLORS[event.category] || 'text-muted-foreground bg-muted/30';
+  const eventKey   = `${event.date}|${event.event.toLowerCase()}`;
+  const enrichment = enrichments?.[eventKey];
 
   return (
     <div className={`border-b border-border/20 last:border-0 ${isToday && isHigh ? 'bg-primary/[0.02]' : ''}`}>
@@ -262,7 +269,7 @@ function EventRow({ event, today }) {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} className="overflow-hidden">
-            <ExpandedPanel event={event} />
+            <ExpandedPanel event={event} enrichment={enrichment} enriching={enriching} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -270,7 +277,7 @@ function EventRow({ event, today }) {
   );
 }
 
-function DateGroup({ dateStr, events, today }) {
+function DateGroup({ dateStr, events, today, enrichments, enriching }) {
   const isToday   = dateStr === today;
   const highCount = events.filter(e => e.importance === 'high').length;
   const tz        = localTzLabel();
@@ -298,7 +305,7 @@ function DateGroup({ dateStr, events, today }) {
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground/40 font-semibold text-right">ACTUAL</span>
           <span />
         </div>
-        {events.map(e => <EventRow key={e.id} event={e} today={today} />)}
+        {events.map(e => <EventRow key={e.id} event={e} today={today} enrichments={enrichments} enriching={enriching} />)}
       </div>
     </div>
   );
@@ -311,6 +318,10 @@ export default function EconomicCalendar() {
   const [ffEvents, setFfEvents]   = useState([]);
   const [loading, setLoading]     = useState(false);
   const [liveStatus, setLiveStatus] = useState('idle');
+  const [enrichments, setEnrichments] = useState({});
+  const [enriching, setEnriching]     = useState(false);
+  const enrichedKeys  = useRef(new Set());
+  const hadActualKeys = useRef(new Set());
 
   useEffect(() => {
     const now = new Date();
@@ -339,6 +350,46 @@ export default function EconomicCalendar() {
     const interval = setInterval(loadFF, 3 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadFF]);
+
+  // Enrich high/medium events with LLM analysis (beat/miss verdicts, speech summaries)
+  useEffect(() => {
+    const enrichable = ffEvents.filter(e => e.importance === 'high' || e.importance === 'medium');
+    if (enrichable.length === 0) return;
+
+    const toEnrich = enrichable.filter(e => {
+      const key = `${e.date}|${e.event.toLowerCase()}`;
+      const hasActual = !!e.actual;
+      if (!enrichedKeys.current.has(key)) return true;
+      if (hasActual && !hadActualKeys.current.has(key)) return true;
+      return false;
+    });
+
+    if (toEnrich.length === 0) return;
+
+    toEnrich.forEach(e => {
+      const key = `${e.date}|${e.event.toLowerCase()}`;
+      enrichedKeys.current.add(key);
+      if (e.actual) hadActualKeys.current.add(key);
+    });
+
+    setEnriching(true);
+    base44.functions.invoke('enrichCalendarEvents', {
+      events: toEnrich.map(e => ({
+        key: `${e.date}|${e.event.toLowerCase()}`,
+        event: e.event,
+        country: e.country,
+        date: e.date,
+        utcTime: e.utcTime,
+        category: e.category,
+        previous: e.previous,
+        forecast: e.forecast,
+        actual: e.actual,
+      }))
+    }).then(res => {
+      const data = res?.data?.analyses || {};
+      setEnrichments(prev => ({ ...prev, ...data }));
+    }).catch(() => {}).finally(() => setEnriching(false));
+  }, [ffEvents]);
 
   const weekEnd = useMemo(() => getWeekEnd(today), [today]);
 
@@ -445,7 +496,7 @@ export default function EconomicCalendar() {
               <p className="text-sm font-medium mb-1">Loading calendar...</p>
             </div>
           ) : grouped.length > 0 ? (
-            grouped.map(([dateStr, evs]) => <DateGroup key={dateStr} dateStr={dateStr} events={evs} today={today} />)
+            grouped.map(([dateStr, evs]) => <DateGroup key={dateStr} dateStr={dateStr} events={evs} today={today} enrichments={enrichments} enriching={enriching} />)
           ) : (
             <div className="text-center py-20 text-muted-foreground">
               <Calendar className="w-10 h-10 mx-auto mb-4 opacity-20" />

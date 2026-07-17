@@ -60,7 +60,7 @@ function normalise(item, idx) {
     country:    mapCurrency(item.Currency ?? item.currency ?? ''),
     event:      item.Name ?? item.name ?? '',
     importance: mapImpact(item.Impact ?? item.impact),
-    category:   mapCategory(item.Category ?? item.category ?? item.Name ?? item.name ?? ''),
+    category:   mapCategory(item.Category ?? item.category ?? '', item.Name ?? item.name ?? ''),
     previous:   prev != null ? String(prev) : '—',
     forecast:   fore != null ? String(fore) : '—',
     actual,
@@ -84,15 +84,15 @@ function mapImpact(impact) {
   return 'low';
 }
 
-function mapCategory(cat) {
-  if (!cat) return 'Other';
-  const c = cat.toLowerCase();
-  if (c.includes('rate') || c.includes('central') || c.includes('bank') || c.includes('monetary') || c.includes('boj') || c.includes('fed') || c.includes('ecb') || c.includes('boe')) return 'Central Bank';
-  if (c.includes('inflation') || c.includes('cpi') || c.includes('ppi') || c.includes('price')) return 'Inflation';
-  if (c.includes('employ') || c.includes('job') || c.includes('labour') || c.includes('labor') || c.includes('payroll') || c.includes('claims')) return 'Labour';
-  if (c.includes('gdp') || c.includes('growth') || c.includes('production') || c.includes('trade')) return 'GDP';
-  if (c.includes('pmi') || c.includes('manufacturing') || c.includes('services') || c.includes('business')) return 'PMI';
-  if (c.includes('consumer') || c.includes('retail') || c.includes('sentiment') || c.includes('confidence') || c.includes('spending')) return 'Consumer';
-  if (c.includes('housing') || c.includes('home') || c.includes('building') || c.includes('construction') || c.includes('mortgage')) return 'Housing';
+function mapCategory(cat, name) {
+  const combined = ((cat || '') + ' ' + (name || '')).toLowerCase();
+  if (combined.includes('speak') || combined.includes('speech') || combined.includes('testimony') || combined.includes('press conference') || combined.includes('remarks')) return 'Speeches';
+  if (combined.includes('rate') || combined.includes('central') || combined.includes('bank') || combined.includes('monetary') || combined.includes('boj') || combined.includes('fed') || combined.includes('ecb') || combined.includes('boe')) return 'Central Bank';
+  if (combined.includes('inflation') || combined.includes('cpi') || combined.includes('ppi') || combined.includes('price')) return 'Inflation';
+  if (combined.includes('employ') || combined.includes('job') || combined.includes('labour') || combined.includes('labor') || combined.includes('payroll') || combined.includes('claims')) return 'Labour';
+  if (combined.includes('gdp') || combined.includes('growth') || combined.includes('production') || combined.includes('trade')) return 'GDP';
+  if (combined.includes('pmi') || combined.includes('manufacturing') || combined.includes('services') || combined.includes('business')) return 'PMI';
+  if (combined.includes('consumer') || combined.includes('retail') || combined.includes('sentiment') || combined.includes('confidence') || combined.includes('spending')) return 'Consumer';
+  if (combined.includes('housing') || combined.includes('home') || combined.includes('building') || combined.includes('construction') || combined.includes('mortgage')) return 'Housing';
   return 'Other';
 }
