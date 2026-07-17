@@ -75,9 +75,12 @@ function mapCurrency(cur) {
 
 function mapImpact(impact) {
   if (!impact) return 'low';
-  const s = String(impact).toLowerCase();
-  if (s === '3' || s === 'high')   return 'high';
-  if (s === '2' || s === 'medium') return 'medium';
+  const s = String(impact).toLowerCase().trim();
+  if (s === '3' || s.includes('high')) return 'high';
+  if (s === '2' || s.includes('medium') || s.includes('moderate')) return 'medium';
+  const n = parseInt(s, 10);
+  if (n === 3) return 'high';
+  if (n === 2) return 'medium';
   return 'low';
 }
 
