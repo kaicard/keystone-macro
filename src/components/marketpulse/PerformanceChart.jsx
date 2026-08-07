@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Search, RefreshCw, AlertTriangle } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer,
+  ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { base44 } from '@/api/base44Client';
 
@@ -188,22 +188,44 @@ export default function PerformanceChart() {
     setActiveSeries(prev => prev.filter(k => k !== key));
   };
 
-  // Thin out labels for readability
+  // Thin out labels for readability; format depends on timeframe
   const labelledData = useMemo(() => {
     if (!chartData.length) return [];
     const step = Math.max(1, Math.floor(chartData.length / 8));
+    const longTf = tf === '1Y' || tf === '5Y';
     return chartData.map((d, i) => ({
       ...d,
-      displayLabel: i % step === 0 ? d.label : '',
+      displayLabel: i % step === 0
+        ? (longTf
+            ? new Date(d.ts * 1000).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })
+            : new Date(d.ts * 1000).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }))
+        : '',
     }));
-  }, [chartData]);
+  }, [chartData, tf]);
+
+  // Y-domain always brackets 100 (the base) so the reference line stays visible
+  const yDomain = useMemo(() => {
+    if (!chartData.length) return ['auto', 'auto'];
+    let min = Infinity, max = -Infinity;
+    for (const d of chartData) {
+      for (const k of activeSeries) {
+        const v = d[k];
+        if (v != null) { if (v < min) min = v; if (v > max) max = v; }
+      }
+    }
+    if (!isFinite(min)) return ['auto', 'auto'];
+    const lo = Math.min(100, min);
+    const hi = Math.max(100, max);
+    const pad = Math.max((hi - lo) * 0.1, 1);
+    return [Math.floor(lo - pad), Math.ceil(hi + pad)];
+  }, [chartData, activeSeries]);
 
   return (
     <div className="glass rounded-xl p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="font-semibold text-sm">Indexed Performance</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Base 100</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Rebased to 100 at period start</p>
         </div>
         <div className="flex items-center gap-2">
           {loading && <RefreshCw className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
@@ -287,26 +309,28 @@ export default function PerformanceChart() {
               <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={labelledData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={labelledData} margin={{ top: 10, right: 12, bottom: 4, left: 4 }}>
                 <defs>
                   {visibleInstruments.map(s => (
                     <linearGradient key={s.key} id={`grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor={s.color} stopOpacity={0.18} />
-                      <stop offset="95%" stopColor={s.color} stopOpacity={0} />
+                      <stop offset="0%"   stopColor={s.color} stopOpacity={0.12} />
+                      <stop offset="100%" stopColor={s.color} stopOpacity={0} />
                     </linearGradient>
                   ))}
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" vertical={false} />
-                <XAxis dataKey="displayLabel" tick={{ fontSize: 10, fill: 'hsl(215 15% 50%)' }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.7} vertical={false} />
+                <XAxis dataKey="displayLabel" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis
-                  domain={['auto', 'auto']}
-                  tick={{ fontSize: 10, fill: 'hsl(215 15% 50%)' }}
+                  domain={yDomain}
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                   tickLine={false}
                   axisLine={false}
+                  width={40}
                   tickFormatter={v => v.toFixed(0)}
                 />
                 <Tooltip content={<CustomTooltip allInstruments={visibleInstruments} activeSeries={activeSeries} chartData={labelledData} />} />
+                <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeOpacity={0.35} />
                 {visibleInstruments.filter(s => activeSeries.includes(s.key)).map(s => (
                   <Area
                     key={s.key}
@@ -317,7 +341,7 @@ export default function PerformanceChart() {
                     strokeWidth={2}
                     fill={`url(#grad-${s.key})`}
                     dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 3, strokeWidth: 0 }}
                     connectNulls
                     isAnimationActive={true}
                     animationDuration={700}
