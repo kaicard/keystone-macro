@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Menu, X, ChevronRight, LogIn, LogOut, User, Shield } from 'lucide-react';
+import { Sun, Moon, Menu, X, ChevronRight, LogIn, LogOut, User, Shield, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -133,13 +133,22 @@ export default function Navbar() {
                           )}
                         </div>
                         {user.role === 'admin' && (
-                          <Link
-                            to="/Admin"
-                            onClick={() => setProfileOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-                          >
-                            <Shield className="w-3.5 h-3.5" /> Admin Panel
-                          </Link>
+                          <>
+                            <Link
+                              to="/Admin"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                            >
+                              <Shield className="w-3.5 h-3.5" /> Admin Panel
+                            </Link>
+                            <Link
+                              to="/Insights"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                            >
+                              <BarChart3 className="w-3.5 h-3.5" /> Insights
+                            </Link>
+                          </>
                         )}
                         <button
                           onClick={() => { setProfileOpen(false); logout(); }}

@@ -17,6 +17,7 @@ import MarketPulse from '@/pages/MarketPulse';                 // Trade Ideas ta
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';                             // Extended with new tabs
+import Insights from '@/pages/Insights';                        // NEW — subscriber growth & content dashboard
 import EconomicCalendar from '@/pages/EconomicCalendar';       // Fixed for all visitors
 import Terms from '@/pages/Terms';
 import Newsletter from '@/pages/Newsletter';                   // Upgraded to paid subscription
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
         <Route path="/About" element={<About />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/Admin" element={<Admin />} />
+        <Route path="/Insights" element={<Insights />} />
         <Route path="/Terms" element={<Terms />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
