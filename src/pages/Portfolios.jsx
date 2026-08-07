@@ -7,6 +7,7 @@ import PortfolioBuilder from '@/components/portfolios/PortfolioBuilder';
 import PortfolioCard from '@/components/portfolios/PortfolioCard';
 import ScenarioSimulator from '@/components/portfolios/ScenarioSimulator';
 import WealthCasesTab from '@/components/portfolios/WealthCasesTab';
+import PortfolioLab from '@/components/portfolios/PortfolioLab';
 
 const modelPortfolios = [
   {
@@ -187,6 +188,7 @@ export default function Portfolios() {
             <TabsTrigger value="models">Model Portfolios</TabsTrigger>
             <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
             <TabsTrigger value="simulator">Scenario Simulator</TabsTrigger>
+            <TabsTrigger value="lab">Portfolio Lab</TabsTrigger>
             <TabsTrigger value="wealth">Wealth Cases</TabsTrigger>
           </TabsList>
 
@@ -243,6 +245,10 @@ export default function Portfolios() {
 
           <TabsContent value="simulator">
             <ScenarioSimulator />
+          </TabsContent>
+
+          <TabsContent value="lab">
+            <PortfolioLab />
           </TabsContent>
 
           <TabsContent value="wealth">
