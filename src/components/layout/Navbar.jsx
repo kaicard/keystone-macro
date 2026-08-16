@@ -12,6 +12,7 @@ const navLinks = [
   { label: 'Market Pulse', path: '/MarketPulse' },
   { label: 'Portfolio Lab', path: '/Portfolios' },
   { label: 'Keystone AI', path: '/AI' },
+  { label: 'Calendar', path: '/EconomicCalendar' },
   { label: 'Newsletter', path: '/Newsletter' },
 ];
 
