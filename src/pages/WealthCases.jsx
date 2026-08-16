@@ -251,7 +251,7 @@ export default function WealthCases() {
   if (selected) {
     const chartData = selected.proposed_saa.map(a => ({ name: a.asset_class, value: a.weight }));
     return (
-      <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
+      <div className="pt-24 lg:pt-28 pb-20 min-h-screen">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <Button variant="ghost" onClick={() => setSelected(null)} className="gap-2 mb-6 text-muted-foreground">
             <ArrowLeft className="w-4 h-4" /> Back to Cases
@@ -259,7 +259,7 @@ export default function WealthCases() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 
             {/* Header */}
-            <div className="glass rounded-xl p-8">
+            <div className="rounded-xl border border-border/55 bg-card/50 p-6 sm:p-8">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <selected.icon className={`w-6 h-6 ${selected.iconColor}`} />
@@ -283,7 +283,7 @@ export default function WealthCases() {
                 { label: 'Capital', value: selected.investable_amount },
                 { label: 'Liquidity', value: selected.liquidity_needs?.split('—')[0].trim() },
               ].map(m => (
-                <div key={m.label} className="glass rounded-xl p-4">
+                <div key={m.label} className="rounded-xl border border-border/55 bg-card/40 p-4">
                   <p className="text-xs text-muted-foreground mb-1">{m.label}</p>
                   <p className="text-sm font-semibold">{m.value}</p>
                 </div>
@@ -292,11 +292,11 @@ export default function WealthCases() {
 
             {/* Objectives & Constraints */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="glass rounded-xl p-6">
+              <div className="rounded-xl border border-border/55 bg-card/45 p-5">
                 <h3 className="font-semibold mb-3">Objectives</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{selected.objectives}</p>
               </div>
-              <div className="glass rounded-xl p-6">
+              <div className="rounded-xl border border-border/55 bg-card/45 p-5">
                 <h3 className="font-semibold mb-3">Constraints</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{selected.constraints}</p>
               </div>
@@ -304,7 +304,7 @@ export default function WealthCases() {
 
             {/* SAA */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 glass rounded-xl p-6">
+              <div className="lg:col-span-2 rounded-xl border border-border/55 bg-card/45 p-5">
                 <h3 className="font-semibold mb-5">Strategic Asset Allocation</h3>
                 <div className="space-y-3">
                   {selected.proposed_saa.map((a, i) => (
@@ -320,7 +320,7 @@ export default function WealthCases() {
                   ))}
                 </div>
               </div>
-              <div className="glass rounded-xl p-6">
+              <div className="rounded-xl border border-border/55 bg-card/45 p-5">
                 <div className="h-52">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -336,7 +336,7 @@ export default function WealthCases() {
 
             {/* Analysis sections */}
             {/* Portfolio Construction Rationale */}
-            <div className="glass rounded-xl p-6 border border-primary/10">
+            <div className="rounded-xl border border-primary/20 bg-card/50 p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-5 rounded-full bg-primary" />
                 <h3 className="font-semibold">Portfolio Construction Rationale</h3>
@@ -359,7 +359,7 @@ export default function WealthCases() {
               { title: 'Behavioural Considerations', content: selected.behavioural_considerations },
               { title: 'Regime Change Sensitivity', content: selected.regime_changes },
             ].map(s => s.content && (
-              <div key={s.title} className="glass rounded-xl p-6">
+              <div key={s.title} className="rounded-xl border border-border/55 bg-card/45 p-5">
                 <h3 className="font-semibold mb-3">{s.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{s.content}</p>
               </div>
@@ -372,9 +372,9 @@ export default function WealthCases() {
   }
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolio Case Studies</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
             Institutional-grade portfolio construction across a range of client mandates, objectives, and constraints. Each case reflects real-world suitability analysis.
@@ -385,7 +385,7 @@ export default function WealthCases() {
           {cases.map((c, i) => (
             <motion.div
               key={c.title}
-              className="glass rounded-xl p-6 cursor-pointer hover:border-primary/20 transition-all group"
+              className="rounded-xl border border-border/55 bg-card/45 p-5 cursor-pointer hover:border-primary/20 hover:bg-card/65 transition-colors group"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
