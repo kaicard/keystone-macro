@@ -1,481 +1,175 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
-import {
-  Mail, CheckCircle, ArrowRight, Lock, Sparkles, Sun, Moon,
-  BookOpen, BarChart2, Globe, TrendingUp, Zap, Shield, X,
-  Calendar, ArrowUpRight, UserPlus
-} from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Mail, CheckCircle, ArrowRight, Lock, Sparkles, Sun, Moon, BookOpen, Globe, BarChart2, UserPlus, X } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
-import EditionCard from '@/components/newsletter/EditionCard';
 import { useAuth } from '@/lib/AuthContext';
 
 const FREE_FEATURES = [
-  'Weekly digest every Friday at 10pm',
-  'Top 4 macro & market themes of the week',
-  'Weekly market snapshot (equities, rates, FX, commodities)',
-  'Premium content teaser, so you can see what you\'re missing',
+  'Friday macro and market digest',
+  'The week’s main cross-asset themes',
+  'A concise market snapshot',
+  'Clear links to current research',
 ];
 
 const PREMIUM_FEATURES = [
-  { icon: Sun,       label: 'Morning Brief at 7am',      desc: 'Pre-market overview, overnight developments, what to watch' },
-  { icon: Moon,      label: 'Evening Wrap at 10pm',      desc: 'Full-day review, desk views, positioning insights' },
-  { icon: BookOpen,  label: 'Deep-Dive Research Notes',  desc: 'Institutional-grade analysis across macro, equities, fixed income' },
-  { icon: TrendingUp,label: 'Trade Ideas',               desc: 'Illustrative ideas with full thesis, entry/exit levels, risk analysis' },
-  { icon: Sparkles,  label: 'Keystone AI Access',        desc: 'Chat with our macro analyst AI or build a custom portfolio' },
-  { icon: Globe,     label: 'Full Archive',              desc: 'Every edition ever published, searchable and categorised' },
+  { icon: Sun, label: 'Morning Brief', desc: 'Overnight developments and the day ahead.' },
+  { icon: Moon, label: 'Evening Wrap', desc: 'Cross-asset close, catalysts, and key risks.' },
+  { icon: Globe, label: 'Source-linked intelligence', desc: 'Traceable sources on new intelligence items.' },
+  { icon: BookOpen, label: 'Subscriber archive', desc: 'Access to every published premium edition.' },
+  { icon: BarChart2, label: 'Market snapshots', desc: 'Rates, equities, FX, commodities, and regime context.' },
+  { icon: Sparkles, label: 'AI-assisted analysis', desc: 'Clearly labelled analysis with transparent limitations.' },
 ];
 
-function CancelBox({ title, description, badge, badgeColor, type }) {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(null); // 'done' | 'not_found' | 'error'
-
-  const badgeClasses = badgeColor === 'emerald'
-    ? 'bg-emerald-400/10 border-emerald-400/20 text-emerald-500'
-    : 'bg-primary/10 border-primary/20 text-primary';
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    setStatus(null);
-    try {
-      const res = await base44.functions.invoke('manageSubscription', { action: 'cancel', email });
-      if (res?.data?.success) {
-        setStatus('done');
-      } else if (res?.data?.error?.includes('No subscription')) {
-        setStatus('not_found');
-      } else {
-        setStatus('error');
-      }
-    } catch (err) {
-      setStatus('error');
-    }
-    setLoading(false);
-  };
-
+function AccountNotice({ user, navigateToLogin }) {
+  if (user) return <p className="text-xs text-muted-foreground">Subscription email: <span className="text-foreground">{user.email}</span></p>;
   return (
-    <div className="glass rounded-2xl border border-border/50 p-6 flex flex-col">
-      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border self-start mb-3 ${badgeClasses}`}>
-        <span className="text-xs font-semibold">{badge}</span>
-      </div>
-      <h3 className="font-semibold text-base mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-4 flex-1">{description}</p>
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border/40 bg-muted/20 p-4">
+      <span className="flex items-center gap-2 text-sm text-muted-foreground"><UserPlus className="w-4 h-4" /> Sign in so access is tied securely to your account.</span>
+      <Button type="button" size="sm" variant="outline" onClick={navigateToLogin}>Sign in</Button>
+    </div>
+  );
+}
 
-      {status === 'done' ? (
-        <div className="flex items-center gap-2 bg-muted/40 rounded-xl px-3 py-2.5">
-          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-xs text-muted-foreground">Done. Confirmation email on its way.</span>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-2.5">
-          <Input
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setStatus(null); }}
-            required
-            className="h-10"
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            className="w-full h-10 gap-2 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive text-sm"
-            disabled={loading || !email}
-          >
-            {loading ? 'Processing…' : <><X className="w-3.5 h-3.5" /> Cancel</>}
+function CancelBox({ type, title, description, user, navigateToLogin }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const cancel = async () => {
+    if (!user) return navigateToLogin();
+    setLoading(true); setResult(null);
+    try {
+      const response = await base44.functions.invoke('manageSubscription', { action: type === 'paid' ? 'cancel_paid' : 'cancel_free' });
+      setResult(response?.data?.success ? 'done' : response?.data?.error || 'Unable to process this request.');
+    } catch (error) {
+      setResult(error?.response?.data?.error || 'Unable to process this request.');
+    } finally { setLoading(false); }
+  };
+  return (
+    <div className="glass rounded-2xl border border-border/50 p-6">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">{type === 'paid' ? 'Premium' : 'Free'}</p>
+      <h3 className="font-semibold mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-4">{description}</p>
+      {result === 'done' ? <p className="flex items-center gap-2 text-sm text-emerald-400"><CheckCircle className="w-4 h-4" /> Request confirmed.</p> : (
+        <>
+          <Button variant="outline" className="w-full gap-2 border-destructive/30 text-destructive" disabled={loading} onClick={cancel}>
+            <X className="w-4 h-4" /> {loading ? 'Processing…' : user ? 'Cancel' : 'Sign in to manage'}
           </Button>
-          {status === 'not_found' && (
-            <p className="text-xs text-destructive">No active subscription found for that email.</p>
-          )}
-          {status === 'error' && (
-            <p className="text-xs text-destructive">Something went wrong. Please try again.</p>
-          )}
-        </form>
+          {result && <p className="text-xs text-destructive mt-2">{result}</p>}
+        </>
       )}
     </div>
   );
 }
 
 export default function Newsletter() {
-  const { user } = useAuth();
-
-  // Free signup
-  const [freeEmail, setFreeEmail] = useState('');
+  const { user, navigateToLogin } = useAuth();
+  const queryClient = useQueryClient();
   const [freeName, setFreeName] = useState('');
-  const [freeLoading, setFreeLoading] = useState(false);
-  const [freeSuccess, setFreeSuccess] = useState(false);
-
-  // Paid signup
-  const [paidEmail, setPaidEmail] = useState('');
   const [paidName, setPaidName] = useState('');
+  const [freeLoading, setFreeLoading] = useState(false);
   const [paidLoading, setPaidLoading] = useState(false);
+  const [freeSuccess, setFreeSuccess] = useState(false);
+  const [checkoutState, setCheckoutState] = useState(null);
+  const sessionId = new URLSearchParams(window.location.search).get('checkout_session_id');
 
-  // Check for ?subscribed=true from Stripe redirect
-  const urlParams = new URLSearchParams(window.location.search);
-  const justSubscribed = urlParams.get('subscribed') === 'true';
-
-  // Editions archive
-  const { data: editions = [] } = useQuery({
-    queryKey: ['newsletter-editions'],
-    queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 50),
+  const { data: access = {}, isLoading: accessLoading } = useQuery({
+    queryKey: ['newsletter-access', user?.id],
+    queryFn: async () => (await base44.functions.invoke('getNewsletterAccess', {}))?.data || {},
   });
 
-  // Check paid status using logged-in user's email
-  const { data: paidSubs = [] } = useQuery({
-    queryKey: ['paid-sub-check', user?.email],
-    queryFn: () => user?.email
-      ? base44.entities.NewsletterSubscription.filter({ email: user.email, status: 'active' })
-      : Promise.resolve([]),
-    enabled: !!user?.email,
-  });
+  useEffect(() => {
+    if (!sessionId || !user) return;
+    let cancelled = false;
+    setCheckoutState('confirming');
+    base44.functions.invoke('confirmNewsletterCheckout', { session_id: sessionId })
+      .then(response => {
+        if (cancelled) return;
+        if (response?.data?.active) {
+          setCheckoutState('confirmed');
+          queryClient.invalidateQueries({ queryKey: ['newsletter-access'] });
+          window.history.replaceState({}, '', '/Newsletter');
+        } else setCheckoutState('error');
+      })
+      .catch(() => !cancelled && setCheckoutState('error'));
+    return () => { cancelled = true; };
+  }, [sessionId, user, queryClient]);
 
-  const isPaidSubscriber = justSubscribed || paidSubs.length > 0;
-
-  const premiumEditions = editions.filter(e => e.status === 'published');
-  const [visibleCount, setVisibleCount] = useState(6);
-  const visibleEditions = premiumEditions.slice(0, visibleCount);
-  const hasMore = visibleCount < premiumEditions.length;
-  const canCollapse = visibleCount > 6;
-
-  const handleFreeSignup = async (e) => {
-    e.preventDefault();
-    if (!freeEmail) return;
+  const subscribeFree = async (event) => {
+    event.preventDefault();
+    if (!user) return navigateToLogin();
     setFreeLoading(true);
-    // Check for existing subscriber
-    const existing = await base44.entities.NewsletterSubscriber.filter({ email: freeEmail });
-    if (!existing?.length) {
-      await base44.entities.NewsletterSubscriber.create({ email: freeEmail, name: freeName, status: 'active' });
-    }
-    // Send welcome email
-    await base44.functions.invoke('welcomeSubscriber', { email: freeEmail, name: freeName, type: 'free' });
-    setFreeSuccess(true);
-    setFreeLoading(false);
+    try {
+      const response = await base44.functions.invoke('subscribeNewsletter', { name: freeName });
+      if (response?.data?.success) setFreeSuccess(true);
+    } finally { setFreeLoading(false); }
   };
 
-  const handlePaidSignup = async (e) => {
-    e.preventDefault();
-    if (!paidEmail) return;
+  const subscribePaid = async (event) => {
+    event.preventDefault();
+    if (!user) return navigateToLogin();
     setPaidLoading(true);
-    // Create or find subscription record
-    const existing = await base44.entities.NewsletterSubscription.filter({ email: paidEmail });
-    if (!existing?.length) {
-      await base44.entities.NewsletterSubscription.create({ email: paidEmail, name: paidName, status: 'pending' });
-    }
-    // Redirect to Stripe
-    const res = await base44.functions.invoke('createNewsletterCheckout', { email: paidEmail, name: paidName });
-    if (res?.data?.url) {
-      window.location.href = res.data.url;
-    }
-    setPaidLoading(false);
+    try {
+      const response = await base44.functions.invoke('createNewsletterCheckout', { name: paidName });
+      if (response?.data?.url) window.location.href = response.data.url;
+    } finally { setPaidLoading(false); }
   };
 
-
+  const isPaid = access?.active || checkoutState === 'confirmed';
 
   return (
     <div className="pt-20 lg:pt-24 pb-24 min-h-screen relative">
       <PageBackground />
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.header initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center pt-8 pb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"><Mail className="w-3.5 h-3.5 text-primary" /><span className="text-xs font-medium text-primary">Macro research · Delivered</span></div>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-4">The Keystone <span className="text-gradient">Macro Brief</span></h1>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">Independent, source-conscious macro research in a concise morning, evening, or weekly format.</p>
+        </motion.header>
 
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-8 pb-12"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
-            <Mail className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Macro Research · Delivered</span>
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-4 leading-tight">
-            The Keystone<br />
-            <span className="text-gradient">Macro Brief</span>
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Institutional-grade macro research and market intelligence — in your inbox.
-          </p>
-        </motion.div>
-
-        {/* ── PREMIUM TIER ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="rounded-2xl border-2 border-primary/40 bg-card p-6 sm:p-8 mb-6 relative overflow-hidden glow-primary"
-          data-premium-tier
-        >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-amber-400 to-primary" />
-
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 mb-3">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-xs font-semibold text-primary">Premium</span>
-              </div>
-              <h2 className="font-display text-2xl font-semibold">Full Access</h2>
-              <p className="text-muted-foreground text-sm mt-1">10 editions per week · Mon–Fri</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-3xl font-bold">£9.99</span>
-              <div className="text-xs text-muted-foreground">/month</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-6">
-            {PREMIUM_FEATURES.map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold leading-tight">{label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {!user && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground/60 mb-4">
-              <UserPlus className="w-3 h-3 shrink-0" />
-              <span>You'll need a free platform account to receive email editions.{' '}
-                <Link to="/register" className="text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
-                  Create yours in 30 seconds →
-                </Link>
-              </span>
-            </div>
-          )}
-
-          {justSubscribed ? (
-            <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
-              <CheckCircle className="w-5 h-5 text-primary shrink-0" />
-              <div>
-                <p className="text-sm font-semibold">Welcome aboard.</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Check your inbox for a welcome email with everything you need to know.</p>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handlePaidSignup} className="flex flex-col sm:flex-row gap-3 mb-4" data-paid>
-              <Input
-                placeholder="Your name (optional)"
-                value={paidName}
-                onChange={(e) => setPaidName(e.target.value)}
-                className="h-11 sm:flex-1"
-              />
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={paidEmail}
-                onChange={(e) => setPaidEmail(e.target.value)}
-                required
-                className="h-11 sm:flex-1"
-              />
-              <Button type="submit" className="h-11 gap-2 whitespace-nowrap px-6" disabled={paidLoading || !paidEmail}>
-                {paidLoading ? 'Redirecting…' : <>Subscribe — £9.99/mo <ArrowRight className="w-4 h-4" /></>}
-              </Button>
-            </form>
-          )}
-
-          <div className="flex flex-wrap gap-x-6 gap-y-1.5">
-            {['Secure payment via Stripe', 'Cancel anytime — no questions asked', 'No setup fees or hidden charges'].map((t) => (
-              <div key={t} className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                {t}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-      </div>
-
-      {/* ── RECENT EDITIONS — full width section ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-10"
-      >
-        {/* Section header */}
-        <div className="flex items-end justify-between mb-7">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">Archive</p>
-            <h2 className="font-display text-2xl font-semibold text-foreground">Recent Editions</h2>
-          </div>
-          {isPaidSubscriber && premiumEditions.length > 0 && (
-            <span className="text-xs text-muted-foreground/50 font-medium tabular-nums">
-              {visibleEditions.length} of {premiumEditions.length}
-            </span>
-          )}
-        </div>
-
-        {isPaidSubscriber ? (
-          <>
-            {premiumEditions.length === 0 ? (
-              <div className="glass rounded-2xl border border-border/50 p-12 text-center">
-                <p className="text-sm text-muted-foreground/50">No editions published yet — check back soon.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {visibleEditions.map((edition, i) => (
-                  <EditionCard key={edition.id} edition={edition} index={i} />
-                ))}
-              </div>
-            )}
-
-            {(hasMore || canCollapse) && (
-              <div className="flex items-center justify-center gap-3 mt-6">
-                {hasMore && (
-                  <button
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-5 rounded-full border border-border/30 hover:border-border/60 bg-card/40 hover:bg-card/70"
-                    onClick={() => setVisibleCount(c => c + 6)}
-                  >
-                    Load {Math.min(6, premiumEditions.length - visibleCount)} more
-                  </button>
-                )}
-                {canCollapse && (
-                  <button
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-5 rounded-full border border-border/30 hover:border-border/60 bg-card/40 hover:bg-card/70"
-                    onClick={() => setVisibleCount(6)}
-                  >
-                    Show less
-                  </button>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="glass rounded-2xl border border-border/50 p-10 flex flex-col items-center justify-center text-center gap-5 min-h-[260px]">
-            <div className="w-12 h-12 rounded-xl bg-card border border-border/50 flex items-center justify-center shadow-sm">
-              <Lock className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-semibold text-base mb-1">Premium Editions</p>
-              <p className="text-sm text-muted-foreground max-w-[300px] leading-relaxed">
-                Subscribe to access the complete archive of every edition, including full market analysis, trade ideas, and desk commentary.
-              </p>
-            </div>
-            <Button
-              className="gap-2 px-6"
-              onClick={() => {
-                const elem = document.querySelector('[data-premium-tier]');
-                if (elem) elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
-            >
-              Subscribe — £9.99/month
-            </Button>
+        {checkoutState && (
+          <div className={`rounded-xl border p-4 mb-6 ${checkoutState === 'confirmed' ? 'border-emerald-400/30 bg-emerald-400/10' : 'border-primary/20 bg-primary/10'}`}>
+            <p className="text-sm font-medium">{checkoutState === 'confirming' ? 'Confirming your Stripe subscription…' : checkoutState === 'confirmed' ? 'Premium access is active.' : 'Checkout could not be confirmed. Please contact support if you were charged.'}</p>
           </div>
         )}
-      </motion.div>
 
-      {/* ── FREE TIER ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-10"
-      >
-        <div className="glass rounded-2xl border border-border/50 p-6 sm:p-8">
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-xs font-semibold text-emerald-500">Free</span>
-              </div>
-              <h2 className="font-display text-2xl font-semibold">Weekly Digest</h2>
-              <p className="text-muted-foreground text-sm mt-1">Every Friday at 10pm</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-3xl font-bold">£0</span>
-              <div className="text-xs text-muted-foreground">always free</div>
-            </div>
+        <div className="rounded-2xl border-2 border-primary/40 bg-card p-6 sm:p-8 mb-6 relative overflow-hidden" data-premium-tier>
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-amber-400 to-primary" />
+          <div className="flex items-start justify-between mb-6"><div><p className="text-xs font-semibold text-primary mb-2">Premium</p><h2 className="font-display text-2xl font-semibold">Morning + Evening</h2><p className="text-sm text-muted-foreground mt-1">Monday to Friday · Archive included</p></div><div className="text-right"><span className="text-3xl font-bold">£9.99</span><p className="text-xs text-muted-foreground">per month</p></div></div>
+          <div className="grid sm:grid-cols-2 gap-4 mb-6">
+            {PREMIUM_FEATURES.map(({ icon: Icon, label, desc }) => <div key={label} className="flex gap-3"><div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Icon className="w-4 h-4 text-primary" /></div><div><p className="text-sm font-semibold">{label}</p><p className="text-xs text-muted-foreground mt-1">{desc}</p></div></div>)}
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6">
-            {FREE_FEATURES.map((f) => (
-              <div key={f} className="flex items-start gap-2.5 text-sm">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span className="text-muted-foreground">{f}</span>
-              </div>
-            ))}
-          </div>
-
-          {!user && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground/60 mb-4">
-              <UserPlus className="w-3 h-3 shrink-0" />
-              <span>Free platform account needed for email delivery.{' '}
-                <Link to="/register" className="text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
-                  Create one now →
-                </Link>
-              </span>
-            </div>
-          )}
-
-          {freeSuccess ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-4 py-3">
-                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold">You're on the list.</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">First edition arrives this Friday at 10pm.</p>
-                </div>
-              </div>
-              {!user && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                  <Zap className="w-3 h-3 shrink-0" />
-                  <span>For guaranteed delivery,{' '}
-                    <Link to="/register" className="text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
-                      create a free account in 30 seconds →
-                    </Link>
-                  </span>
-                </div>
-              )}
-            </div>
+          {isPaid ? (
+            <div className="rounded-xl border border-emerald-400/25 bg-emerald-400/10 p-4 flex items-center gap-3"><CheckCircle className="w-5 h-5 text-emerald-400" /><div><p className="text-sm font-semibold">Premium access active</p><p className="text-xs text-muted-foreground">{access?.status === 'cancelling' ? 'Access continues until the current billing period ends.' : 'Your archive entitlement is verified server-side.'}</p></div></div>
           ) : (
-            <form onSubmit={handleFreeSignup} className="flex flex-col sm:flex-row gap-3">
-              <Input
-                placeholder="Your name (optional)"
-                value={freeName}
-                onChange={(e) => setFreeName(e.target.value)}
-                className="h-11 sm:flex-1"
-              />
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={freeEmail}
-                onChange={(e) => setFreeEmail(e.target.value)}
-                required
-                className="h-11 sm:flex-1"
-              />
-              <Button type="submit" variant="outline" className="h-11 gap-2 whitespace-nowrap px-6" disabled={freeLoading || !freeEmail}>
-                {freeLoading ? 'Signing up…' : <><Mail className="w-4 h-4" /> Sign Up Free</>}
-              </Button>
+            <form onSubmit={subscribePaid} className="space-y-3">
+              <AccountNotice user={user} navigateToLogin={navigateToLogin} />
+              {user && <div className="flex flex-col sm:flex-row gap-3"><Input placeholder="Your name (optional)" value={paidName} onChange={e => setPaidName(e.target.value)} /><Button type="submit" disabled={paidLoading} className="gap-2 whitespace-nowrap">{paidLoading ? 'Redirecting…' : <>Subscribe securely <ArrowRight className="w-4 h-4" /></>}</Button></div>}
             </form>
           )}
+          <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground"><span>Stripe checkout</span><span>Cancel at period end</span><Link className="hover:text-foreground underline" to="/Terms">Subscription terms</Link></div>
         </div>
-      </motion.div>
 
-      {/* ── CANCEL / MANAGE ── */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <motion.div
-          id="manage"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        >
-          <CancelBox
-            title="Cancel Free Digest"
-            description="Unsubscribe from the weekly free newsletter."
-            badge="Free"
-            badgeColor="emerald"
-            type="free"
-          />
-          <CancelBox
-            title="Cancel Premium"
-            description="Cancel your £9.99/month paid subscription."
-            badge="Premium"
-            badgeColor="amber"
-            type="paid"
-          />
-        </motion.div>
+        <section className="glass rounded-2xl border border-border/50 p-6 sm:p-8 mb-8">
+          <div className="flex justify-between gap-4 mb-5"><div><p className="text-xs font-semibold text-emerald-400 mb-2">Free</p><h2 className="font-display text-2xl font-semibold">Weekly Digest</h2><p className="text-sm text-muted-foreground mt-1">Every Friday</p></div><span className="text-3xl font-bold">£0</span></div>
+          <div className="grid sm:grid-cols-2 gap-2 mb-6">{FREE_FEATURES.map(item => <p key={item} className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />{item}</p>)}</div>
+          {freeSuccess ? <p className="flex items-center gap-2 text-emerald-400"><CheckCircle className="w-4 h-4" /> You’re subscribed.</p> : <form onSubmit={subscribeFree} className="space-y-3"><AccountNotice user={user} navigateToLogin={navigateToLogin} />{user && <div className="flex flex-col sm:flex-row gap-3"><Input placeholder="Your name (optional)" value={freeName} onChange={e => setFreeName(e.target.value)} /><Button type="submit" variant="outline" disabled={freeLoading}>{freeLoading ? 'Subscribing…' : 'Join free digest'}</Button></div>}</form>}
+        </section>
+
+        <section className="glass rounded-2xl border border-border/50 p-8 text-center mb-8">
+          <Lock className="w-5 h-5 text-primary mx-auto mb-3" />
+          <h2 className="font-display text-2xl font-semibold mb-2">Premium archive</h2>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">{accessLoading ? 'Checking your access…' : isPaid ? 'Your subscription is active. Archive delivery is restricted to your verified account.' : 'Full edition bodies are available only after a paid subscription is verified.'}</p>
+        </section>
+
+        <div id="manage" className="grid sm:grid-cols-2 gap-4">
+          <CancelBox type="free" title="Leave the free digest" description="Stops future free weekly email." user={user} navigateToLogin={navigateToLogin} />
+          <CancelBox type="paid" title="Cancel premium" description="Stops renewal; access continues to the end of the paid period." user={user} navigateToLogin={navigateToLogin} />
+        </div>
       </div>
-
     </div>
   );
 }
