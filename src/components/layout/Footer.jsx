@@ -64,7 +64,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-5 border-t border-border/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium text-foreground/80">The Keystone Macro Brief</p>
+            <p className="text-xs font-medium text-foreground/80">The Macro Brief</p>
             <p className="mt-1 text-xs text-muted-foreground/55">A concise view of the macro week and what matters next.</p>
           </div>
           <Link to="/Newsletter" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary/80 transition-colors hover:text-primary">
