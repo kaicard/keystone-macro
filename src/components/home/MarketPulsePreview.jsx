@@ -44,7 +44,7 @@ function InstrumentRow({ item }) {
 function SessionCard({ title, flag, isOpen, instruments, loading, delay, inView }) {
   return (
     <motion.div
-      className="glass rounded-xl p-5 flex flex-col"
+      className="glass flex flex-col rounded-xl p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay }}
@@ -130,17 +130,17 @@ export default function MarketPulsePreview() {
   ];
 
   return (
-    <section ref={ref} className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 pointer-events-none" />
+    <section ref={ref} className="relative overflow-hidden border-y border-border/25 bg-card/20 py-16 sm:py-24">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/[0.025] via-transparent to-primary/[0.025]" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Market Pulse</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Market Intelligence</h2>
             <p className="text-muted-foreground">Live prices by trading session. Click through for the full dashboard.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -150,13 +150,13 @@ export default function MarketPulsePreview() {
             </Badge>
             <Link to="/MarketPulse">
               <Button variant="ghost" className="gap-2 text-primary hover:text-primary">
-                Full Dashboard <ArrowRight className="w-4 h-4" />
+                Open markets <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {sessions.map((s, i) => (
             <SessionCard
               key={s.title}
