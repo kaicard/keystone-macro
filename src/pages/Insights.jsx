@@ -128,7 +128,7 @@ export default function Insights() {
 
   if (loading) {
     return (
-      <div className="pt-20 lg:pt-24 pb-20 min-h-screen flex items-center justify-center">
+      <div className="pt-24 lg:pt-28 pb-20 min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/40" />
       </div>
     );
@@ -141,7 +141,7 @@ export default function Insights() {
   const recentEditions = editions.filter(e => e.status === 'published').slice(0, 5);
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
