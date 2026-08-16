@@ -42,10 +42,10 @@ function generateSlug(title) {
 function NoteCard({ note, viewMode, delay, onClick }) {
   return (
     <motion.div
-      className={`glass rounded-xl p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col ${
-        viewMode === 'list' ? 'flex-row gap-6 items-start' : 'h-full'
+      className={`rounded-xl border border-border/55 bg-card/55 p-5 hover:border-primary/25 hover:bg-card/75 transition-colors duration-200 cursor-pointer group flex flex-col ${
+        viewMode === 'list' ? 'gap-4' : 'h-full'
       }`}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
       onClick={onClick}
@@ -64,7 +64,7 @@ function NoteCard({ note, viewMode, delay, onClick }) {
         <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{note.executive_summary}</p>
         <div className="flex items-center gap-2 mt-4 flex-wrap flex-1 content-start">
           {note.tags?.slice(0, 3).map(tag => (
-            <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tag}</span>
+            <span key={tag} className="text-xs px-2 py-0.5 rounded-md bg-muted/70 text-muted-foreground">{tag}</span>
           ))}
         </div>
         <div className="flex items-center justify-between mt-3">
@@ -123,20 +123,20 @@ export default function Research() {
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div className="mb-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Macro Research</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">Live market intelligence, macro themes, and original research notes.</p>
         </motion.div>
 
-        <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+        <motion.div className="mb-10" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
           <IntelligenceFeed />
         </motion.div>
 
-        <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+        <motion.div className="mb-10" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
           <TrendingThemes />
         </motion.div>
 
@@ -148,10 +148,10 @@ export default function Research() {
           <div className="flex gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 glass border-border/30" />
+              <Input placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 bg-card/55" />
             </div>
             <Select value={activeCategory} onValueChange={setActiveCategory}>
-              <SelectTrigger className="w-40 glass border-border/30">
+              <SelectTrigger className="w-40 bg-card/55">
                 <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -170,7 +170,7 @@ export default function Research() {
           </div>
         </div>
 
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch' : 'space-y-4'}>
           <AnimatePresence>
             {visibleNotes.map((note, i) => (
               <NoteCard key={note.id} note={note} viewMode={viewMode} delay={i * 0.04} onClick={() => handleNoteClick(note)} />
@@ -182,7 +182,7 @@ export default function Research() {
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setShowAll(v => !v)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl glass border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all duration-200 group"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-card/45 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/25 transition-colors duration-200 group"
             >
               <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAll ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
               {showAll ? 'See less' : `See ${filtered.length - INITIAL_VISIBLE} more note${filtered.length - INITIAL_VISIBLE !== 1 ? 's' : ''}`}
