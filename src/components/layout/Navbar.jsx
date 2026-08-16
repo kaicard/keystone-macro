@@ -61,7 +61,7 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${scrolled ? 'border-border/45 bg-background/92 shadow-[0_12px_40px_-34px_rgba(0,0,0,0.8)] backdrop-blur-xl' : 'border-border/25 bg-background/72 backdrop-blur-lg'}`}
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${scrolled ? 'border-border/45 bg-background/[0.92] shadow-[0_12px_40px_-34px_rgba(0,0,0,0.8)] backdrop-blur-xl' : 'border-border/25 bg-background/[0.72] backdrop-blur-lg'}`}
         initial={{ y: -72 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -91,7 +91,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setProfileOpen((open) => !open)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/15 bg-primary/[0.07] text-sm font-semibold text-primary transition-colors hover:bg-primary/12"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/15 bg-primary/[0.07] text-sm font-semibold text-primary transition-colors hover:bg-primary/[0.12]"
                   aria-label="Open account menu"
                 >
                   {user.full_name ? user.full_name[0].toUpperCase() : <User className="h-4 w-4" />}
