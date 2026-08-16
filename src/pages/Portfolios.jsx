@@ -177,7 +177,7 @@ export default function Portfolios() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolios</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolio Strategy</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
             Illustrative model portfolios, an interactive builder, and scenario analysis. For educational purposes only.
           </p>
