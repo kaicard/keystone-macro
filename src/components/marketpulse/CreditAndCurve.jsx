@@ -6,7 +6,7 @@ function DirectionBadge({ direction }) {
   const value = cleanMarketCopy(direction).toLowerCase();
   const positive = ['tightening', 'up', 'steepening', 'normal'].includes(value);
   const negative = ['widening', 'down', 'inverted'].includes(value);
-  const cls = positive ? 'text-emerald-400 bg-emerald-400/8' : negative ? 'text-red-400 bg-red-400/8' : 'text-muted-foreground bg-muted/30';
+  const cls = positive ? 'text-emerald-400 bg-emerald-400/[0.08]' : negative ? 'text-red-400 bg-red-400/[0.08]' : 'text-muted-foreground bg-muted/30';
   return <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${cls}`}>{value || 'flat'}</span>;
 }
 
