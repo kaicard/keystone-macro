@@ -1,62 +1,80 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Linkedin, Mail } from 'lucide-react';
+import { ArrowUpRight, Linkedin, Mail } from 'lucide-react';
 
 const footerLinks = [
-  { title: 'Research', links: [
-    { label: 'Research', path: '/Research' },
-    { label: 'Market Pulse', path: '/MarketPulse' },
-    { label: 'Portfolio Lab', path: '/Portfolios' },
-    { label: 'Keystone AI', path: '/AI' },
-  ]},
-  { title: 'Publishing', links: [
-    { label: 'Newsletter', path: '/Newsletter' },
-    { label: 'Methodology', path: '/Methodology' },
-    { label: 'Economic Calendar', path: '/EconomicCalendar' },
-  ]},
-  { title: 'Company', links: [
-    { label: 'About', path: '/About' },
-    { label: 'Contact', path: '/Contact' },
-    { label: 'Privacy', path: '/Privacy' },
-    { label: 'Terms', path: '/Terms' },
-  ]},
+  {
+    title: 'Platform',
+    links: [
+      { label: 'Research', path: '/Research' },
+      { label: 'Market Pulse', path: '/MarketPulse' },
+      { label: 'Portfolio Lab', path: '/Portfolios' },
+      { label: 'Keystone AI', path: '/AI' },
+    ],
+  },
+  {
+    title: 'Publishing',
+    links: [
+      { label: 'Newsletter', path: '/Newsletter' },
+      { label: 'Economic Calendar', path: '/EconomicCalendar' },
+      { label: 'Methodology', path: '/Methodology' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', path: '/About' },
+      { label: 'Contact', path: '/Contact' },
+      { label: 'Privacy', path: '/Privacy' },
+      { label: 'Terms', path: '/Terms' },
+    ],
+  },
 ];
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-card/50 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          <div className="lg:col-span-2">
-            <span className="font-display text-base font-semibold tracking-tight">Keystone Macro</span>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm my-4">
-              Independent, AI-assisted macro research with source-linked intelligence and cross-asset market context.
+    <footer className="relative border-t border-border/35 bg-card/20">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-primary/[0.07] text-[11px] font-semibold text-primary">K</span>
+              <span className="font-display text-[15px] font-semibold tracking-[-0.02em]">Keystone Macro</span>
+            </div>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground/70">
+              Independent macro research, portfolio intelligence, and live cross-asset market context.
             </p>
-            <div className="flex items-center gap-3">
-              <a aria-label="Keystone Macro on LinkedIn" href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-primary"><Linkedin className="w-4 h-4" /></a>
-              <a aria-label="Email Keystone Macro" href="mailto:hello@keystonemacro.com" className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-primary"><Mail className="w-4 h-4" /></a>
+            <div className="mt-5 flex items-center gap-2">
+              <a aria-label="Keystone Macro on LinkedIn" href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/60 transition-colors hover:border-primary/25 hover:text-primary"><Linkedin className="h-3.5 w-3.5" /></a>
+              <a aria-label="Email Keystone Macro" href="mailto:hello@keystonemacro.com" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/60 transition-colors hover:border-primary/25 hover:text-primary"><Mail className="h-3.5 w-3.5" /></a>
             </div>
           </div>
-          {footerLinks.map(section => (
+
+          {footerLinks.map((section) => (
             <div key={section.title}>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">{section.title}</h2>
-              <ul className="space-y-3">
-                {section.links.map(link => <li key={link.label}><Link to={link.path} className="text-sm text-muted-foreground hover:text-foreground">{link.label}</Link></li>)}
+              <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/45">{section.title}</h2>
+              <ul className="mt-4 space-y-2.5">
+                {section.links.map((link) => (
+                  <li key={link.label}><Link to={link.path} className="text-sm text-muted-foreground/70 transition-colors hover:text-foreground">{link.label}</Link></li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
+
+        <div className="mt-10 flex flex-col gap-5 border-t border-border/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="font-medium text-sm mb-1">The Keystone Macro Brief</h2>
-            <p className="text-muted-foreground text-xs">Free weekly digest or premium morning and evening editions.</p>
+            <p className="text-xs font-medium text-foreground/80">The Keystone Macro Brief</p>
+            <p className="mt-1 text-xs text-muted-foreground/55">A concise view of the macro week and what matters next.</p>
           </div>
-          <Button asChild size="sm"><Link to="/Newsletter" className="gap-2">View newsletter options <ArrowRight className="w-4 h-4" /></Link></Button>
+          <Link to="/Newsletter" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary/80 transition-colors hover:text-primary">
+            Newsletter options <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
-        <div className="mt-8 pt-6 border-t border-border">
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Keystone Macro. Informational content only; not financial advice.</p>
+
+        <div className="mt-6 flex flex-col gap-2 border-t border-border/25 pt-5 text-[10px] text-muted-foreground/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Keystone Macro</p>
+          <p>General information only. Not investment advice.</p>
         </div>
       </div>
     </footer>
