@@ -197,6 +197,11 @@ For EACH event provide:
         published_at:  publishedAt,
         published_date: publishedDate,
         is_top_story:  false,
+        source_name:   'JBlanked economic calendar (MQL5 / Forex Factory)',
+        source_url:    'https://www.jblanked.com/news/api/',
+        source_published_at: publishedAt,
+        verified_at:   now.toISOString(),
+        verification_status: 'verified',
         batch_id:      batchId,
       });
 
