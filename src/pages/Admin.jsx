@@ -184,7 +184,7 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="pt-20 lg:pt-24 pb-20 min-h-screen flex items-center justify-center">
+      <div className="pt-24 lg:pt-28 pb-20 min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
@@ -213,7 +213,7 @@ export default function Admin() {
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl font-semibold mb-2">Administration</h1>
