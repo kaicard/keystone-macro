@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const META = {
-  '/Home': ['Keystone Macro | Independent Macro Research', 'Source-linked intelligence, cross-asset market context, portfolio frameworks, and independent macro research.'],
+  '/Home': ['Keystone Macro | Independent Macro Research', 'Macro research, cross-asset market context, portfolio frameworks, and live market intelligence.'],
   '/Research': ['Macro Research | Keystone Macro', 'Independent, AI-assisted macro and multi-asset research with transparent sourcing.'],
   '/MarketPulse': ['Market Intelligence | Keystone Macro', 'Cross-asset market data, sector performance, yields, movers, and macro-regime context.'],
   '/Portfolios': ['Portfolio Strategy | Keystone Macro', 'Educational model portfolios and risk-aware allocation frameworks.'],
