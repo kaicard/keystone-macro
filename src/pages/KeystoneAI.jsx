@@ -236,7 +236,7 @@ export default function KeystoneAI() {
                 <KeystoneIcon className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="font-display text-2xl font-semibold">Keystone AI</h1>
+                <h1 className="font-display text-2xl font-semibold">Keystone Research Assistant</h1>
                 <p className="text-xs text-muted-foreground">Macro Intelligence Analyst</p>
               </div>
             </div>
