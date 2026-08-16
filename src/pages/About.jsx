@@ -140,6 +140,30 @@ export default function About() {
           </div>
         </div>
 
+        {/* Early careers */}
+        <motion.section
+          id="early-careers"
+          className="mb-12 rounded-xl border border-border/55 bg-card/45 p-6 sm:p-8"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Opportunities</p>
+              <h2 className="font-display text-2xl font-semibold mb-3">Early Careers &amp; Contributors</h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Keystone Macro welcomes enquiries from students and early-career professionals interested in markets, research, and portfolio strategy. Whether you have a question, are seeking short-term experience, or would like to contribute to a research or data project, you’re encouraged to get in touch.
+              </p>
+            </div>
+            <Link to="/Contact?type=early-careers" className="shrink-0">
+              <Button variant="outline" className="gap-2">
+                Register your interest <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </motion.section>
+
         {/* CTA */}
         <motion.div
           className="text-center"
