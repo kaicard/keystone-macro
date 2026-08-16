@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, FlaskConical } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -165,11 +164,11 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/15 bg-primary/[0.07] mb-4">
             <FlaskConical className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">AI Portfolio Constructor</span>
           </div>
@@ -179,10 +178,10 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-5 items-start">
           {/* Input Panel */}
           <div className="space-y-5">
-            <div className="glass rounded-xl p-6 space-y-5">
+            <div className="rounded-xl border border-border/55 bg-card/55 p-5 space-y-5">
               <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Configure Inputs</h3>
 
               {/* Capital Amount */}
@@ -190,7 +189,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
                 <Label className="text-xs text-muted-foreground">Capital to Invest</Label>
                 <div className="flex gap-2">
                   <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger className="glass border-border/30 w-28 shrink-0">
+                    <SelectTrigger className="bg-background/40 w-28 shrink-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -204,7 +203,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
                     placeholder="e.g. 25000"
                     value={capital}
                     onChange={e => setCapital(e.target.value)}
-                    className="glass border-border/30 flex-1 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:cursor-pointer [&::-webkit-outer-spin-button]:opacity-100"
+                    className="bg-background/40 flex-1 [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-inner-spin-button]:cursor-pointer [&::-webkit-outer-spin-button]:opacity-100"
                     style={{ colorScheme: 'dark' }}
                     min="0"
                   />
@@ -219,7 +218,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Risk Tolerance</Label>
                 <Select value={risk} onValueChange={setRisk}>
-                  <SelectTrigger className="glass border-border/30"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger className="bg-background/40"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>{riskOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -227,7 +226,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Time Horizon</Label>
                 <Select value={horizon} onValueChange={setHorizon}>
-                  <SelectTrigger className="glass border-border/30"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger className="bg-background/40"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>{horizonOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -235,7 +234,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Objective</Label>
                 <Select value={objective} onValueChange={setObjective}>
-                  <SelectTrigger className="glass border-border/30"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger className="bg-background/40"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>{objectiveOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -243,7 +242,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Market Regime</Label>
                 <Select value={regime} onValueChange={setRegime}>
-                  <SelectTrigger className="glass border-border/30"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger className="bg-background/40"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>{regimeOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -273,7 +272,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
               {loading && (
                 <motion.div
                   key="loading"
-                  className="glass rounded-xl p-16 flex flex-col items-center justify-center"
+                  className="rounded-xl border border-border/55 bg-card/45 min-h-[520px] p-10 flex flex-col items-center justify-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -294,8 +293,8 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-                    <FlaskConical className="w-8 h-8 text-primary/50" />
+                  <div className="w-12 h-12 rounded-xl border border-primary/15 bg-primary/[0.07] flex items-center justify-center mb-5">
+                    <FlaskConical className="w-6 h-6 text-primary/70" />
                   </div>
                   <p className="text-foreground font-medium mb-2">Configure your portfolio parameters</p>
                   <p className="text-xs text-muted-foreground/60 max-w-xs">
