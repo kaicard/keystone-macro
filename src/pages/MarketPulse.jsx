@@ -112,21 +112,21 @@ function LiveGrid({ items, cols = 4, onSelect, watchlist, loading = false }) {
   );
 }
 
-// LLM-fetched data (regime, summary, sectors, bonds, credit spreads etc)
+// Server-generated market context built from live quote inputs.
 function useCombinedData() {
   const liveQuotes = useLiveQuotes();
-  const llmData = useMarketData();
-  return { liveQuotes, llmData };
+  const contextData = useMarketData();
+  return { liveQuotes, contextData };
 }
 
 export default function MarketPulse() {
-  const { liveQuotes, llmData } = useCombinedData();
+  const { liveQuotes, contextData } = useCombinedData();
   const { data: live, loading: liveLoading, lastFetched, secondsUntilRefresh, refresh } = liveQuotes;
-  const { data: llm, loading: llmLoading } = llmData;
+  const { data: context, loading: contextLoading } = contextData;
   const [selectedInstrument, setSelectedInstrument] = React.useState(null);
   const watchlistHook = useWatchlist();
 
-  const loading = liveLoading || llmLoading;
+  const loading = liveLoading || contextLoading;
 
   return (
     <div className="min-h-screen relative">
@@ -205,14 +205,10 @@ export default function MarketPulse() {
             />
           </motion.div>
 
-          {/* Regime Panel */}
-          <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <RegimePanel regime={llm?.regime} loading={llmLoading} />
-          </motion.div>
-
-          {/* Market Summary */}
-          <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-            <MarketSummary summary={llm?.market_summary} loading={llmLoading} />
+          {/* Market intelligence — compact editorial layout */}
+          <motion.div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.65fr] gap-4 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <RegimePanel regime={context?.regime} loading={contextLoading} />
+            <MarketSummary summary={context?.market_summary} loading={contextLoading} />
           </motion.div>
 
           {/* Tabs */}
@@ -238,20 +234,20 @@ export default function MarketPulse() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
-                    <TopMovers topMovers={llm?.top_movers} loading={llmLoading} />
+                    <TopMovers topMovers={context?.top_movers} loading={contextLoading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance</h3>
-                    <SectorHeatmap sectors={llm?.sectors} loading={llmLoading} />
+                    <SectorHeatmap sectors={context?.sectors} loading={contextLoading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit, Yield Curve & Dollar</h3>
-                    <CreditAndCurve creditSpreads={llm?.credit_spreads} yieldCurve={llm?.yield_curve} dxy={live?.dxy} loading={loading} />
+                    <CreditAndCurve creditSpreads={context?.credit_spreads} yieldCurve={context?.yield_curve} dxy={live?.dxy} loading={loading} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {llmLoading ? [...Array(4)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (llm?.bonds || []).map(b => (
+                      {contextLoading ? [...Array(4)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (context?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
                       ))}
                     </div>
@@ -295,7 +291,7 @@ export default function MarketPulse() {
               <TabsContent value="sectors">
                 <div>
                   <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance — Today</h3>
-                  <SectorHeatmap sectors={llm?.sectors} loading={llmLoading} />
+                  <SectorHeatmap sectors={context?.sectors} loading={contextLoading} />
                 </div>
               </TabsContent>
 
@@ -304,14 +300,14 @@ export default function MarketPulse() {
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Government Yields</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {llmLoading ? [...Array(8)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (llm?.bonds || []).map(b => (
+                      {contextLoading ? [...Array(8)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (context?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
                       ))}
                     </div>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit Spreads, Yield Curve & Dollar</h3>
-                    <CreditAndCurve creditSpreads={llm?.credit_spreads} yieldCurve={llm?.yield_curve} dxy={live?.dxy} loading={loading} />
+                    <CreditAndCurve creditSpreads={context?.credit_spreads} yieldCurve={context?.yield_curve} dxy={live?.dxy} loading={loading} />
                   </div>
                 </div>
               </TabsContent>
