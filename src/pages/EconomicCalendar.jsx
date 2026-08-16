@@ -432,12 +432,12 @@ export default function EconomicCalendar() {
   const todayReleased = todayEvents.filter(e => e.actual && isReleased(e.date, e.utcTime)).length;
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/15 bg-primary/[0.07] mb-4">
             <Calendar className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">Macro Events</span>
           </div>
@@ -446,15 +446,15 @@ export default function EconomicCalendar() {
         </motion.div>
 
         {tab === 'today' && (
-          <motion.div className="flex gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+          <motion.div className="grid grid-cols-2 gap-3 mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}>
+            <div className="rounded-xl border border-border/55 bg-card/50 px-4 py-3 flex items-center gap-3">
               <Zap className="w-4 h-4 text-amber-400" />
               <div>
                 <p className="text-xs text-muted-foreground">High Impact Today</p>
                 <p className="text-lg font-semibold">{todayHigh}</p>
               </div>
             </div>
-            <div className="glass rounded-xl px-4 py-3 flex items-center gap-3 flex-1">
+            <div className="rounded-xl border border-border/55 bg-card/50 px-4 py-3 flex items-center gap-3">
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               <div>
                 <p className="text-xs text-muted-foreground">Released</p>
@@ -465,10 +465,10 @@ export default function EconomicCalendar() {
           </motion.div>
         )}
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-          <div className="flex gap-1 p-1 glass rounded-xl w-fit">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5 rounded-xl border border-border/55 bg-card/40 p-2">
+          <div className="flex gap-1 w-fit">
             {[{ key: 'today', label: 'Today' }, { key: 'week', label: 'This Week' }, { key: 'previous', label: 'Previous' }].map(t => (
-              <button key={t.key} onClick={() => setTab(t.key)} className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>
+              <button key={t.key} onClick={() => setTab(t.key)} className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-foreground/[0.075] text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'}`}>
                 {t.label}
               </button>
             ))}
@@ -478,10 +478,10 @@ export default function EconomicCalendar() {
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
-            <div className="flex items-center gap-1 p-1 glass rounded-lg">
+            <div className="flex items-center gap-1">
               <Filter className="w-3 h-3 text-muted-foreground/50 ml-1 mr-0.5" />
               {[{ key: 'all', label: 'All' }, { key: 'high', label: 'High Only' }].map(f => (
-                <button key={f.key} onClick={() => setImpact(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}>
+                <button key={f.key} onClick={() => setImpact(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-foreground/[0.075] text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'}`}>
                   {f.label}
                 </button>
               ))}
