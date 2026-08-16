@@ -4,6 +4,7 @@
   "properties": {
     "email": {
       "type": "string",
+      "format": "email",
       "description": "Subscriber email"
     },
     "name": {
@@ -21,5 +22,27 @@
   },
   "required": [
     "email"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
