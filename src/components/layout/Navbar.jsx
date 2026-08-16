@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 const navLinks = [
   { label: 'Home', path: '/Home' },
   { label: 'Research', path: '/Research' },
-  { label: 'Market Pulse', path: '/MarketPulse' },
-  { label: 'Portfolio Lab', path: '/Portfolios' },
+  { label: 'Markets', path: '/MarketPulse' },
+  { label: 'Portfolio', path: '/Portfolios' },
   { label: 'Keystone AI', path: '/AI' },
   { label: 'Calendar', path: '/EconomicCalendar' },
   { label: 'Newsletter', path: '/Newsletter' },
