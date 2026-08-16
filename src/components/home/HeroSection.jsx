@@ -33,9 +33,9 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          Independent Macro Research.{' '}
-          <span className="text-gradient">Source-Linked Intelligence.</span>
-          {' '}Cross-Asset Context.
+          Macro Research.{' '}
+          <span className="text-gradient">Portfolio Intelligence.</span>
+          {' '}Live Market Insight.
         </motion.h1>
 
         <motion.p
