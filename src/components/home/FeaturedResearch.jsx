@@ -27,7 +27,7 @@ function NoteCard({ note, delay, inView, onClick }) {
       transition={{ duration: 0.5, delay }}
     >
       <div
-        className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-0.5 cursor-pointer group"
+        className="glass rounded-xl p-6 h-full hover:border-primary/30 transition-all duration-300 hover:bg-card/70 cursor-pointer group"
         onClick={onClick}
       >
         <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -109,10 +109,10 @@ export default function FeaturedResearch() {
   const displayOlder = olderNotes;
 
   return (
-    <section ref={ref} className="py-20 sm:py-28">
+    <section ref={ref} className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
@@ -123,7 +123,7 @@ export default function FeaturedResearch() {
           </div>
           <Link to="/Research">
             <Button variant="ghost" className="gap-2 text-primary hover:text-primary">
-              View All <ArrowRight className="w-4 h-4" />
+              View research <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
         </motion.div>
