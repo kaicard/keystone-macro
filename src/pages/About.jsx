@@ -19,7 +19,7 @@ const timeline = [
   { year: '2023', title: 'Macro Research Focus', description: 'Deep dive into macro regime analysis — studying central bank policy, yield curve dynamics, cross-asset correlations, and cycle identification frameworks.' },
   { year: '2024', title: 'Portfolio Frameworks', description: 'Studied strategic and tactical asset allocation, factor analysis, and client-suitability frameworks through Economics and independent work.' },
   { year: '2025', title: 'Markets Experience', description: 'Expanded multi-asset research through proprietary trading and a summer internship connected with the LBMA Good Delivery ecosystem.' },
-  { year: '2026', title: 'Keystone Macro Platform', description: 'Launched an independent research platform combining source-linked intelligence, market data, AI-assisted analysis, and educational portfolio tools.' },
+  { year: '2026', title: 'Keystone Macro Platform', description: 'Launched an independent research platform combining referenced intelligence, market data, AI-assisted analysis, and educational portfolio tools.' },
 ];
 
 export default function About() {
