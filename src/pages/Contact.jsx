@@ -26,30 +26,30 @@ export default function Contact() {
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Contact</h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
             Open to conversations on markets, collaboration, and professional opportunities.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
           <a href="mailto:hello@keystonemacro.com"
-            className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
+            className="rounded-xl border border-border/55 bg-card/45 p-5 text-center hover:border-primary/20 hover:bg-card/65 transition-colors group">
             <Mail className="w-6 h-6 text-primary mx-auto mb-3" />
             <p className="font-medium text-sm group-hover:text-primary transition-colors">Email</p>
             <p className="text-xs text-muted-foreground mt-1">hello@keystonemacro.com</p>
           </a>
           <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer"
-            className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
+            className="rounded-xl border border-border/55 bg-card/45 p-5 text-center hover:border-primary/20 hover:bg-card/65 transition-colors group">
             <Linkedin className="w-6 h-6 text-primary mx-auto mb-3" />
             <p className="font-medium text-sm group-hover:text-primary transition-colors">LinkedIn</p>
             <p className="text-xs text-muted-foreground mt-1">Connect professionally</p>
           </a>
           <Link to="/Newsletter"
-            className="glass rounded-xl p-6 text-center hover:border-primary/20 transition-all group">
+            className="rounded-xl border border-border/55 bg-card/45 p-5 text-center hover:border-primary/20 hover:bg-card/65 transition-colors group">
             <Send className="w-6 h-6 text-primary mx-auto mb-3" />
             <p className="font-medium text-sm group-hover:text-primary transition-colors">Newsletter</p>
             <p className="text-xs text-muted-foreground mt-1">Weekly macro digest</p>
@@ -58,7 +58,7 @@ export default function Contact() {
 
         {submitted ? (
           <motion.div
-            className="glass rounded-2xl p-12 text-center"
+            className="rounded-xl border border-border/55 bg-card/50 p-10 text-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
           >
@@ -68,7 +68,7 @@ export default function Contact() {
           </motion.div>
         ) : (
           <motion.form
-            className="glass rounded-2xl p-8"
+            className="rounded-xl border border-border/55 bg-card/50 p-6 sm:p-8"
             onSubmit={handleSubmit}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -83,7 +83,7 @@ export default function Contact() {
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="Your name"
                   required
-                  className="glass border-border/30"
+                  className="bg-background/35"
                 />
               </div>
               <div className="space-y-2">
@@ -94,7 +94,7 @@ export default function Contact() {
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="your@email.com"
                   required
-                  className="glass border-border/30"
+                  className="bg-background/35"
                 />
               </div>
             </div>
@@ -105,13 +105,13 @@ export default function Contact() {
                   value={form.subject}
                   onChange={e => setForm({ ...form, subject: e.target.value })}
                   placeholder="Subject"
-                  className="glass border-border/30"
+                  className="bg-background/35"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Type</Label>
                 <Select value={form.type} onValueChange={v => setForm({ ...form, type: v })}>
-                  <SelectTrigger className="glass border-border/30"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-background/35"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="general">General Inquiry</SelectItem>
                     <SelectItem value="collaboration">Collaboration</SelectItem>
@@ -129,7 +129,7 @@ export default function Contact() {
                 placeholder="Your message..."
                 rows={6}
                 required
-                className="glass border-border/30"
+                className="bg-background/35"
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full gap-2">
