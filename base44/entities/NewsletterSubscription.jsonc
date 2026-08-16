@@ -4,7 +4,12 @@
   "properties": {
     "email": {
       "type": "string",
+      "format": "email",
       "description": "Subscriber email"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID linked to this subscription"
     },
     "name": {
       "type": "string",
@@ -34,9 +39,43 @@
         "type": "string"
       },
       "description": "Topic preferences"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Stripe subscription period end"
     }
   },
   "required": [
     "email"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
