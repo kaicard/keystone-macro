@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://keystonemacro.com/Home</loc></url>
+  <url><loc>https://keystonemacro.com/</loc></url>
   <url><loc>https://keystonemacro.com/Research</loc></url>
   <url><loc>https://keystonemacro.com/MarketPulse</loc></url>
   <url><loc>https://keystonemacro.com/Portfolios</loc></url>
+  <url><loc>https://keystonemacro.com/AIPortfolioLab</loc></url>
   <url><loc>https://keystonemacro.com/AI</loc></url>
+  <url><loc>https://keystonemacro.com/EconomicCalendar</loc></url>
   <url><loc>https://keystonemacro.com/Newsletter</loc></url>
+  <url><loc>https://keystonemacro.com/WealthCases</loc></url>
   <url><loc>https://keystonemacro.com/About</loc></url>
   <url><loc>https://keystonemacro.com/Methodology</loc></url>
   <url><loc>https://keystonemacro.com/Privacy</loc></url>
