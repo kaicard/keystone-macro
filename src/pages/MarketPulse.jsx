@@ -97,7 +97,7 @@ function LiveGrid({ items, cols = 4, onSelect, watchlist, loading = false }) {
   if (loading || !items?.length) {
     const skeletonCount = items?.length > 0 ? items.length : cols;
     return (
-      <div className={`grid ${gridClass} gap-4`}>
+      <div className={`grid ${gridClass} gap-3`}>
         {[...Array(skeletonCount)].map((_, i) => (
           <div key={i} className="glass rounded-xl p-4 h-24 bg-muted/30 animate-pulse" />
         ))}
@@ -106,7 +106,7 @@ function LiveGrid({ items, cols = 4, onSelect, watchlist, loading = false }) {
   }
 
   return (
-    <div className={`grid ${gridClass} gap-4`}>
+    <div className={`grid ${gridClass} gap-3`}>
       {items.map(item => <LiveTile key={item.ticker} item={item} onSelect={onSelect} watchlist={watchlist} />)}
     </div>
   );
@@ -214,7 +214,7 @@ export default function MarketPulse() {
           {/* Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
+              <TabsList className="w-full justify-start overflow-x-auto h-auto gap-1">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="equities">Equities</TabsTrigger>
                 <TabsTrigger value="sectors">Sectors</TabsTrigger>
@@ -229,41 +229,41 @@ export default function MarketPulse() {
                 <div className="space-y-8">
                   <PerformanceChart />
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Global Indices</h3>
                     <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Top Movers</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Top Movers</h3>
                     <TopMovers topMovers={context?.top_movers} loading={contextLoading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Sector Performance</h3>
                     <SectorHeatmap sectors={context?.sectors} loading={contextLoading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit, Yield Curve & Dollar</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Credit, Yield Curve & Dollar</h3>
                     <CreditAndCurve creditSpreads={context?.credit_spreads} yieldCurve={context?.yield_curve} dxy={live?.dxy} loading={loading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Bonds & Yields</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Bonds & Yields</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {contextLoading ? [...Array(4)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (context?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
                       ))}
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Commodities</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Commodities</h3>
                     <LiveGrid items={live?.commodities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">FX</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">FX</h3>
                     <LiveGrid items={live?.fx} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   {live?.vix && (
                     <div>
-                      <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Volatility</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Volatility</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {liveLoading ? <div className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse col-span-1" /> : <LiveTile item={live.vix} onSelect={setSelectedInstrument} watchlist={watchlistHook} />}
                       </div>
                     </div>
@@ -274,11 +274,11 @@ export default function MarketPulse() {
               <TabsContent value="equities">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Global Indices</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Global Indices</h3>
                     <LiveGrid items={live?.indices} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Single Names</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Single Names</h3>
                     <LiveGrid items={live?.equities} cols={4} onSelect={setSelectedInstrument} watchlist={watchlistHook} loading={liveLoading} />
                   </div>
                 </div>
@@ -290,7 +290,7 @@ export default function MarketPulse() {
 
               <TabsContent value="sectors">
                 <div>
-                  <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Sector Performance — Today</h3>
+                  <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Sector Performance — Today</h3>
                   <SectorHeatmap sectors={context?.sectors} loading={contextLoading} />
                 </div>
               </TabsContent>
@@ -298,15 +298,15 @@ export default function MarketPulse() {
               <TabsContent value="bonds">
                 <div className="space-y-8">
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Government Yields</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Government Yields</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {contextLoading ? [...Array(8)].map((_, i) => <div key={i} className="glass rounded-xl p-4 h-20 bg-muted/30 animate-pulse" />) : (context?.bonds || []).map(b => (
                         <MarketTile key={b.name} name={b.name} value={b.yield} change={b.change_bps} direction={b.direction} />
                       ))}
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wide">Credit Spreads, Yield Curve & Dollar</h3>
+                    <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Credit Spreads, Yield Curve & Dollar</h3>
                     <CreditAndCurve creditSpreads={context?.credit_spreads} yieldCurve={context?.yield_curve} dxy={live?.dxy} loading={loading} />
                   </div>
                 </div>
