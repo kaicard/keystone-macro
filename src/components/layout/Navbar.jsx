@@ -9,13 +9,10 @@ import { Button } from '@/components/ui/button';
 const navLinks = [
   { label: 'Home', path: '/Home' },
   { label: 'Research', path: '/Research' },
-  { label: 'Portfolios', path: '/Portfolios' },
   { label: 'Market Pulse', path: '/MarketPulse' },
+  { label: 'Portfolio Lab', path: '/Portfolios' },
   { label: 'Keystone AI', path: '/AI' },
-  { label: 'Calendar', path: '/EconomicCalendar' },
   { label: 'Newsletter', path: '/Newsletter' },
-  { label: 'About', path: '/About' },
-  { label: 'Contact', path: '/Contact' },
 ];
 
 export default function Navbar() {
