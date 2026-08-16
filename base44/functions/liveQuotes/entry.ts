@@ -204,20 +204,20 @@ function isValidPrice(ticker, price) {
   }
   
   // Commodity futures
-  if (ticker === 'GC=F') return price >= 1000 && price <= 3500;     // Gold futures
-  if (ticker === 'SI=F') return price >= 10 && price <= 60;         // Silver futures
-  if (ticker === 'PL=F') return price >= 600 && price <= 1500;      // Platinum
+  if (ticker === 'GC=F') return price >= 1000 && price <= 8000;     // Gold futures
+  if (ticker === 'SI=F') return price >= 10 && price <= 150;        // Silver futures
+  if (ticker === 'PL=F') return price >= 400 && price <= 3000;      // Platinum
   if (['CL=F', 'BZ=F'].includes(ticker)) return price >= 20 && price <= 150;
   if (ticker === 'NG=F') return price >= 0.5 && price <= 10;
   if (ticker === 'HG=F') return price >= 1 && price <= 10;
   if (ticker === 'ZW=F') return price >= 5 && price <= 15;          // Wheat
   if (ticker === 'ZC=F') return price >= 3 && price <= 10;          // Corn
   
-  // Crypto: BTC usually 30k-80k, ETH 1k-5k
-  if (ticker === 'BTC-USD') return price >= 10000 && price <= 200000;
+  // Broad guardrails reject corrupt values without becoming stale price targets
+  if (ticker === 'BTC-USD') return price >= 1000 && price <= 500000;
   if (ticker === 'ETH-USD') return price >= 500 && price <= 50000;
-  if (ticker === 'SOL-USD') return price >= 50 && price <= 500;
-  if (ticker === 'XRP-USD') return price >= 0.1 && price <= 10;
+  if (ticker === 'SOL-USD') return price >= 1 && price <= 2000;
+  if (ticker === 'XRP-USD') return price >= 0.01 && price <= 50;
   
   // VIX: 5-100
   if (ticker === '^VIX') return price >= 5 && price <= 100;
