@@ -169,10 +169,10 @@ export default function Portfolios() {
   const inView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <div ref={ref} className="pt-20 lg:pt-24 pb-20 min-h-screen">
+    <div ref={ref} className="pt-24 lg:pt-28 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="mb-12"
+          className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -183,13 +183,13 @@ export default function Portfolios() {
           </p>
         </motion.div>
 
-        <Tabs defaultValue="models" className="space-y-8">
-          <TabsList className="glass border-border/30 flex-wrap h-auto gap-1">
+        <Tabs defaultValue="models" className="space-y-6">
+          <TabsList className="w-full justify-start overflow-x-auto h-auto gap-1">
             <TabsTrigger value="models">Model Portfolios</TabsTrigger>
             <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
             <TabsTrigger value="simulator">Scenario Simulator</TabsTrigger>
-            <TabsTrigger value="lab">Portfolio Lab</TabsTrigger>
-            <TabsTrigger value="wealth">Wealth Cases</TabsTrigger>
+            <TabsTrigger value="lab">Portfolio Analytics</TabsTrigger>
+            <TabsTrigger value="wealth">Case Studies</TabsTrigger>
           </TabsList>
 
           <TabsContent value="models">
@@ -200,11 +200,11 @@ export default function Portfolios() {
                 onBack={() => setSelectedPortfolio(null)}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {modelPortfolios.map((p, i) => (
                   <motion.div
                     key={p.name}
-                    className="glass rounded-xl p-6 cursor-pointer hover:border-primary/20 transition-all duration-300 group"
+                    className="rounded-xl border border-border/55 bg-card/55 p-5 cursor-pointer hover:border-primary/25 hover:bg-card/75 transition-colors duration-200 group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.4, delay: i * 0.08 }}
