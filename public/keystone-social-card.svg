@@ -15,5 +15,6 @@
   <line x1="638" y1="360" x2="735" y2="360" stroke="#d6a447" stroke-width="2"/>
   <text x="774" y="377" fill="#d6a447" font-family="Arial, Helvetica, sans-serif" font-size="38" letter-spacing="20">MACRO</text>
   <line x1="1053" y1="360" x2="1150" y2="360" stroke="#d6a447" stroke-width="2"/>
-  <text x="638" y="442" fill="#9ba7ba" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="1">MACRO RESEARCH · PORTFOLIO INTELLIGENCE · LIVE MARKET INSIGHT</text>
+  <text x="638" y="430" fill="#9ba7ba" font-family="Arial, Helvetica, sans-serif" font-size="20" letter-spacing="1">MACRO RESEARCH · PORTFOLIO INTELLIGENCE</text>
+  <text x="638" y="462" fill="#9ba7ba" font-family="Arial, Helvetica, sans-serif" font-size="20" letter-spacing="1">LIVE CROSS-ASSET MARKET INSIGHT</text>
 </svg>
