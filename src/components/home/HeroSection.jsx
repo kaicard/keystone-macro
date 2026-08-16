@@ -22,7 +22,7 @@ export default function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-              Macro Research · Portfolio Intelligence · Live Market Data
+              Independent Research · Source-Linked Intelligence · Cross-Asset Data
             </span>
           </div>
         </motion.div>
@@ -33,9 +33,9 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          Macro Research.{' '}
-          <span className="text-gradient">Portfolio Intelligence.</span>
-          {' '}Real-Time Market Insight.
+          Independent Macro Research.{' '}
+          <span className="text-gradient">Source-Linked Intelligence.</span>
+          {' '}Cross-Asset Context.
         </motion.h1>
 
         <motion.p
@@ -44,7 +44,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          A platform for macro analysis, asset allocation, and modern wealth strategy.
+          Rigorous, AI-assisted market analysis with transparent sources, educational portfolio frameworks, and clearly labelled data limitations.
         </motion.p>
 
         <motion.div
@@ -61,15 +61,12 @@ export default function HeroSection() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Link to="/Portfolios">
-            <Button size="lg" variant="outline" className="px-6 gap-2 rounded-full glass">
-              View Model Portfolios
-            </Button>
+          <Link to="/MarketPulse">
+            <Button size="lg" variant="outline" className="px-6 gap-2 rounded-full glass">Market Pulse</Button>
           </Link>
-          <Link to="/AI">
+          <Link to="/Newsletter">
             <Button size="lg" variant="ghost" className="gap-2 rounded-full text-primary hover:text-primary">
-              <Sparkles className="w-4 h-4" />
-              Keystone AI
+              <Sparkles className="w-4 h-4" /> Newsletter
             </Button>
           </Link>
         </motion.div>
