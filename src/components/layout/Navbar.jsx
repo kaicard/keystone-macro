@@ -5,6 +5,7 @@ import { Sun, Moon, Menu, X, ChevronRight, LogIn, LogOut, User, Shield, BarChart
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
+import KeystoneLogo from '@/components/brand/KeystoneLogo';
 
 const navLinks = [
   { label: 'Home', path: '/Home' },
@@ -18,8 +19,8 @@ const navLinks = [
 
 function Brand() {
   return (
-    <Link to="/Home" className="font-display text-[15px] font-semibold tracking-[-0.02em] text-foreground/95 transition-colors hover:text-foreground" aria-label="Keystone Macro home">
-      Keystone Macro
+    <Link to="/Home" className="transition-opacity hover:opacity-85" aria-label="Keystone Macro home">
+      <KeystoneLogo markClassName="h-7 w-10 text-primary" />
     </Link>
   );
 }
