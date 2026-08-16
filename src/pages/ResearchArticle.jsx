@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { sampleNotes } from '@/lib/researchNotes';
 
 const CATEGORY_CONFIG = {
   'Macro':               { color: 'bg-amber-400/10 text-amber-400 border-amber-400/20',  accent: 'from-amber-500/8',  bar: 'from-amber-400 via-primary to-transparent' },
@@ -95,7 +94,7 @@ export default function ResearchArticle() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const allNotes = dbNotes.length > 0 ? dbNotes : sampleNotes;
+  const allNotes = dbNotes;
   const note = allNotes.find(n => (n.slug && n.slug === slug) || generateSlug(n.title) === slug);
   const related = allNotes.filter(n => n !== note && n.category === note?.category).slice(0, 3);
 
