@@ -41,17 +41,17 @@ const DATE_FILTERS = [
 ];
 
 const CATEGORY_STYLES = {
-  Macro: 'text-amber-300 bg-amber-400/8 border-amber-400/15',
-  Equities: 'text-emerald-300 bg-emerald-400/8 border-emerald-400/15',
-  Rates: 'text-blue-300 bg-blue-400/8 border-blue-400/15',
-  Commodities: 'text-orange-300 bg-orange-400/8 border-orange-400/15',
-  Geopolitics: 'text-red-300 bg-red-400/8 border-red-400/15',
-  FX: 'text-purple-300 bg-purple-400/8 border-purple-400/15',
-  Credit: 'text-cyan-300 bg-cyan-400/8 border-cyan-400/15',
-  Technology: 'text-violet-300 bg-violet-400/8 border-violet-400/15',
-  'US Economy': 'text-sky-300 bg-sky-400/8 border-sky-400/15',
-  'UK Economy': 'text-rose-300 bg-rose-400/8 border-rose-400/15',
-  'EU Economy': 'text-indigo-300 bg-indigo-400/8 border-indigo-400/15',
+  Macro: 'text-amber-300 bg-amber-400/[0.08] border-amber-400/15',
+  Equities: 'text-emerald-300 bg-emerald-400/[0.08] border-emerald-400/15',
+  Rates: 'text-blue-300 bg-blue-400/[0.08] border-blue-400/15',
+  Commodities: 'text-orange-300 bg-orange-400/[0.08] border-orange-400/15',
+  Geopolitics: 'text-red-300 bg-red-400/[0.08] border-red-400/15',
+  FX: 'text-purple-300 bg-purple-400/[0.08] border-purple-400/15',
+  Credit: 'text-cyan-300 bg-cyan-400/[0.08] border-cyan-400/15',
+  Technology: 'text-violet-300 bg-violet-400/[0.08] border-violet-400/15',
+  'US Economy': 'text-sky-300 bg-sky-400/[0.08] border-sky-400/15',
+  'UK Economy': 'text-rose-300 bg-rose-400/[0.08] border-rose-400/15',
+  'EU Economy': 'text-indigo-300 bg-indigo-400/[0.08] border-indigo-400/15',
 };
 
 const SENTIMENT_DOT = {
@@ -369,7 +369,7 @@ export default function IntelligenceFeed() {
       <header className="flex flex-col gap-5 border-b border-border/25 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/15 bg-primary/7">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/15 bg-primary/[0.07]">
               <Radio className="h-4 w-4 text-primary" />
             </div>
             <div>
