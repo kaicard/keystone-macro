@@ -375,7 +375,7 @@ export default function WealthCases() {
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Wealth Case Studies</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolio Case Studies</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
             Institutional-grade portfolio construction across a range of client mandates, objectives, and constraints. Each case reflects real-world suitability analysis.
           </p>
