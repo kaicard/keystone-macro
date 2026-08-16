@@ -17,9 +17,9 @@ const principles = [
 const timeline = [
   { year: '2021', title: 'Active Market Participation', description: 'Began systematic trading across equities, FX, and commodities. Built early risk frameworks through hands-on exposure to live market conditions.' },
   { year: '2023', title: 'Macro Research Focus', description: 'Deep dive into macro regime analysis — studying central bank policy, yield curve dynamics, cross-asset correlations, and cycle identification frameworks.' },
-  { year: '2024', title: 'Institutional Portfolio Construction', description: 'Applied SAA/TAA methodologies, factor analysis, and client suitability frameworks aligned with institutional wealth management standards.' },
-  { year: '2025', title: 'Multi-Asset Research & Wealth Strategy', description: 'Developed comprehensive wealth case studies covering high-net-worth clients, family office structures, and complex cross-border mandates.' },
-  { year: '2026', title: 'Keystone Macro Platform', description: 'Launched a professional-grade macro and portfolio intelligence platform integrating live market data, AI-assisted portfolio construction, and institutional research.' },
+  { year: '2024', title: 'Portfolio Frameworks', description: 'Studied strategic and tactical asset allocation, factor analysis, and client-suitability frameworks through Economics and independent work.' },
+  { year: '2025', title: 'Markets Experience', description: 'Expanded multi-asset research through proprietary trading and a summer internship connected with the LBMA Good Delivery ecosystem.' },
+  { year: '2026', title: 'Keystone Macro Platform', description: 'Launched an independent research platform combining source-linked intelligence, market data, AI-assisted analysis, and educational portfolio tools.' },
 ];
 
 export default function About() {
@@ -41,7 +41,7 @@ export default function About() {
             About Keystone Macro
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            A professional macro and multi-asset intelligence platform, built through hands-on market experience and independent investment research.
+            Independent macro research built by Kai Card, an Economics student at the University of Surrey.
           </p>
         </motion.div>
 
@@ -55,14 +55,10 @@ export default function About() {
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-6">The Platform</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Keystone Macro is a professional-grade macro and multi-asset research platform, built from 
-              the ground up through active market participation, independent research, and rigorous study 
-              of institutional investment frameworks.
+              Keystone Macro is Kai Card’s independent macro and multi-asset research platform, developed alongside Economics studies at the University of Surrey and hands-on market work.
             </p>
             <p>
-              The platform integrates live market data, AI-assisted portfolio construction, institutional 
-              wealth case studies, and original macro research, reflecting the full analytical toolkit 
-              used by asset managers and multi-asset teams.
+              Experience includes a summer internship connected with the LBMA Good Delivery ecosystem, proprietary trading, and independent research. The platform uses AI to assist analysis, while new intelligence links its sources and automated long-form drafts require review before publication.
             </p>
             <p>
               The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding 
@@ -161,7 +157,7 @@ export default function About() {
                 Get In Touch <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="gap-2 rounded-full glass">
                 <Linkedin className="w-4 h-4" /> LinkedIn
               </Button>
