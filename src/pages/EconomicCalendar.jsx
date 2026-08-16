@@ -289,7 +289,7 @@ function DateGroup({ dateStr, events, today, enrichments, enriching }) {
           {isToday ? 'TODAY · ' : ''}{formatDate(dateStr)}
         </span>
         {highCount > 0 && (
-          <span className="text-[10px] text-amber-400/70 px-1.5 py-0.5 rounded bg-amber-400/8 border border-amber-400/15 ml-auto">
+          <span className="text-[10px] text-amber-400/70 px-1.5 py-0.5 rounded bg-amber-400/[0.08] border border-amber-400/15 ml-auto">
             {highCount} high impact
           </span>
         )}
