@@ -128,7 +128,7 @@ export default function Research() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         <motion.div className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Research & Intelligence</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Macro Research</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">Live market intelligence, macro themes, and original research notes.</p>
         </motion.div>
 
