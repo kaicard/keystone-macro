@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Linkedin, Mail } from 'lucide-react';
+import KeystoneLogo from '@/components/brand/KeystoneLogo';
 
 const footerLinks = [
   {
@@ -37,10 +38,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-primary/[0.07] text-[11px] font-semibold text-primary">K</span>
-              <span className="font-display text-[15px] font-semibold tracking-[-0.02em]">Keystone Macro</span>
-            </div>
+            <KeystoneLogo markClassName="h-8 w-12 text-primary" />
             <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground/70">
               Independent macro research, portfolio intelligence, and live cross-asset market context.
             </p>
