@@ -29,7 +29,8 @@
         "active",
         "cancelled",
         "past_due",
-        "pending"
+        "pending",
+        "cancelling"
       ],
       "default": "pending"
     },
