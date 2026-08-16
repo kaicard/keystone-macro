@@ -36,7 +36,7 @@ Choose a topic that is timely and relevant to current macro, markets, or investm
 - Behavioural finance
 - Specific regional economies
 
-The note must be institutional-grade, data-driven, and written in the voice of a Goldman Sachs or BlackRock research publication. Be specific with levels, percentages, and catalysts.
+The note must be rigorous, data-driven independent research. Search current primary and authoritative sources before writing. Every specific level, percentage, date, quotation, or catalyst must be supported by a direct source URL. If a claim cannot be verified, omit it.
 
 Format:
 - title: Sharp, specific (e.g. "ECB's June Decision: The Case for Staying on Hold")
@@ -56,10 +56,12 @@ Format:
 - key_risks: Key risks paragraph
 - takeaway: Concise actionable takeaway (2-4 sentences)
 - what_would_change_mind: What evidence would alter this view
-- read_time_minutes: Estimated read time (integer, 5-12)`;
+- read_time_minutes: Estimated read time (integer, 5-12)
+- sources: 3-8 objects with title, publisher, url, and accessed_at. URLs must be direct HTTPS source pages, never search-result pages.`;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
+      add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -73,6 +75,9 @@ Format:
           takeaway:              { type: 'string' },
           what_would_change_mind:{ type: 'string' },
           read_time_minutes:     { type: 'number' },
+          sources: { type: 'array', items: { type: 'object', properties: {
+            title: { type: 'string' }, publisher: { type: 'string' }, url: { type: 'string' }, accessed_at: { type: 'string' }
+          } } },
         }
       }
     });
@@ -106,12 +111,15 @@ Format:
       what_would_change_mind: result.what_would_change_mind,
       read_time_minutes:      result.read_time_minutes,
       publish_date:           publishDate,
-      status:                 'published',
+      status:                 'draft',
+      ai_assisted:            true,
+      review_status:          'unreviewed',
+      sources:                (result.sources || []).filter(s => /^https:\/\//i.test(s.url || '')),
       is_featured:            false,
       is_premium:             false,
     });
 
-    return Response.json({ success: true, note_id: note.id, title: result.title });
+    return Response.json({ success: true, note_id: note.id, title: result.title, status: 'draft', review_required: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
