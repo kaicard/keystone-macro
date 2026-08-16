@@ -1,89 +1,60 @@
 import React from 'react';
 import { Activity, TrendingUp, BarChart3, Shield, Zap, Target } from 'lucide-react';
+import { cleanMarketCopy, compactSignal, truncateWords } from '@/lib/cleanMarketCopy';
 
 const REGIME_COLORS = {
-  'Risk-On': { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  'Risk-Off': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' },
-  'Inflation Pressure': { color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-  'Growth Slowdown': { color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
-  'Liquidity Expansion': { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-  'Stagflation': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' },
+  'Risk-On': { color: 'text-emerald-400', dot: 'bg-emerald-400', line: 'from-emerald-400/50' },
+  'Risk-Off': { color: 'text-red-400', dot: 'bg-red-400', line: 'from-red-400/50' },
+  'Inflation Pressure': { color: 'text-amber-400', dot: 'bg-amber-400', line: 'from-amber-400/50' },
+  'Growth Slowdown': { color: 'text-orange-400', dot: 'bg-orange-400', line: 'from-orange-400/50' },
+  'Liquidity Expansion': { color: 'text-blue-400', dot: 'bg-blue-400', line: 'from-blue-400/50' },
+  'Stagflation': { color: 'text-red-400', dot: 'bg-red-400', line: 'from-red-400/50' },
 };
-
-const SIGNAL_COLORS = {
-  positive: 'text-emerald-400',
-  expanding: 'text-emerald-400',
-  easing: 'text-emerald-400',
-  low: 'text-emerald-400',
-  accelerating: 'text-emerald-400',
-  neutral: 'text-amber-400',
-  moderating: 'text-amber-400',
-  stable: 'text-amber-400',
-  negative: 'text-red-400',
-  contracting: 'text-red-400',
-  restrictive: 'text-red-400',
-  high: 'text-red-400',
-  elevated: 'text-amber-400',
-};
-
-function getSignalColor(val) {
-  if (!val) return 'text-muted-foreground';
-  const key = val.toLowerCase().split(' ')[0];
-  return SIGNAL_COLORS[key] || 'text-muted-foreground';
-}
 
 export default function RegimePanel({ regime, loading }) {
-  const regimeStyle = regime?.label ? (REGIME_COLORS[regime.label] || REGIME_COLORS['Risk-On']) : REGIME_COLORS['Risk-On'];
-
+  const style = REGIME_COLORS[regime?.label] || REGIME_COLORS['Risk-On'];
   const signals = regime ? [
-    { icon: TrendingUp, label: 'Growth Signal', value: regime.growth },
-    { icon: BarChart3, label: 'Inflation Signal', value: regime.inflation },
-    { icon: Shield, label: 'Policy Stance', value: regime.policy },
+    { icon: TrendingUp, label: 'Growth', value: regime.growth },
+    { icon: BarChart3, label: 'Inflation', value: regime.inflation },
+    { icon: Shield, label: 'Policy', value: regime.policy },
     { icon: Activity, label: 'Volatility', value: regime.volatility },
     { icon: Zap, label: 'Leadership', value: regime.leadership },
   ] : [];
 
   return (
-    <div className="glass rounded-xl p-6">
-      <div className="flex items-center gap-2 mb-5">
-        <Target className="w-4 h-4 text-primary" />
-        <h2 className="font-semibold">Regime Monitor</h2>
-      </div>
+    <section className="relative overflow-hidden rounded-2xl border border-border/40 bg-card/55 backdrop-blur-xl p-6 sm:p-7 h-full">
+      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${style.line} via-primary/20 to-transparent`} />
+      <header className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><Target className="w-4 h-4 text-primary" /></div>
+          <div><p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/55 font-semibold">Macro framework</p><h2 className="text-base font-semibold">Regime Monitor</h2></div>
+        </div>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/45 border border-border/30 rounded-full px-2.5 py-1">Model view</span>
+      </header>
 
       {loading && !regime ? (
-        <div className="animate-pulse space-y-3">
-          <div className="h-10 bg-muted/30 rounded-lg" />
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-muted/30 rounded-lg" />)}
-          </div>
+        <div className="animate-pulse grid lg:grid-cols-[0.9fr_1.1fr] gap-6">
+          <div className="h-32 rounded-xl bg-muted/25" />
+          <div className="grid grid-cols-2 gap-3">{[...Array(4)].map((_, i) => <div key={i} className="h-14 rounded-lg bg-muted/25" />)}</div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Current Regime Badge */}
-          <div className={`flex items-center justify-between p-4 rounded-xl ${regimeStyle.bg} border ${regimeStyle.border}`}>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Current Regime</p>
-              <p className={`text-xl font-bold ${regimeStyle.color}`}>{regime?.label || 'Risk-On'}</p>
-            </div>
-            <div className="max-w-xs">
-              <p className="text-xs text-muted-foreground text-right leading-relaxed">{regime?.description}</p>
-            </div>
+        <div className="grid lg:grid-cols-[0.92fr_1.08fr] gap-6 lg:gap-7 items-stretch">
+          <div className="lg:border-r lg:border-border/25 lg:pr-7 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-3"><span className={`w-2 h-2 rounded-full ${style.dot}`} /><span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/55 font-semibold">Current regime</span></div>
+            <p className={`font-display text-3xl sm:text-4xl font-semibold tracking-tight ${style.color}`}>{cleanMarketCopy(regime?.label) || 'Awaiting signal'}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground/75 max-w-md">{truncateWords(regime?.description, 28) || 'The model is waiting for sufficient market context.'}</p>
           </div>
 
-          {/* Signal Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {signals.map(s => (
-              <div key={s.label} className="p-3 rounded-lg bg-muted/20">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <s.icon className="w-3.5 h-3.5 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
-                </div>
-                <p className={`text-sm font-semibold ${getSignalColor(s.value)}`}>{s.value || '—'}</p>
+          <div className="grid grid-cols-2 gap-x-5 gap-y-1 content-center">
+            {signals.map(({ icon: Icon, label, value }, index) => (
+              <div key={label} className={`py-3.5 ${index < 3 ? 'border-b border-border/20' : ''}`}>
+                <div className="flex items-center gap-1.5 mb-1.5"><Icon className="w-3.5 h-3.5 text-muted-foreground/50" /><span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold">{label}</span></div>
+                <p className="text-sm font-semibold text-foreground/85 leading-snug">{compactSignal(value)}</p>
               </div>
             ))}
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
