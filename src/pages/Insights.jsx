@@ -149,7 +149,7 @@ export default function Insights() {
             <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">Insights</span>
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Growth & Content</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Platform Analytics</h1>
           <p className="text-muted-foreground">Subscriber trends and content output over the last 3 months.</p>
         </motion.div>
 
