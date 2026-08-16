@@ -84,6 +84,8 @@ Deno.serve(async (req) => {
               desk_view:     { type: 'string' },
               what_to_watch: { type: 'string' },
               published_at:  { type: 'string' },
+              source_name:   { type: 'string' },
+              source_url:    { type: 'string' },
               is_breaking:   { type: 'string' },
             }
           }
@@ -107,7 +109,7 @@ HARD RULES — violating ANY of these means the story is REJECTED outright:
 2. VERIFY the story is genuinely current — check the publication date. If you cannot confirm it happened today or in the last 4 hours, do NOT include it.
 3. Do NOT fabricate, hallucinate, speculate, or infer. If you cannot confirm a story via web search, return an empty array.
 4. Write in Keystone Macro's editorial voice — sharp, analytical, no waffle. Do NOT copy-paste from sources.
-5. Do NOT include any URLs, source names, or publication names anywhere.
+5. Every story MUST include the direct HTTPS URL and publication name used to verify it. Reject aggregator/search-result URLs and reject any story without a traceable source.
 6. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
 7. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array.
 
@@ -117,7 +119,9 @@ For each confirmed story return:
 - impact: 1 precise sentence — what the market implication is RIGHT NOW
 - desk_view: 2-3 sentences — the development, why it matters structurally, what it means for positioning
 - what_to_watch: 2 specific instruments or data points to monitor next (e.g. "GBPUSD, 2Y Gilt yield")
-- published_at: ISO timestamp of when the story broke (your best estimate, must be after ${cutoffISO})
+- published_at: ISO timestamp shown by the source (must be after ${cutoffISO})
+- source_name: publication or primary-source organisation
+- source_url: direct HTTPS URL to the source page
 - is_breaking: ONLY mark true if this is a genuinely market-moving, unexpected, or rare event — a central bank surprise, major policy shift, geopolitical escalation, or significant data shock. Expect at most 1 in 5 stories to qualify.`,
           response_json_schema: TOPIC_SCHEMA,
         });
@@ -150,10 +154,6 @@ For each confirmed story return:
 
     const cappedStories = allStories.slice(0, 2);
 
-    const WINDOW_MS = 30 * 60 * 1000;
-    const offsets = cappedStories.map(() => Math.floor(Math.random() * WINDOW_MS));
-    offsets.sort((a, b) => b - a);
-
     // ── Deduplicate and publish ───────────────────────────────────────────────
     let created = 0;
     let skipped = 0;
@@ -162,7 +162,10 @@ For each confirmed story return:
       const { topic, story } = cappedStories[idx];
       if (!story.headline || story.headline.length < 10) { skipped++; continue; }
 
-      const publishedAt = new Date(now.getTime() - offsets[idx]).toISOString();
+      const parsedPublishedAt = new Date(story.published_at);
+      if (!story.source_name || !/^https:\/\//i.test(story.source_url || '')) { skipped++; continue; }
+      if (Number.isNaN(parsedPublishedAt.getTime()) || parsedPublishedAt < new Date(cutoffISO) || parsedPublishedAt > now) { skipped++; continue; }
+      const publishedAt = parsedPublishedAt.toISOString();
 
       const storyDate = new Date(publishedAt).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
       const yesterdayStr = new Date(now.getTime() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
@@ -194,6 +197,11 @@ For each confirmed story return:
         published_at:   publishedAt,
         published_date: publishedDate,
         is_top_story:   isTopStory,
+        source_name:    story.source_name,
+        source_url:     story.source_url,
+        source_published_at: publishedAt,
+        verified_at:    now.toISOString(),
+        verification_status: 'verified',
         batch_id:       `news_scan_${now.toISOString()}`,
       });
 
