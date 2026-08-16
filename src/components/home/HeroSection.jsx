@@ -22,7 +22,7 @@ export default function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-              Independent Research · Source-Linked Intelligence · Cross-Asset Data
+              Keystone Macro · Independent Market Intelligence
             </span>
           </div>
         </motion.div>
@@ -44,7 +44,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          Rigorous, AI-assisted market analysis with transparent sources, educational portfolio frameworks, and clearly labelled data limitations.
+          Clear macro research, live cross-asset context, and practical portfolio intelligence—built for better investment decisions.
         </motion.p>
 
         <motion.div
