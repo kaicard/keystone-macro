@@ -11,7 +11,8 @@ import { Send, Linkedin, Mail, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', type: 'general' });
+  const initialType = new URLSearchParams(window.location.search).get('type') === 'early-careers' ? 'early-careers' : 'general';
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', type: initialType });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +32,7 @@ export default function Contact() {
         <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Contact</h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Open to conversations on markets, collaboration, and professional opportunities.
+            Open to conversations on markets, collaboration, early-career questions, and professional opportunities.
           </p>
         </motion.div>
 
@@ -114,7 +115,8 @@ export default function Contact() {
                   <SelectTrigger className="bg-background/35"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="general">General Inquiry</SelectItem>
-                    <SelectItem value="collaboration">Collaboration</SelectItem>
+                    <SelectItem value="collaboration">Research Collaboration</SelectItem>
+                    <SelectItem value="early-careers">Early Careers &amp; Contributing</SelectItem>
                     <SelectItem value="media">Media / Speaking</SelectItem>
                     <SelectItem value="speaking">Career Opportunity</SelectItem>
                   </SelectContent>
