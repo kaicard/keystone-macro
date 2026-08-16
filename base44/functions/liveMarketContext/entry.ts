@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const CACHE_KEY = 'liveMarketContext';
+const CACHE_KEY = 'liveMarketContextV2';
 const CACHE_TTL_MS = 35 * 60 * 1000;
 const STALE_THRESHOLD_MS = 18 * 60 * 1000;
 
@@ -166,8 +166,8 @@ async function refreshInBackground(base44, existingId) {
     type: 'object',
     properties: {
       regime: { type: 'object', properties: { label: { type: 'string' }, description: { type: 'string' }, growth: { type: 'string' }, inflation: { type: 'string' }, policy: { type: 'string' }, volatility: { type: 'string' }, leadership: { type: 'string' } } },
-      market_summary: { type: 'string' },
-      credit_spreads: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, value_bps: { type: 'string' }, direction: { type: 'string' }, trend: { type: 'string' } } } },
+      market_summary: { type: 'object', properties: { headline: { type: 'string' }, bullets: { type: 'array', items: { type: 'string' } } } },
+      credit_spreads: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, value_bps: { type: 'string' }, direction: { type: 'string' }, trend: { type: 'string' }, source_name: { type: 'string' }, source_url: { type: 'string' } } } },
     }
   };
 
@@ -178,10 +178,19 @@ BOND YIELDS: ${bondSummary}
 SECTORS (SPDR ETFs): ${sectorSummary}
 TOP MOVERS: ${moverSummary}
 
-Based on this real data:
-1. Write a regime assessment (label must be one of: Risk-On, Risk-Off, Inflation Pressure, Growth Slowdown, Liquidity Expansion, Stagflation). Include growth, inflation, policy, volatility, and leadership signals.
-2. Write a 3-4 sentence market_summary using the real numbers above. Be specific — reference actual sector moves and bond levels.
-3. Provide credit_spreads: use add_context_from_internet to get today's real US IG OAS, US HY OAS (from ICE BofA or Bloomberg). If unavailable, omit.`,
+Based on this real data, return concise dashboard copy.
+
+DISPLAY RULES:
+- Never include citations, markdown links, URLs, brackets, or source titles inside any narrative field.
+- Do not repeat the inputs or turn a signal into a paragraph.
+- Use neutral institutional language. No hype and no unsupported claims.
+
+1. Regime label must be one of: Risk-On, Risk-Off, Inflation Pressure, Growth Slowdown, Liquidity Expansion, Stagflation.
+2. Regime description: one sentence, maximum 22 words.
+3. growth, inflation, policy, volatility, and leadership: each 2-5 words maximum.
+4. market_summary.headline: maximum 12 words.
+5. market_summary.bullets: exactly 2 bullets, each maximum 18 words, using only the real inputs above.
+6. For credit_spreads, use web context for current US IG OAS and US HY OAS. If verified values are unavailable, return an empty array. Put source details only in source_name and source_url.`,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
     response_json_schema: REGIME_SCHEMA,
