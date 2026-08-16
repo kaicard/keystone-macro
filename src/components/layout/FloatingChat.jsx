@@ -4,31 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { X, Send, RotateCcw, Maximize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 
 const SYSTEM_PROMPT = `You are a senior macro research analyst at Keystone Macro — sharp, opinionated, and genuinely enjoyable to talk to. Today is ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
 
 You're having a real conversation via a chat widget. Be concise but human. Match the user's energy — casual or analytical. For market questions: give the view + 1 key risk. For casual chat: just talk naturally. No preamble, no sycophancy, no memo headers. You can be dry, witty, and push back when needed.`;
-
-function KeystoneIcon({ className = "w-6 h-6" }) {
-  const id = Math.random().toString(36).slice(2);
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={`kg-${id}`} x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0.55" />
-        </linearGradient>
-      </defs>
-      <path d="M16 3 L28.5 9.5 L28.5 22.5 L16 29 L3.5 22.5 L3.5 9.5 Z" stroke={`url(#kg-${id})`} strokeWidth="1.4" strokeLinejoin="round" fill="currentColor" fillOpacity="0.06" />
-      <path d="M16 8 L23.5 12 L23.5 20 L16 24 L8.5 20 L8.5 12 Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" strokeOpacity="0.35" fill="currentColor" fillOpacity="0.10" />
-      <line x1="16" y1="9.5" x2="16" y2="22.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeOpacity="0.9" />
-      <path d="M16 15 L21.5 9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.9" />
-      <path d="M16 15 L21.5 22.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.9" />
-      <circle cx="16" cy="15" r="2" fill="currentColor" fillOpacity="0.9" />
-      <circle cx="16" cy="15" r="3.5" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.25" fill="none" />
-    </svg>
-  );
-}
 
 function TypingDots() {
   return (
