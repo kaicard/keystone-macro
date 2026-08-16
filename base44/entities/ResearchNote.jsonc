@@ -87,10 +87,76 @@
         "archived"
       ],
       "default": "draft"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "accessed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Sources supporting factual and numeric claims"
+    },
+    "ai_assisted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI assisted drafting"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "unreviewed",
+        "reviewed",
+        "correction_required"
+      ],
+      "default": "unreviewed"
     }
   },
   "required": [
     "title",
     "category"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.status": "published"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
