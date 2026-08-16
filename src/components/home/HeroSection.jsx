@@ -62,7 +62,7 @@ export default function HeroSection() {
             </Button>
           </Link>
           <Link to="/MarketPulse">
-            <Button size="lg" variant="outline" className="gap-2 px-6">Market Pulse</Button>
+            <Button size="lg" variant="outline" className="gap-2 px-6">Markets</Button>
           </Link>
           <Link to="/Newsletter">
             <Button size="lg" variant="ghost" className="gap-2 text-primary hover:text-primary">
