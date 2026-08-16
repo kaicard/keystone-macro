@@ -216,7 +216,7 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">Executive Summary</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/[0.08]5 font-medium">{note.executive_summary}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.executive_summary}</p>
                 </div>
               </div>
             )}
@@ -242,7 +242,7 @@ export default function ResearchArticle() {
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-red-400/10">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/[0.08]0">Key Risks</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/80">Key Risks</span>
                   </div>
                   <p className="text-[15px] leading-[1.9] text-foreground/75">{note.key_risks}</p>
                 </div>
@@ -258,9 +258,9 @@ export default function ResearchArticle() {
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-amber-400/10">
                       <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/[0.08]0">Key Takeaway</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/80">Key Takeaway</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/[0.08]5 font-medium">{note.takeaway}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.takeaway}</p>
                 </div>
               </div>
             )}
