@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Clock, Tag, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { sampleNotes } from '@/lib/researchNotes';
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
@@ -96,12 +95,7 @@ export default function FeaturedResearch() {
 
   const [showOlder, setShowOlder] = useState(false);
 
-  // Merge DB notes with sample notes — DB notes take precedence (dedup by title)
-  const allNotes = useMemo(() => {
-    const dbTitles = new Set(dbNotes.map(n => n.title?.toLowerCase().trim()));
-    const filteredSamples = sampleNotes.filter(n => !dbTitles.has(n.title?.toLowerCase().trim()));
-    return [...dbNotes, ...filteredSamples];
-  }, [dbNotes]);
+  const allNotes = dbNotes;
 
   const sorted = [...allNotes]
     .filter(n => !n.status || n.status === 'published' || n.publish_date)
