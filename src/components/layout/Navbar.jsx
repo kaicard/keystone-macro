@@ -18,9 +18,8 @@ const navLinks = [
 
 function Brand() {
   return (
-    <Link to="/Home" className="group flex items-center gap-2.5" aria-label="Keystone Macro home">
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-primary/[0.07] text-[11px] font-semibold text-primary transition-colors group-hover:bg-primary/10">K</span>
-      <span className="font-display text-[15px] font-semibold tracking-[-0.02em] text-foreground/95">Keystone Macro</span>
+    <Link to="/Home" className="font-display text-[15px] font-semibold tracking-[-0.02em] text-foreground/95 transition-colors hover:text-foreground" aria-label="Keystone Macro home">
+      Keystone Macro
     </Link>
   );
 }
