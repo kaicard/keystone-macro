@@ -9,7 +9,7 @@ export default function AILabPreview() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-20 sm:py-28 relative overflow-hidden">
+    <section ref={ref} className="relative overflow-hidden border-y border-border/25 bg-card/15 py-16 sm:py-24">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-accent/5 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -20,10 +20,10 @@ export default function AILabPreview() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 mb-6">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">AI-Powered Macro Analyst</span>
+              <span className="text-xs font-medium text-primary">AI-assisted research workflow</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-4">
-              Keystone AI
+              Keystone Research Assistant
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
               Chat with a senior macro analyst for real-time market views, policy takes, and positioning ideas. Sign in to save your conversation history and revisit past chats anytime.
@@ -54,7 +54,7 @@ export default function AILabPreview() {
             <Link to="/AI">
               <Button className="gap-2 rounded-full">
                 <Sparkles className="w-4 h-4" />
-                Try Keystone AI
+                Open research assistant
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -70,8 +70,8 @@ export default function AILabPreview() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="glass rounded-2xl p-6 glow-accent relative overflow-hidden">
-              <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-primary/8 blur-3xl pointer-events-none" />
+            <div className="glass relative overflow-hidden rounded-2xl p-6">
+              <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-primary/[0.08] blur-3xl pointer-events-none" />
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-3 h-3 rounded-full bg-red-400/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
@@ -109,7 +109,7 @@ export default function AILabPreview() {
               {/* Mock input bar */}
               <div className="rounded-xl bg-muted/30 border border-border/50 px-3 py-2.5 flex items-center gap-2">
                 <span className="text-xs text-muted-foreground/50 flex-1">Ask about macro, markets, positioning…</span>
-                <div className="w-6 h-6 rounded-lg bg-primary/80 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-lg bg-primary/[0.08]0 flex items-center justify-center">
                   <ArrowRight className="w-3 h-3 text-primary-foreground" />
                 </div>
               </div>
