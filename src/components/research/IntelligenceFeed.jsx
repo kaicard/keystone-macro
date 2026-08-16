@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar, Bell } from 'lucide-react';
+import { Radio, ChevronDown, ChevronUp, ArrowRight, Clock, Star, Zap, Calendar, Bell, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const BEATS = [
@@ -177,8 +177,21 @@ function IntelligenceItem({ item, index }) {
                   </div>
                 </div>
               )}
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/20 bg-muted/10 px-3 py-2">
+                {item.source_url ? (
+                  <a href={item.source_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline min-w-0">
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                    <span className="truncate">Source: {item.source_name || 'Open source'}</span>
+                  </a>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground/40">Source unavailable for this legacy item</span>
+                )}
+                {item.verification_status === 'verified' && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 shrink-0"><CheckCircle2 className="w-3 h-3" /> Verified</span>
+                )}
+              </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-muted-foreground/30 italic">Keystone Macro Intelligence</span>
+                <span className="text-[10px] text-muted-foreground/30 italic">AI-assisted analysis · Sources linked above</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(`/Research/Intelligence/${item.slug}`); }}
                   className="inline-flex items-center gap-1 text-xs text-primary/60 hover:text-primary transition-colors"
