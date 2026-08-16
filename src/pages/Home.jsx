@@ -4,7 +4,6 @@ import CredibilityStrip from '@/components/home/CredibilityStrip';
 import FeaturedResearch from '@/components/home/FeaturedResearch';
 import MarketPulsePreview from '@/components/home/MarketPulsePreview';
 import PortfolioPreview from '@/components/home/PortfolioPreview';
-import WealthCasesPreview from '@/components/home/WealthCasesPreview';
 import AILabPreview from '@/components/home/AILabPreview';
 import NewsletterSection from '@/components/home/NewsletterSection';
 import ParticleBackground from '@/components/home/ParticleBackground';
@@ -18,7 +17,6 @@ export default function Home() {
       <FeaturedResearch />
       <MarketPulsePreview />
       <PortfolioPreview />
-      <WealthCasesPreview />
       <AILabPreview />
       <NewsletterSection />
     </div>
