@@ -20,6 +20,8 @@ import Admin from '@/pages/Admin';                             // Extended with 
 import Insights from '@/pages/Insights';                        // NEW — subscriber growth & content dashboard
 import EconomicCalendar from '@/pages/EconomicCalendar';       // Fixed for all visitors
 import Terms from '@/pages/Terms';
+import Privacy from '@/pages/Privacy';
+import Methodology from '@/pages/Methodology';
 import Newsletter from '@/pages/Newsletter';                   // Upgraded to paid subscription
 import NewsletterEdition from '@/pages/NewsletterEdition';     // NEW — individual edition archive
 import KeystoneAI from '@/pages/KeystoneAI';                  // NEW — dedicated AI chat page
@@ -99,6 +101,8 @@ const AuthenticatedApp = () => {
         <Route path="/Admin" element={<Admin />} />
         <Route path="/Insights" element={<Insights />} />
         <Route path="/Terms" element={<Terms />} />
+        <Route path="/Privacy" element={<Privacy />} />
+        <Route path="/Methodology" element={<Methodology />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
