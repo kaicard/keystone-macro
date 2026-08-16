@@ -27,12 +27,12 @@ export default function About() {
   const inView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <div className="pt-20 lg:pt-24 pb-20 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-20 min-h-screen relative">
       <PageBackground />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Hero */}
         <motion.div
-          className="text-center mb-20"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -47,7 +47,7 @@ export default function About() {
 
         {/* Story */}
         <motion.div
-          className="glass rounded-2xl p-8 sm:p-12 mb-16"
+          className="rounded-xl border border-border/55 bg-card/50 p-6 sm:p-8 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -58,7 +58,7 @@ export default function About() {
               Keystone Macro is Kai Card’s independent macro and multi-asset research platform, developed alongside Economics studies at the University of Surrey and hands-on market work.
             </p>
             <p>
-              Experience includes a summer internship connected with the LBMA Good Delivery ecosystem, proprietary trading, and independent research. The platform uses AI to assist analysis, while new intelligence links its sources and automated long-form drafts require review before publication.
+              Experience includes a summer internship connected with the LBMA Good Delivery ecosystem, proprietary trading, and independent research. The platform uses AI to assist analysis, while new intelligence includes direct attribution and automated long-form drafts require review before publication.
             </p>
             <p>
               The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding 
@@ -72,13 +72,13 @@ export default function About() {
         </motion.div>
 
         {/* Principles */}
-        <div ref={ref} className="mb-16">
+        <div ref={ref} className="mb-12">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Core Principles</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {principles.map((p, i) => (
               <motion.div
                 key={p.title}
-                className="glass rounded-xl p-6"
+                className="rounded-xl border border-border/55 bg-card/45 p-5"
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
@@ -94,7 +94,7 @@ export default function About() {
         </div>
 
         {/* Timeline */}
-        <div className="mb-16">
+        <div className="mb-12">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Experience</h2>
           <div className="relative">
             <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px bg-border" />
@@ -110,7 +110,7 @@ export default function About() {
               >
                 <div className={`flex-1 ${i % 2 === 0 ? 'sm:text-right' : 'sm:text-left'} hidden sm:block`}>
                   {i % 2 === 0 ? (
-                    <div className="glass rounded-xl p-5">
+                    <div className="rounded-xl border border-border/55 bg-card/40 p-5">
                       <span className="text-primary font-semibold text-sm">{t.year}</span>
                       <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
                       <p className="text-sm text-muted-foreground">{t.description}</p>
@@ -122,7 +122,7 @@ export default function About() {
                 </div>
                 <div className={`flex-1 ${i % 2 !== 0 ? 'sm:text-left' : ''}`}>
                   {i % 2 !== 0 ? (
-                    <div className="glass rounded-xl p-5">
+                    <div className="rounded-xl border border-border/55 bg-card/40 p-5">
                       <span className="text-primary font-semibold text-sm">{t.year}</span>
                       <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
                       <p className="text-sm text-muted-foreground">{t.description}</p>
@@ -147,18 +147,18 @@ export default function About() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-display text-2xl font-semibold mb-4">Get In Touch</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4">Contact</h2>
           <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
             Open to conversations on macro markets, portfolio strategy, asset allocation, and professional opportunities in investment management.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link to="/Contact">
-              <Button className="gap-2 rounded-full">
-                Get In Touch <ArrowRight className="w-4 h-4" />
+              <Button className="gap-2">
+                Contact <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <a href="https://www.linkedin.com/company/keystone-macro/" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="gap-2 rounded-full glass">
+              <Button variant="outline" className="gap-2">
                 <Linkedin className="w-4 h-4" /> LinkedIn
               </Button>
             </a>
