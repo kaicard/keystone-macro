@@ -216,7 +216,7 @@ export default function Admin() {
     <div className="pt-20 lg:pt-24 pb-20 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-4xl font-semibold mb-2">Admin</h1>
+          <h1 className="font-display text-4xl font-semibold mb-2">Administration</h1>
           <p className="text-muted-foreground">Manage content, research notes, and subscribers.</p>
         </motion.div>
 
