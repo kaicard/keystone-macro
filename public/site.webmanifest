@@ -1,0 +1,13 @@
+{
+  "name": "Keystone Macro",
+  "short_name": "Keystone Macro",
+  "description": "Macro research, portfolio intelligence and live cross-asset market insight.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050f2a",
+  "theme_color": "#050f2a",
+  "icons": [
+    { "src": "/keystone-logo-square.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
