@@ -14,15 +14,15 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const CATEGORY_CONFIG = {
-  'Macro':               { color: 'bg-amber-400/10 text-amber-400 border-amber-400/20',  accent: 'from-amber-500/8',  bar: 'from-amber-400 via-primary to-transparent' },
-  'Multi-Asset':         { color: 'bg-blue-400/10 text-blue-400 border-blue-400/20',     accent: 'from-blue-500/8',   bar: 'from-blue-400 via-accent to-transparent' },
-  'Equities':            { color: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20', accent: 'from-emerald-500/8', bar: 'from-emerald-400 via-primary to-transparent' },
-  'Fixed Income':        { color: 'bg-sky-400/10 text-sky-400 border-sky-400/20',        accent: 'from-sky-500/8',    bar: 'from-sky-400 via-accent to-transparent' },
-  'Commodities':         { color: 'bg-orange-400/10 text-orange-400 border-orange-400/20', accent: 'from-orange-500/8', bar: 'from-orange-400 via-primary to-transparent' },
-  'Wealth Strategy':     { color: 'bg-purple-400/10 text-purple-400 border-purple-400/20', accent: 'from-purple-500/8', bar: 'from-purple-400 via-accent to-transparent' },
-  'Behavioural Finance': { color: 'bg-violet-400/10 text-violet-400 border-violet-400/20', accent: 'from-violet-500/8', bar: 'from-violet-400 via-primary to-transparent' },
-  'Risk Management':     { color: 'bg-red-400/10 text-red-400 border-red-400/20',        accent: 'from-red-500/8',    bar: 'from-red-400 via-destructive to-transparent' },
-  'Trade Reviews':       { color: 'bg-cyan-400/10 text-cyan-400 border-cyan-400/20',     accent: 'from-cyan-500/8',   bar: 'from-cyan-400 via-accent to-transparent' },
+  'Macro':               { color: 'bg-amber-400/10 text-amber-400 border-amber-400/20',  accent: 'from-amber-500/[0.08]',  bar: 'from-amber-400 via-primary to-transparent' },
+  'Multi-Asset':         { color: 'bg-blue-400/10 text-blue-400 border-blue-400/20',     accent: 'from-blue-500/[0.08]',   bar: 'from-blue-400 via-accent to-transparent' },
+  'Equities':            { color: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20', accent: 'from-emerald-500/[0.08]', bar: 'from-emerald-400 via-primary to-transparent' },
+  'Fixed Income':        { color: 'bg-sky-400/10 text-sky-400 border-sky-400/20',        accent: 'from-sky-500/[0.08]',    bar: 'from-sky-400 via-accent to-transparent' },
+  'Commodities':         { color: 'bg-orange-400/10 text-orange-400 border-orange-400/20', accent: 'from-orange-500/[0.08]', bar: 'from-orange-400 via-primary to-transparent' },
+  'Wealth Strategy':     { color: 'bg-purple-400/10 text-purple-400 border-purple-400/20', accent: 'from-purple-500/[0.08]', bar: 'from-purple-400 via-accent to-transparent' },
+  'Behavioural Finance': { color: 'bg-violet-400/10 text-violet-400 border-violet-400/20', accent: 'from-violet-500/[0.08]', bar: 'from-violet-400 via-primary to-transparent' },
+  'Risk Management':     { color: 'bg-red-400/10 text-red-400 border-red-400/20',        accent: 'from-red-500/[0.08]',    bar: 'from-red-400 via-destructive to-transparent' },
+  'Trade Reviews':       { color: 'bg-cyan-400/10 text-cyan-400 border-cyan-400/20',     accent: 'from-cyan-500/[0.08]',   bar: 'from-cyan-400 via-accent to-transparent' },
 };
 
 function generateSlug(title) {
@@ -123,7 +123,7 @@ export default function ResearchArticle() {
     : null;
 
   return (
-    <div className="pt-20 lg:pt-24 pb-24 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-24 min-h-screen relative">
       <PageBackground />
       <div className="relative z-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -141,7 +141,7 @@ export default function ResearchArticle() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="relative overflow-hidden rounded-3xl border border-border/30 bg-card/70 backdrop-blur-xl mb-6"
+            className="relative overflow-hidden rounded-xl border border-border/55 bg-card/60 mb-6"
           >
             <div className={`h-1 w-full bg-gradient-to-r ${cfg.bar}`} />
             <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-[0.06] blur-3xl pointer-events-none bg-gradient-to-br ${cfg.accent} to-transparent`} />
@@ -190,7 +190,7 @@ export default function ResearchArticle() {
               )}
 
               <div className="mt-6">
-                <Button variant="outline" size="sm" className="gap-2 glass border-border/30 text-xs" onClick={handleShare}>
+                <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handleShare}>
                   {copied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
                   {copied ? 'Link copied' : 'Share'}
                 </Button>
@@ -207,7 +207,7 @@ export default function ResearchArticle() {
           >
             {/* Executive Summary */}
             {note.executive_summary && (
-              <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-primary/5 backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-xl border border-primary/15 bg-primary/5 backdrop-blur-sm">
                 <div className="h-px w-full bg-gradient-to-r from-border/60 via-border/20 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <div className="flex items-center gap-2.5 mb-4">
@@ -216,14 +216,14 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">Executive Summary</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.executive_summary}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/[0.08]5 font-medium">{note.executive_summary}</p>
                 </div>
               </div>
             )}
 
             {/* Main Body */}
             {note.body && (
-              <div className="relative overflow-hidden rounded-2xl border border-border/25 bg-card/40 backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-xl border border-border/25 bg-card/40 backdrop-blur-sm">
                 <div className="h-px w-full bg-gradient-to-r from-border/60 via-border/20 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <ReactMarkdown components={bodyComponents} remarkPlugins={[remarkGfm]}>
@@ -235,14 +235,14 @@ export default function ResearchArticle() {
 
             {/* Key Risks */}
             {note.key_risks && (
-              <div className="relative overflow-hidden rounded-2xl border border-red-400/20 bg-red-400/5 backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-xl border border-red-400/20 bg-red-400/5 backdrop-blur-sm">
                 <div className="h-px w-full bg-gradient-to-r from-red-400/40 via-red-400/10 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <div className="flex items-center gap-2.5 mb-4">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-red-400/10">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/80">Key Risks</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/[0.08]0">Key Risks</span>
                   </div>
                   <p className="text-[15px] leading-[1.9] text-foreground/75">{note.key_risks}</p>
                 </div>
@@ -251,23 +251,23 @@ export default function ResearchArticle() {
 
             {/* Takeaway */}
             {note.takeaway && (
-              <div className="relative overflow-hidden rounded-2xl border border-amber-400/20 bg-amber-400/5 backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-xl border border-amber-400/20 bg-amber-400/5 backdrop-blur-sm">
                 <div className="h-px w-full bg-gradient-to-r from-amber-400/40 via-amber-400/10 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <div className="flex items-center gap-2.5 mb-4">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-amber-400/10">
                       <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/80">Key Takeaway</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/[0.08]0">Key Takeaway</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.takeaway}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/[0.08]5 font-medium">{note.takeaway}</p>
                 </div>
               </div>
             )}
 
             {/* What Would Change My Mind */}
             {note.what_would_change_mind && (
-              <div className="relative overflow-hidden rounded-2xl border border-border/25 bg-card/30 backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-xl border border-border/25 bg-card/30 backdrop-blur-sm">
                 <div className="h-px w-full bg-gradient-to-r from-border/60 via-border/20 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <div className="flex items-center gap-2.5 mb-4">
@@ -306,7 +306,7 @@ export default function ResearchArticle() {
                     <Link
                       key={r.id}
                       to={`/Research/${r.slug || generateSlug(r.title)}`}
-                      className="group relative overflow-hidden rounded-2xl border border-border/25 bg-card/40 backdrop-blur-sm hover:border-primary/20 transition-all p-5"
+                      className="group relative overflow-hidden rounded-xl border border-border/25 bg-card/40 backdrop-blur-sm hover:border-primary/20 transition-all p-5"
                     >
                       <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${rcfg.bar} opacity-60`} />
                       <Badge variant="outline" className={`text-xs mb-3 border ${rcfg.color}`}>{r.category}</Badge>
