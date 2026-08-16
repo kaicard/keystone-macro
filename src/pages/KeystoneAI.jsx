@@ -196,7 +196,7 @@ export default function KeystoneAI() {
   };
 
   return (
-    <div className="pt-20 lg:pt-24 pb-10 min-h-screen relative">
+    <div className="pt-24 lg:pt-28 pb-10 min-h-screen relative">
       <PageBackground />
       <div className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isAuthenticated ? 'lg:flex lg:gap-6' : ''}`}>
 
@@ -230,9 +230,9 @@ export default function KeystoneAI() {
 
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <motion.div className="mb-6" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div className="mb-4" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-primary/[0.07] border border-primary/15 flex items-center justify-center">
                 <KeystoneIcon className="w-5 h-5 text-primary" />
               </div>
               <div>
@@ -242,7 +242,7 @@ export default function KeystoneAI() {
             </div>
           </motion.div>
 
-          <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 220px)' }}>
+          <div className="flex flex-col rounded-xl border border-border/55 bg-card/35 p-4 sm:p-5" style={{ minHeight: 'calc(100vh - 230px)' }}>
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">Institutional-grade macro analysis on demand.</p>
               {isAuthenticated && messages.length > 0 && (
@@ -254,8 +254,8 @@ export default function KeystoneAI() {
 
             <div className="flex-1 flex flex-col min-h-0">
               {messages.length === 0 ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-12 h-12 rounded-xl border border-primary/15 bg-primary/[0.07] flex items-center justify-center mb-4">
                     <KeystoneIcon className="w-7 h-7 text-primary" />
                   </div>
                   <h2 className="font-display text-2xl font-semibold mb-2">Ask the Desk</h2>
@@ -263,7 +263,7 @@ export default function KeystoneAI() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl">
                     {STARTERS.map(s => (
                       <button key={s} onClick={() => sendMessage(s)}
-                        className="glass rounded-xl px-4 py-3 text-left text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all duration-200">
+                        className="rounded-lg border border-border/50 bg-background/30 px-4 py-3 text-left text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 hover:bg-background/50 transition-colors duration-200">
                         {s}
                       </button>
                     ))}
@@ -278,7 +278,7 @@ export default function KeystoneAI() {
               )}
 
               <div className="pt-4 pb-2">
-                <div className="glass rounded-2xl p-3 flex gap-3 items-end">
+                <div className="rounded-xl border border-border/60 bg-background/55 p-3 flex gap-3 items-end">
                   <Textarea ref={textareaRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
                     placeholder="Ask about macro, markets, positioning, or portfolio construction…"
                     className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 p-0 text-sm min-h-[44px] max-h-36" rows={1} />
