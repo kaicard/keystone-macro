@@ -44,7 +44,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          Clear macro research, live cross-asset context, and practical portfolio intelligence—built for better investment decisions.
+          Clear macro research, live cross-asset context, and practical portfolio intelligence for a more informed view of markets.
         </motion.p>
 
         <motion.div
