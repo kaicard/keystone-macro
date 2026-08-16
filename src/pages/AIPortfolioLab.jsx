@@ -173,7 +173,7 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
             <FlaskConical className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">AI Portfolio Constructor</span>
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">AI Portfolio Lab</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolio Analytics</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
             Construct institutional-style multi-asset portfolios with strategic allocation, tactical tilts, scenario analysis, and capital-appropriate exposures.
           </p>
