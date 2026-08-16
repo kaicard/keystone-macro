@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#07152f"/>
+  <g fill="#d6a447" transform="translate(360 250) scale(3)">
+    <path d="M64 12H96L88 88H72L64 12Z"/>
+    <path d="M53 25L63 18L57 88H43L53 25Z" opacity=".96"/>
+    <path d="M97 18L107 25L117 88H103L97 18Z" opacity=".96"/>
+    <path d="M40 42L49 33L36 88H24L40 42Z" opacity=".88"/>
+    <path d="M111 33L120 42L136 88H124L111 33Z" opacity=".88"/>
+    <path d="M27 59L34 50L18 88H9L27 59Z" opacity=".76"/>
+    <path d="M126 50L133 59L151 88H142L126 50Z" opacity=".76"/>
+    <path d="M15 72L20 64L8 88H2L15 72Z" opacity=".58"/>
+    <path d="M140 64L145 72L158 88H152L140 64Z" opacity=".58"/>
+  </g>
+  <text x="600" y="700" text-anchor="middle" fill="#f4efe4" font-family="Georgia, 'Times New Roman', serif" font-size="112" letter-spacing="16">KEYSTONE</text>
+  <line x1="280" y1="790" x2="420" y2="790" stroke="#d6a447" stroke-width="3"/>
+  <text x="600" y="812" text-anchor="middle" fill="#d6a447" font-family="Arial, Helvetica, sans-serif" font-size="52" letter-spacing="30">MACRO</text>
+  <line x1="780" y1="790" x2="920" y2="790" stroke="#d6a447" stroke-width="3"/>
+</svg>
