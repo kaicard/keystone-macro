@@ -66,6 +66,34 @@
       "default": false,
       "description": "Flagged as a top story"
     },
+    "source_name": {
+      "type": "string",
+      "description": "Primary publication or data provider"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Direct source URL"
+    },
+    "source_published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp reported by the source"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the source was checked"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "unverified",
+        "legacy"
+      ],
+      "default": "unverified"
+    },
     "batch_id": {
       "type": "string",
       "description": "ID of the refresh batch that created this item"
@@ -76,5 +104,23 @@
     "category",
     "sentiment",
     "slug"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
