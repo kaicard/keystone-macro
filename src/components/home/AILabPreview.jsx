@@ -109,7 +109,7 @@ export default function AILabPreview() {
               {/* Mock input bar */}
               <div className="rounded-xl bg-muted/30 border border-border/50 px-3 py-2.5 flex items-center gap-2">
                 <span className="text-xs text-muted-foreground/50 flex-1">Ask about macro, markets, positioning…</span>
-                <div className="w-6 h-6 rounded-lg bg-primary/[0.08]0 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-lg bg-primary/80 flex items-center justify-center">
                   <ArrowRight className="w-3 h-3 text-primary-foreground" />
                 </div>
               </div>
