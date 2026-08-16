@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#050f2a"/>
+  <g fill="#d6a447" transform="translate(125 193) scale(2.75)">
+    <path d="M64 12H96L88 88H72L64 12Z"/>
+    <path d="M53 25L63 18L57 88H43L53 25Z" opacity=".96"/>
+    <path d="M97 18L107 25L117 88H103L97 18Z" opacity=".96"/>
+    <path d="M40 42L49 33L36 88H24L40 42Z" opacity=".88"/>
+    <path d="M111 33L120 42L136 88H124L111 33Z" opacity=".88"/>
+    <path d="M27 59L34 50L18 88H9L27 59Z" opacity=".76"/>
+    <path d="M126 50L133 59L151 88H142L126 50Z" opacity=".76"/>
+    <path d="M15 72L20 64L8 88H2L15 72Z" opacity=".58"/>
+    <path d="M140 64L145 72L158 88H152L140 64Z" opacity=".58"/>
+  </g>
+  <text x="635" y="292" fill="#f4efe4" font-family="Georgia, 'Times New Roman', serif" font-size="82" letter-spacing="8">KEYSTONE</text>
+  <line x1="638" y1="360" x2="735" y2="360" stroke="#d6a447" stroke-width="2"/>
+  <text x="774" y="377" fill="#d6a447" font-family="Arial, Helvetica, sans-serif" font-size="38" letter-spacing="20">MACRO</text>
+  <line x1="1053" y1="360" x2="1150" y2="360" stroke="#d6a447" stroke-width="2"/>
+  <text x="638" y="442" fill="#9ba7ba" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="1">MACRO RESEARCH · PORTFOLIO INTELLIGENCE · LIVE MARKET INSIGHT</text>
+</svg>
