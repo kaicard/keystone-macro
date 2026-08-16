@@ -1,69 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { TrendingUp, FileText, Briefcase, BarChart3, Clock, Newspaper } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Link2, FileCheck2, BarChart3, Mail, Scale } from 'lucide-react';
 
-const metrics = [
-  { icon: Newspaper, value: 200, suffix: '+', label: 'Headlines Analysed Weekly', decimals: 0 },
-  { icon: FileText, value: 50, suffix: '+', label: 'Macro Views Published', decimals: 0 },
-  { icon: Briefcase, value: 12, suffix: '', label: 'Portfolio Case Studies', decimals: 0 },
-  { icon: BarChart3, value: 80, suffix: '+', label: 'Market Research Notes', decimals: 0 },
-  { icon: Clock, value: 52, suffix: '/yr', label: 'Weekly Research Updates', decimals: 0 },
+const capabilities = [
+  { icon: Link2, title: 'Source-linked intelligence', text: 'Direct links and verification status on new intelligence items.' },
+  { icon: FileCheck2, title: 'Reviewed research', text: 'AI-assisted drafts remain unpublished until editorial review.' },
+  { icon: BarChart3, title: 'Cross-asset context', text: 'Equities, rates, FX, commodities, credit, and regime signals.' },
+  { icon: Mail, title: 'Subscriber briefings', text: 'Morning and evening editions with an accessible archive.' },
+  { icon: Scale, title: 'Transparent methodology', text: 'Clear sourcing, data-delay, AI, and correction policies.' },
 ];
 
-function AnimatedCounter({ value, suffix, decimals, inView }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const duration = 2000;
-    const step = 16;
-    const steps = duration / step;
-    const increment = value / steps;
-    
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= value) {
-        setCount(value);
-        clearInterval(timer);
-      } else {
-        setCount(start);
-      }
-    }, step);
-    return () => clearInterval(timer);
-  }, [inView, value]);
-
-  return (
-    <span className="text-2xl sm:text-3xl font-bold text-foreground tabular-nums">
-      {count.toFixed(decimals)}{suffix}
-    </span>
-  );
-}
-
 export default function CredibilityStrip() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
-
   return (
-    <section ref={ref} className="py-16 sm:py-20 border-y border-border/50 relative overflow-hidden">
+    <section className="py-16 sm:py-20 border-y border-border/50 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/3 via-transparent to-accent/3 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {metrics.map((metric, i) => (
-            <motion.div
-              key={metric.label}
-              className="text-center glass rounded-2xl p-6 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                <metric.icon className="w-5 h-5 text-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {capabilities.map((item, index) => (
+            <motion.div key={item.title} className="glass rounded-2xl p-5" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.06 }}>
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <item.icon className="w-4.5 h-4.5 text-primary" />
               </div>
-              <div className="mb-1">
-                <AnimatedCounter value={metric.value} suffix={metric.suffix} decimals={metric.decimals} inView={inView} />
-              </div>
-              <p className="text-xs text-muted-foreground">{metric.label}</p>
+              <h2 className="text-sm font-semibold mb-2">{item.title}</h2>
+              <p className="text-xs leading-relaxed text-muted-foreground">{item.text}</p>
             </motion.div>
           ))}
         </div>
