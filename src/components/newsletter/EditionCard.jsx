@@ -61,7 +61,7 @@ export default function EditionCard({ edition, index }) {
     : '';
 
   const accentColor = isMorning ? 'text-amber-400' : 'text-sky-400';
-  const accentBg = isMorning ? 'bg-amber-400/8' : 'bg-sky-400/8';
+  const accentBg = isMorning ? 'bg-amber-400/[0.08]' : 'bg-sky-400/[0.08]';
   const accentBorder = isMorning ? 'border-amber-400/15' : 'border-sky-400/15';
   const accentLine = isMorning
     ? 'bg-gradient-to-r from-amber-400/60 via-amber-400/20 to-transparent'
