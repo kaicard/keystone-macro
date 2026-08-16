@@ -7,8 +7,8 @@ const footerLinks = [
     title: 'Platform',
     links: [
       { label: 'Research', path: '/Research' },
-      { label: 'Market Pulse', path: '/MarketPulse' },
-      { label: 'Portfolio Lab', path: '/Portfolios' },
+      { label: 'Markets', path: '/MarketPulse' },
+      { label: 'Portfolio', path: '/Portfolios' },
       { label: 'Keystone AI', path: '/AI' },
     ],
   },
