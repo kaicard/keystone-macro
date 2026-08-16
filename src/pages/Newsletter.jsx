@@ -126,7 +126,7 @@ export default function Newsletter() {
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.header initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center pt-8 pb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"><Mail className="w-3.5 h-3.5 text-primary" /><span className="text-xs font-medium text-primary">Macro research · Delivered</span></div>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-4">The Keystone <span className="text-gradient">Macro Brief</span></h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-4">The <span className="text-gradient">Macro Brief</span></h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">Independent, source-conscious macro research in a concise morning, evening, or weekly format.</p>
         </motion.header>
 
