@@ -84,14 +84,14 @@ export default function FloatingChat() {
         {!open && (
           <motion.button
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 transition-transform"
+            className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-primary/20 bg-card/95 text-primary shadow-[0_16px_42px_-20px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-all hover:border-primary/35 hover:bg-card"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.08 }}
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}
           >
-            <KeystoneIcon className="w-6 h-6" />
+            <KeystoneIcon className="w-5 h-5" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -100,15 +100,15 @@ export default function FloatingChat() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] flex flex-col glass-strong rounded-2xl shadow-2xl shadow-black/30 overflow-hidden border border-border/50"
-            style={{ height: '520px' }}
+            className="fixed bottom-5 right-5 z-50 flex w-[380px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-border/45 bg-card/95 shadow-[0_28px_90px_-34px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+            style={{ height: 'min(560px, calc(100vh - 100px))' }}
             initial={{ opacity: 0, scale: 0.85, y: 30, originX: 1, originY: 1 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: 'spring', damping: 22, stiffness: 280 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-card/50 shrink-0">
+            <div className="flex shrink-0 items-center justify-between border-b border-border/30 bg-background/30 px-4 py-3.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
                   <KeystoneIcon className="w-3.5 h-3.5 text-primary" />
