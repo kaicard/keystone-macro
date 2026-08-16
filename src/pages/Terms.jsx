@@ -18,7 +18,7 @@ export default function Terms() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Terms &amp; Conditions</h1>
-          <p className="text-muted-foreground">Last updated: April 2026</p>
+          <p className="text-muted-foreground">Last updated: 16 August 2026</p>
         </motion.div>
 
         <motion.div
@@ -78,7 +78,7 @@ export default function Terms() {
           <Section title="5. AI-Generated Content">
             <p>
               The Platform makes use of artificial intelligence tools to generate certain content, including
-              portfolio scenarios, market commentary, and analytical summaries. AI-generated content is
+              portfolio scenarios, market commentary, and analytical summaries. AI-assisted content is labelled where practical, and automated long-form drafts require editorial review before publication. AI output is
               inherently subject to errors, omissions, and inaccuracies. It should not be treated as
               authoritative or relied upon for any decision-making. Keystone Macro makes no representations
               or warranties as to the accuracy, completeness, or fitness for purpose of any AI-generated
@@ -91,7 +91,7 @@ export default function Terms() {
               Market data, economic indicators, news summaries, and other third-party information displayed
               on the Platform are sourced from publicly available data and third-party providers. This data
               may be delayed, incomplete, or inaccurate. Keystone Macro accepts no liability for errors
-              in third-party data or for any decisions made in reliance upon it.
+              in third-party data or for any decisions made in reliance upon it. Displayed update times describe the application cache and do not guarantee exchange-grade real-time delivery.
             </p>
           </Section>
 
