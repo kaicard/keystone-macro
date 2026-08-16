@@ -60,26 +60,26 @@ export default function PortfolioPreview() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-20 sm:py-28">
+    <section ref={ref} className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Model Portfolios</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-2">Portfolio Strategy</h2>
             <p className="text-muted-foreground">Illustrative portfolio ideas for different risk profiles and objectives.</p>
           </div>
           <Link to="/Portfolios">
             <Button variant="ghost" className="gap-2 text-primary hover:text-primary">
-              All Portfolios <ArrowRight className="w-4 h-4" />
+              Explore portfolios <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {portfolios.map((p, i) => (
             <motion.div
               key={p.name}
@@ -88,8 +88,8 @@ export default function PortfolioPreview() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
               <Link to="/Portfolios" className="block group">
-                <div className="glass rounded-xl p-6 h-full hover:border-primary/20 transition-all duration-300 relative overflow-hidden">
-                  <div className={`absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br ${p.color} blur-2xl opacity-60 -translate-y-8 translate-x-8`} />
+                <div className="glass relative h-full overflow-hidden rounded-xl p-5 transition-colors duration-200 hover:border-primary/20 hover:bg-card/70">
+                  <div className={`absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br ${p.color} blur-2xl opacity-35 -translate-y-8 translate-x-8`} />
                   <div className="relative">
                     <div className={`w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-4`}>
                       <p.icon className={`w-5 h-5 ${p.iconColor}`} />
