@@ -3,11 +3,11 @@ import { useLocation } from 'react-router-dom';
 
 const META = {
   '/Home': ['Keystone Macro | Independent Macro Research', 'Source-linked intelligence, cross-asset market context, portfolio frameworks, and independent macro research.'],
-  '/Research': ['Research | Keystone Macro', 'Independent, AI-assisted macro and multi-asset research with transparent sourcing.'],
-  '/MarketPulse': ['Market Pulse | Keystone Macro', 'Cross-asset market data, sector performance, yields, movers, and macro-regime context.'],
-  '/Portfolios': ['Portfolio Lab | Keystone Macro', 'Educational model portfolios and risk-aware allocation frameworks.'],
-  '/AI': ['Keystone AI | Keystone Macro', 'Explore macro questions and educational portfolio scenarios with an AI-assisted research tool.'],
-  '/Newsletter': ['Newsletter | Keystone Macro', 'Choose the free weekly digest or premium morning and evening Keystone Macro briefings.'],
+  '/Research': ['Macro Research | Keystone Macro', 'Independent, AI-assisted macro and multi-asset research with transparent sourcing.'],
+  '/MarketPulse': ['Market Intelligence | Keystone Macro', 'Cross-asset market data, sector performance, yields, movers, and macro-regime context.'],
+  '/Portfolios': ['Portfolio Strategy | Keystone Macro', 'Educational model portfolios and risk-aware allocation frameworks.'],
+  '/AI': ['Keystone Research Assistant | Keystone Macro', 'Explore macro questions and educational portfolio scenarios with an AI-assisted research tool.'],
+  '/Newsletter': ['The Macro Brief | Keystone Macro', 'Choose the free weekly digest or premium morning and evening Keystone Macro briefings.'],
   '/About': ['About | Keystone Macro', 'The people, process, and principles behind Keystone Macro.'],
   '/Privacy': ['Privacy | Keystone Macro', 'How Keystone Macro collects, uses, protects, and retains personal information.'],
   '/Methodology': ['Methodology | Keystone Macro', 'Keystone Macro sourcing, AI assistance, editorial review, market-data, and correction policies.'],
