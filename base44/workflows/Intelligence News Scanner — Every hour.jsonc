@@ -1,0 +1,44 @@
+{
+  "name": "Intelligence News Scanner \u2014 Every hour",
+  "description": "Scans all 11 topics (Macro, Equities, US/UK/EU Economy, Rates, Commodities, FX, Geopolitics, Credit, Technology) every hour 24/7. Publishes only genuinely new stories from the last 4 hours. Deduplicates by slug and headline fingerprint.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/30 5-22 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "intelligence_news_scanner_every_hour",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "scanAndPublishIntelligence",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "scanAndPublishIntelligence"
+  }
+}
