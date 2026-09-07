@@ -111,7 +111,7 @@ Format:
       what_would_change_mind: result.what_would_change_mind,
       read_time_minutes:      result.read_time_minutes,
       publish_date:           publishDate,
-      status:                 'draft',
+      status:                 'published',
       ai_assisted:            true,
       review_status:          'unreviewed',
       sources:                (result.sources || []).filter(s => /^https:\/\//i.test(s.url || '')),
