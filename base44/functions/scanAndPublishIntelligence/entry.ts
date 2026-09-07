@@ -53,14 +53,17 @@ Deno.serve(async (req) => {
     const londonTime = now.toLocaleTimeString('en-GB', {
       hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
     });
-    const cutoffISO = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
+    const cutoffISO = new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString();
     const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     const cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
-    // ── Pick 1 topic this run, rotating by 30-min slot ───────────────────────
+    // ── Pick 3 topics this run, rotating by 30-min slot ───────────────────────
     const slot = Math.floor(now.getTime() / (30 * 60 * 1000)) % TOPICS.length;
-    const runTopics = [TOPICS[slot]];
+    const runTopics = [];
+    for (let i = 0; i < 3; i++) {
+      runTopics.push(TOPICS[(slot + i) % TOPICS.length]);
+    }
 
     // ── Load existing items for dedup ─────────────────────────────────────────
     const existing = await base44.asServiceRole.entities.IntelligenceItem.list('-published_at', 300);
@@ -105,13 +108,13 @@ Today is ${londonDate}, ${londonTime} London time.
 Search the web RIGHT NOW for the 2-3 most important and genuinely NEW developments in: **${topic.name}**
 
 HARD RULES — violating ANY of these means the story is REJECTED outright:
-1. ONLY stories confirmed to have broken or developed after ${cutoffISO}. Do NOT include anything from 2024, 2023, or any prior year. If a story is more than 4 hours old, reject it.
-2. VERIFY the story is genuinely current — check the publication date. If you cannot confirm it happened today or in the last 4 hours, do NOT include it.
+1. ONLY stories confirmed to have broken or developed after ${cutoffISO}. Do NOT include anything from 2024, 2023, or any prior year. If a story is more than 8 hours old, reject it.
+2. VERIFY the story is genuinely current — check the publication date. If you cannot confirm it happened today or in the last 8 hours, do NOT include it.
 3. Do NOT fabricate, hallucinate, speculate, or infer. If you cannot confirm a story via web search, return an empty array.
 4. Write in Keystone Macro's editorial voice — sharp, analytical, no waffle. Do NOT copy-paste from sources.
 5. Every story MUST include the direct HTTPS URL and publication name used to verify it. Reject aggregator/search-result URLs and reject any story without a traceable source.
 6. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
-7. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array.
+7. If there are genuinely NO new stories in ${topic.name} in the past 8 hours, return an empty stories array.
 
 For each confirmed story return:
 - headline: original 15-word max headline with a specific fact
@@ -152,7 +155,7 @@ For each confirmed story return:
       [allStories[i], allStories[j]] = [allStories[j], allStories[i]];
     }
 
-    const cappedStories = allStories.slice(0, 2);
+    const cappedStories = allStories.slice(0, 4);
 
     // ── Deduplicate and publish ───────────────────────────────────────────────
     let created = 0;
