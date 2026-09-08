@@ -278,9 +278,10 @@ Deno.serve(async (req) => {
       const entry = cached[0];
       const age = Date.now() - new Date(entry.fetched_at).getTime();
 
-      if (entry.payload && age < CACHE_TTL_MS) {
+      if (entry.payload) {
         const data = JSON.parse(entry.payload);
-        // Background refresh if getting stale
+        // Serve any cached data immediately and refresh in background when stale.
+        // This avoids blocking the user on a slow Yahoo Finance fetch.
         if (age >= STALE_TTL_MS) {
           fetchAndCache(base44, entry.id).catch(() => {});
         }
@@ -288,7 +289,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cache miss or expired — blocking fetch
+    // Truly first-ever fetch — no choice but to block
     const { organized, fetched_at } = await fetchAndCache(base44, cached?.[0]?.id || null);
     return Response.json({ ok: true, data: organized, cached: false, ts: new Date(fetched_at).getTime() });
 

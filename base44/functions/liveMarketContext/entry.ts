@@ -225,15 +225,16 @@ Deno.serve(async (req) => {
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
-        if (age >= STALE_THRESHOLD_MS && age < CACHE_TTL_MS) {
+        // Serve any cached data immediately and refresh in the background.
+        // This avoids a slow blocking fetch when the cache is merely stale.
+        if (age >= STALE_THRESHOLD_MS) {
           refreshInBackground(base44, entry.id).catch(() => {});
         }
-        if (age < CACHE_TTL_MS) {
-          return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
-        }
+        return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
       }
     }
 
+    // Truly first-ever fetch — no choice but to block
     await refreshInBackground(base44, cached?.[0]?.id || null);
     const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     const freshEntry = fresh?.[0];

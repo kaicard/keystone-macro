@@ -7,7 +7,7 @@ const REFRESH_INTERVAL = 15 * 60 * 1000;
 
 export function useMarketData() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [error, setError] = useState(null);
 

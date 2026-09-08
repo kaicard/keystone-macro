@@ -215,24 +215,26 @@ function IntelligenceItem({ item, index }) {
 
                 <div>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/45">Provenance</p>
-                  {item.source_url ? (
-                    <a
-                      href={item.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground/70 transition-colors hover:text-primary"
-                    >
-                      <ExternalLink className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{item.source_name || 'Primary source'}</span>
-                    </a>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground/35">Legacy item · source unavailable</p>
-                  )}
-                  {item.verification_status === 'verified' && (
-                    <p className="mt-2 inline-flex items-center gap-1 text-[10px] text-emerald-400/80">
-                      <CheckCircle2 className="h-3 w-3" /> Verified
-                    </p>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    {item.source_url ? (
+                      <a
+                        href={item.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground/70 transition-colors hover:text-primary"
+                      >
+                        <ExternalLink className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{item.source_name || 'Primary source'}</span>
+                      </a>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground/35">Legacy item · source unavailable</p>
+                    )}
+                    {item.verification_status === 'verified' && (
+                      <span className="inline-flex w-fit items-center gap-1 text-[10px] text-emerald-400/80">
+                        <CheckCircle2 className="h-3 w-3" /> Verified
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {item.slug && (
