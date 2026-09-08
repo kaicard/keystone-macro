@@ -94,7 +94,7 @@ async function fetchCalendarWeek() {
   const res = await base44.functions.invoke('calendarToday', { source: 'forex-factory', range: 'week' });
   const events = res?.data?.events;
   if (!Array.isArray(events)) throw new Error('No events returned');
-  return events.filter(e => e.importance === 'high' || e.importance === 'medium');
+  return events;
 }
 
 function toLocalTime(dateStr, utcTime) {
@@ -406,7 +406,7 @@ export default function EconomicCalendar() {
       if (tab === 'previous') return e.date < today;
       return true;
     });
-    if (impactFilter === 'high') base = base.filter(e => e.importance === 'high');
+    if (impactFilter !== 'all') base = base.filter(e => e.importance === impactFilter);
     return base;
   }, [allEvents, tab, today, weekEnd, impactFilter]);
 
@@ -442,7 +442,7 @@ export default function EconomicCalendar() {
             <span className="text-xs font-medium text-primary">Macro Events</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Economic Calendar</h1>
-          <p className="text-muted-foreground">Central bank decisions, macro releases, and market-moving data. Medium and high impact only.</p>
+          <p className="text-muted-foreground">Central bank decisions, macro releases, and all economic data. Filter by impact level to focus on what matters to you.</p>
         </motion.div>
 
         {tab === 'today' && (
@@ -480,7 +480,12 @@ export default function EconomicCalendar() {
             </button>
             <div className="flex items-center gap-1">
               <Filter className="w-3 h-3 text-muted-foreground/50 ml-1 mr-0.5" />
-              {[{ key: 'all', label: 'All' }, { key: 'high', label: 'High Only' }].map(f => (
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'high', label: 'High' },
+                { key: 'medium', label: 'Medium' },
+                { key: 'low', label: 'Low' },
+              ].map(f => (
                 <button key={f.key} onClick={() => setImpact(f.key)} className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${impactFilter === f.key ? 'bg-foreground/[0.075] text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'}`}>
                   {f.label}
                 </button>
