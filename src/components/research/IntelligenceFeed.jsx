@@ -294,6 +294,7 @@ function DayGroup({ dateStr, items, defaultOpen }) {
 export default function IntelligenceFeed() {
   const [activeBeat, setActiveBeat] = useState('all');
   const [activeDateFilter, setActiveDateFilter] = useState('today');
+  const [priorityOnly, setPriorityOnly] = useState(false);
   const [allItems, setAllItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newCount, setNewCount] = useState(0);
@@ -342,14 +343,15 @@ export default function IntelligenceFeed() {
       if (activeDateFilter === 'yesterday' && date !== yesterday) return false;
       if (activeDateFilter === 'week' && (date < weekStart || date > today)) return false;
       if (activeBeat !== 'all' && item.beat !== activeBeat) return false;
+      if (priorityOnly && !item.is_top_story) return false;
       return true;
     });
-  }, [allItems, activeDateFilter, activeBeat]);
+  }, [allItems, activeDateFilter, activeBeat, priorityOnly]);
 
   const PAGE_SIZE = 10;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  useEffect(() => setVisibleCount(PAGE_SIZE), [activeDateFilter, activeBeat]);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [activeDateFilter, activeBeat, priorityOnly]);
 
   const visibleItems = filtered.slice(0, visibleCount);
   const byDate = useMemo(() => {
@@ -415,6 +417,20 @@ export default function IntelligenceFeed() {
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 h-3.5 w-3.5 text-muted-foreground/35" />
           </label>
+
+          <button
+            type="button"
+            onClick={() => setPriorityOnly((v) => !v)}
+            className={`flex h-10 items-center gap-1.5 rounded-xl border px-3.5 text-xs font-medium whitespace-nowrap transition-colors ${
+              priorityOnly
+                ? 'border-amber-300/30 bg-amber-300/[0.08] text-amber-300'
+                : 'border-border/30 bg-background/30 text-muted-foreground/55 hover:text-foreground'
+            }`}
+            aria-pressed={priorityOnly}
+          >
+            <Star className={`h-3.5 w-3.5 ${priorityOnly ? 'fill-amber-300/80' : ''}`} />
+            Priority only
+          </button>
 
           <div className="hidden items-center gap-2 pl-1 lg:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
