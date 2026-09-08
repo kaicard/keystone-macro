@@ -138,7 +138,7 @@ export default function Navbar() {
           <>
             <motion.button type="button" aria-label="Close navigation" className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} />
             <motion.aside
-              className="fixed inset-y-0 right-0 z-50 w-[min(88vw,340px)] border-l border-border/40 bg-background/97 p-6 shadow-2xl backdrop-blur-xl"
+              className="fixed inset-y-0 right-0 z-50 w-[min(88vw,340px)] border-l border-border/40 bg-background p-6 shadow-2xl"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
