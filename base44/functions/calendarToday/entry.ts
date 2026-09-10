@@ -44,8 +44,10 @@ function normalise(item, idx) {
   const [datePart, timePart] = normalised.split(' ');
   const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
 
+  const hasValue = (v) => v != null && v !== '' && v !== 0 && v !== '0';
+
   const rawActual = item.Actual ?? item.actual;
-  const actual = rawActual != null && rawActual !== '' ? String(rawActual) : null;
+  const actual   = hasValue(rawActual) ? String(rawActual) : null;
 
   const prev = item.Previous ?? item.previous;
   const fore = item.Forecast ?? item.forecast;
@@ -58,8 +60,8 @@ function normalise(item, idx) {
     event:      item.Name ?? item.name ?? '',
     importance: mapImpact(item.Impact ?? item.impact),
     category:   mapCategory(item.Category ?? item.category ?? '', item.Name ?? item.name ?? ''),
-    previous:   prev != null ? String(prev) : '—',
-    forecast:   fore != null ? String(fore) : '—',
+    previous:   hasValue(prev) ? String(prev) : '—',
+    forecast:   hasValue(fore) ? String(fore) : '—',
     actual,
     outcome:    (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
   };
