@@ -18,7 +18,7 @@ const timeline = [
   { year: '2021', title: 'Active Market Participation', description: 'Began systematic trading across equities, FX, and commodities. Built early risk frameworks through hands-on exposure to live market conditions.' },
   { year: '2023', title: 'Proprietary Trading', description: 'Managed funded capital across indices and commodities, generating consistent monthly returns and ranking in top weekly payouts through macro-driven trade ideas.' },
   { year: '2024', title: 'University of Surrey', description: 'Began BSc Economics. Deepened work in strategic and tactical asset allocation, factor analysis, and client-suitability frameworks.' },
-  { year: '2025', title: 'Spring Programmes', description: 'Completed spring insight programmes at American Express (Finance & Commercial Strategy) and Susquehanna International Group (Trading, Quant Research, and Equity Research).' },
+  { year: '2025', title: 'Spring Programmes', description: 'Completed spring insight programmes at American Express and Susquehanna International Group across finance, trading, and research.' },
   { year: '2026', title: 'LBMA & Keystone Macro', description: 'Summer internship within the LBMA Good Delivery ecosystem, coordinating physical bullion movements and precious-metals trade settlement. Launched Keystone Macro the same year.' },
 ];
 
@@ -58,7 +58,7 @@ export default function About() {
               Keystone Macro is Kai Card’s independent macro and multi-asset research platform, developed alongside Economics studies at the University of Surrey and hands-on market work.
             </p>
             <p>
-              Experience includes proprietary trading across indices and commodities, spring programmes at American Express and Susquehanna International Group, and a summer internship within the LBMA Good Delivery ecosystem. The platform uses AI to assist analysis, while new intelligence includes direct attribution and automated long-form drafts require review before publication.
+              Experience includes proprietary trading across indices and commodities, spring programmes at American Express and Susquehanna, and a summer internship within the LBMA Good Delivery ecosystem. The platform uses AI to assist analysis, while new intelligence includes direct attribution and automated long-form drafts require review before publication.
             </p>
             <p>
               The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding 
