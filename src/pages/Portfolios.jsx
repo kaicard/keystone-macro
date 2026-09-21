@@ -3,9 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Shield, TrendingUp, Target, Umbrella, GraduationCap, BarChart3, Globe, Leaf, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import PortfolioBuilder from '@/components/portfolios/PortfolioBuilder';
 import PortfolioCard from '@/components/portfolios/PortfolioCard';
-import ScenarioSimulator from '@/components/portfolios/ScenarioSimulator';
 import WealthCasesTab from '@/components/portfolios/WealthCasesTab';
 import PortfolioLab from '@/components/portfolios/PortfolioLab';
 
@@ -179,15 +177,13 @@ export default function Portfolios() {
         >
           <h1 className="font-display text-4xl sm:text-5xl font-semibold mb-3">Portfolio Strategy</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Illustrative model portfolios, an interactive builder, and scenario analysis. For educational purposes only.
+            Illustrative model portfolios and educational portfolio analysis. For educational purposes only.
           </p>
         </motion.div>
 
         <Tabs defaultValue="models" className="space-y-6">
           <TabsList className="w-full justify-start overflow-x-auto h-auto gap-1">
             <TabsTrigger value="models">Model Portfolios</TabsTrigger>
-            <TabsTrigger value="builder">Portfolio Builder</TabsTrigger>
-            <TabsTrigger value="simulator">Scenario Simulator</TabsTrigger>
             <TabsTrigger value="lab">Portfolio Analytics</TabsTrigger>
             <TabsTrigger value="wealth">Case Studies</TabsTrigger>
           </TabsList>
@@ -237,14 +233,6 @@ export default function Portfolios() {
             <p className="text-xs text-muted-foreground/50 mt-8 text-center">
               Illustrative portfolio ideas only. Not financial advice or recommendations.
             </p>
-          </TabsContent>
-
-          <TabsContent value="builder">
-            <PortfolioBuilder />
-          </TabsContent>
-
-          <TabsContent value="simulator">
-            <ScenarioSimulator />
           </TabsContent>
 
           <TabsContent value="lab">
