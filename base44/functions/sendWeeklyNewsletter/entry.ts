@@ -96,7 +96,7 @@ function snapRow(m, isLast) {
   </tr>`;
 }
 
-function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumTeaser }) {
+function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumItems }) {
   const ACCENTS = ['#d97706','#3b82f6','#8b5cf6','#10b981','#f43f5e'];
   const snap = (marketSnapshot || []).slice(0, 5);
   const snapshotRows = snap.map((m, i) => snapRow(m, i === snap.length - 1)).join('');
@@ -121,7 +121,7 @@ function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, pr
     </td></tr>`;
   }).join('');
 
-  const premiumTeaserHtml = `<tr><td style="padding:0 0 16px 0;">
+  const premiumTeaserHtml = (premiumItems || []).length === 0 ? '' : `<tr><td style="padding:0 0 16px 0;">
     <div style="border-radius:14px;border:2px solid #d97706;overflow:hidden;background:#fffbeb;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
       <div style="height:3px;background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24);"></div>
       <div style="padding:26px 28px 28px;">
@@ -131,17 +131,17 @@ function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, pr
             <td style="vertical-align:middle;"><span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#d97706;">Premium This Week</span></td>
           </tr>
         </table>
-        <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">What our paid subscribers read this week — that you didn't</div>
+        <div style="font-size:20px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:14px;font-family:Georgia,'Times New Roman',serif;">What our paid subscribers read this week</div>
         <div style="margin-bottom:16px;">
-          ${(premiumTeaser.items || []).map(item => `<div style="margin-bottom:10px;padding-left:14px;border-left:3px solid #d97706;">
+          ${premiumItems.map(item => `<div style="margin-bottom:10px;padding-left:14px;border-left:3px solid #d97706;">
             <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:2px;">${item.title}</div>
-            <div style="font-size:13px;color:#64748b;line-height:1.6;">${item.teaser}</div>
+            ${item.teaser ? `<div style="font-size:13px;color:#64748b;line-height:1.6;">${item.teaser}</div>` : ''}
           </div>`).join('')}
         </div>
         <div style="border-radius:8px;background:#fef3c7;border-left:3px solid #d97706;padding:14px 18px;margin-bottom:20px;">
-          <div style="font-size:13px;color:#92400e;line-height:1.7;font-style:italic;">${premiumTeaser.fomo_line}</div>
+          <div style="font-size:13px;color:#92400e;line-height:1.7;">These editions and notes are archived for premium subscribers. Educational research and market analysis only — not investment advice.</div>
         </div>
-        <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Upgrade to Premium →</a>
+        <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Explore Premium →</a>
       </div>
     </div>
   </td></tr>`;
@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
       : 'Market data temporarily unavailable — describe direction and trends only, do NOT fabricate specific prices or levels.';
 
     // Generate weekly content via LLM
-    const [metaRes, sectionsRes, premiumRes] = await Promise.all([
+    const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week: ${weekRange}.
 
@@ -300,7 +300,7 @@ Return JSON:
 REAL MARKET DATA (current live levels — do NOT fabricate any price, level, or percentage):
 ${snapshotSummary}
 
-Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. This week, if relevant, include a section on the SpaceX Nasdaq listing — give free readers a taste of the story (valuation context, market reaction, what it means for tech sentiment) but stop well short of a trade view or deep positioning analysis — that's reserved for premium.
+Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. Cover only stories that genuinely happened this week — never invent events, figures, or company news.
 
 No URLs, no emojis. Write authoritatively but accessibly — not as dense as a premium note. Each body is 3-4 sentences. Use the real data above for any specific numbers.
 
@@ -313,36 +313,30 @@ Return JSON:
             sections: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, headline: { type: 'string' }, body: { type: 'string' } } } }
           }
         }
-      }),
-      base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro. Today is ${dateStr}. Week: ${weekRange}.
-
-Generate content for a "Premium Teaser" block in the FREE weekly newsletter — designed to make free subscribers feel like they missed out and want to upgrade.
-
-List 3 premium content items that would realistically have been published this week as deep-dive research notes or trade ideas. Make them sound compelling and specific — titles like "The Fed's Hidden Playbook: Why We're Positioned for a September Cut" or "Long Bund / Short BTP: Our Best Trade for Q3". Do NOT make them generic.
-
-Also write a short FOMO line (1 sentence) that emphasises the value of the premium content this week.
-
-Return JSON:
-- items: array of 3 objects each with: title (compelling premium note/trade title), teaser (1 sentence, what the note argues — tantalising but incomplete)
-- fomo_line: 1 punchy sentence making free readers feel they missed out this week`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            items: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, teaser: { type: 'string' } } } },
-            fomo_line: { type: 'string' }
-          }
-        }
       })
     ]);
+
+    // Real premium content published this week — listed from actual records, never invented.
+    const mondayISO = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+    const [editions, notes] = await Promise.all([
+      base44.asServiceRole.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 50),
+      base44.asServiceRole.entities.ResearchNote.filter({ status: 'published' }, '-publish_date', 50),
+    ]);
+    const weekEditions = (editions || []).filter(e => e.publish_date && e.publish_date >= mondayISO);
+    const weekNotes = (notes || []).filter(n => n.is_premium && n.publish_date && n.publish_date >= mondayISO);
+    const premiumItems = [
+      ...weekEditions.map(e => ({
+        title: e.title,
+        teaser: e.market_summary ? e.market_summary.split(' · ').slice(0, 3).join(' · ') : '',
+      })),
+      ...weekNotes.map(n => ({ title: n.title, teaser: n.subtitle || n.executive_summary || '' })),
+    ].slice(0, 3);
 
     const subject = metaRes.subject_line || `Keystone Macro Weekly — ${weekRange}`;
     const marketSnapshot = realSnapshot;
     const sections = sectionsRes.sections || [];
-    const premiumTeaser = premiumRes || { items: [], fomo_line: '' };
 
-    const htmlBody = buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumTeaser });
+    const htmlBody = buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, premiumItems });
 
     let sent = 0;
     const skipped = [];
