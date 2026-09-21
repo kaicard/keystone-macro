@@ -1,11 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Clock, Tag, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { ArrowRight, Clock, Tag, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import PaginationControls from '@/components/common/PaginationControls';
+import usePagination from '@/hooks/usePagination';
+
+const PAGE_SIZE = 6;
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
@@ -93,20 +97,12 @@ export default function FeaturedResearch() {
     refetchInterval: 5 * 60 * 1000,
   });
 
-  const [showOlder, setShowOlder] = useState(false);
-
-  const allNotes = dbNotes;
-
-  const sorted = [...allNotes]
+  const sorted = [...dbNotes]
     .filter(n => !n.status || n.status === 'published' || n.publish_date)
     .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
 
-  // Show top 6 most recent as "recent", rest as older
-  const recentNotes = sorted.slice(0, 6);
-  const olderNotes = sorted.slice(6);
-
-  const displayRecent = recentNotes;
-  const displayOlder = olderNotes;
+  const pager = usePagination(sorted.length, PAGE_SIZE);
+  const displayNotes = sorted.slice(0, pager.visible);
 
   return (
     <section ref={ref} className="py-16 sm:py-24">
@@ -129,40 +125,22 @@ export default function FeaturedResearch() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayRecent.map((note, i) => (
-            <NoteCard key={note.id} note={note} delay={i * 0.1} inView={inView} onClick={() => navigate(`/Research/${note.slug || generateSlug(note.title)}`)} />
+          {displayNotes.map((note, i) => (
+            <NoteCard key={note.id} note={note} delay={Math.min(i, 5) * 0.08} inView={inView} onClick={() => navigate(`/Research/${note.slug || generateSlug(note.title)}`)} />
           ))}
         </div>
 
-        {/* Older notes */}
-        {displayOlder.length > 0 && (
-          <div className="mt-6">
-            <button
-              onClick={() => setShowOlder(o => !o)}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
-            >
-              {showOlder ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              {showOlder ? 'Hide older notes' : `Show ${displayOlder.length} older note${displayOlder.length !== 1 ? 's' : ''}`}
-            </button>
-            <AnimatePresence>
-              {showOlder && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    {displayOlder.map((note, i) => (
-                      <NoteCard key={note.id} note={note} delay={i * 0.05} inView={true} onClick={() => navigate(`/Research/${note.slug || generateSlug(note.title)}`)} />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+        <PaginationControls
+          className="mt-8"
+          visible={pager.visible}
+          total={sorted.length}
+          pageSize={PAGE_SIZE}
+          itemLabel="notes"
+          onShowMore={pager.showMore}
+          onHideMore={pager.hideMore}
+          onShowAll={pager.showAll}
+          onHideAll={pager.hideAll}
+        />
       </div>
     </section>
   );

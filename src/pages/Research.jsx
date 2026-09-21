@@ -4,13 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Grid3X3, List, Clock, Filter, ArrowRight, ChevronDown } from 'lucide-react';
+import { Search, Grid3X3, List, Clock, Filter, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import IntelligenceFeed from '@/components/research/IntelligenceFeed';
 import TrendingThemes from '@/components/research/TrendingThemes';
+import PaginationControls from '@/components/common/PaginationControls';
+import usePagination from '@/hooks/usePagination';
 
 const categories = [
   'All', 'Macro', 'Equities', 'Fixed Income', 'Multi-Asset',
@@ -80,14 +82,13 @@ function NoteCard({ note, viewMode, delay, onClick }) {
   );
 }
 
-const INITIAL_VISIBLE = 6;
+const PAGE_SIZE = 6;
 
 export default function Research() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
-  const [showAll, setShowAll] = useState(false);
 
   const { data: dbNotes = [] } = useQuery({
     queryKey: ['research-notes'],
@@ -104,17 +105,14 @@ export default function Research() {
     [allNotes]
   );
 
-  const filtered = useMemo(() => {
-    setShowAll(false);
-    return sorted.filter(note => {
-      const matchSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
-      const matchCat = activeCategory === 'All' || note.category === activeCategory;
-      return matchSearch && matchCat;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sorted, search, activeCategory]);
+  const filtered = useMemo(() => sorted.filter(note => {
+    const matchSearch = !search || note.title?.toLowerCase().includes(search.toLowerCase());
+    const matchCat = activeCategory === 'All' || note.category === activeCategory;
+    return matchSearch && matchCat;
+  }), [sorted, search, activeCategory]);
 
-  const visibleNotes = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
+  const pager = usePagination(filtered.length, PAGE_SIZE, `${search}|${activeCategory}`);
+  const visibleNotes = filtered.slice(0, pager.visible);
   const isFiltering = search || activeCategory !== 'All';
 
   const handleNoteClick = (note) => {
@@ -178,16 +176,18 @@ export default function Research() {
           </AnimatePresence>
         </div>
 
-        {filtered.length > INITIAL_VISIBLE && !isFiltering && (
-          <div className="flex justify-center mt-10">
-            <button
-              onClick={() => setShowAll(v => !v)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-card/45 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/25 transition-colors duration-200 group"
-            >
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAll ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
-              {showAll ? 'See less' : `See ${filtered.length - INITIAL_VISIBLE} more note${filtered.length - INITIAL_VISIBLE !== 1 ? 's' : ''}`}
-            </button>
-          </div>
+        {!isFiltering && (
+          <PaginationControls
+            className="mt-10"
+            visible={pager.visible}
+            total={filtered.length}
+            pageSize={PAGE_SIZE}
+            itemLabel="notes"
+            onShowMore={pager.showMore}
+            onHideMore={pager.hideMore}
+            onShowAll={pager.showAll}
+            onHideAll={pager.hideAll}
+          />
         )}
 
         {filtered.length === 0 && (
