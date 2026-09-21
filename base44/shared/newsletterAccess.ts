@@ -7,19 +7,23 @@ export async function resolvePremiumAccess(base44) {
   const user = await base44.auth.me().catch(() => null);
   if (!user?.email) return { authenticated: false, active: false, user: null };
 
-  const records = await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email });
-  const record = records?.[0];
-  if (!record) return { authenticated: true, active: false, user };
+  const records = (await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email })) || [];
+  if (records.length === 0) return { authenticated: true, active: false, user };
 
-  if (['active', 'cancelling'].includes(record.status)) {
+  // An email can hold more than one row (e.g. a stale pending row alongside a live
+  // subscription). Access is granted if ANY record for this email is active.
+  const activeRecord = records.find((r) => ['active', 'cancelling'].includes(r.status));
+  if (activeRecord) {
     return {
       authenticated: true,
       active: true,
-      status: record.status,
-      current_period_end: record.current_period_end || null,
+      status: activeRecord.status,
+      current_period_end: activeRecord.current_period_end || null,
       user,
     };
   }
+
+  const record = records.find((r) => r.stripe_customer_id) || records[0];
 
   const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
   if (!stripeKey || !record.stripe_customer_id) {
