@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Lock, Archive, Loader2 } from 'lucide-react';
+import { Lock, Archive, Loader2, ChevronDown, ChevronUp, ChevronsDown, ChevronsUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 import EditionCard from '@/components/newsletter/EditionCard';
 
+const PAGE_SIZE = 9;
+
 export default function PremiumArchive({ isPaid, accessLoading }) {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
   const { data, isLoading } = useQuery({
     queryKey: ['premium-archive'],
     queryFn: async () => (await base44.functions.invoke('getPremiumArchive', {}))?.data || {},
@@ -13,6 +18,9 @@ export default function PremiumArchive({ isPaid, accessLoading }) {
 
   const editions = data?.editions || [];
   const loading = accessLoading || (isPaid && isLoading);
+  const shown = editions.slice(0, visibleCount);
+  const hasMore = visibleCount < editions.length;
+  const canHide = visibleCount > PAGE_SIZE;
 
   return (
     <section className="rounded-xl border border-border/55 bg-card/35 p-6 mb-5">
@@ -39,11 +47,40 @@ export default function PremiumArchive({ isPaid, accessLoading }) {
               <p className="text-sm text-muted-foreground/60">No editions published yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {editions.map((edition, index) => (
-                <EditionCard key={edition.id} edition={edition} index={index} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {shown.map((edition, index) => (
+                  <EditionCard key={edition.id} edition={edition} index={index} />
+                ))}
+              </div>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  Showing {shown.length} of {editions.length} editions
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {hasMore && (
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setVisibleCount(c => Math.min(c + PAGE_SIZE, editions.length))}>
+                      <ChevronDown className="w-3.5 h-3.5" /> Show {Math.min(PAGE_SIZE, editions.length - visibleCount)} more
+                    </Button>
+                  )}
+                  {canHide && (
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setVisibleCount(c => Math.max(c - PAGE_SIZE, PAGE_SIZE))}>
+                      <ChevronUp className="w-3.5 h-3.5" /> Hide {Math.min(PAGE_SIZE, visibleCount - PAGE_SIZE)}
+                    </Button>
+                  )}
+                  {hasMore && (
+                    <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setVisibleCount(editions.length)}>
+                      <ChevronsDown className="w-3.5 h-3.5" /> Show all
+                    </Button>
+                  )}
+                  {canHide && (
+                    <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setVisibleCount(PAGE_SIZE)}>
+                      <ChevronsUp className="w-3.5 h-3.5" /> Hide all
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </>
       ) : (
