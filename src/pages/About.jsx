@@ -15,11 +15,11 @@ const principles = [
 ];
 
 const timeline = [
-  { year: '2021', title: 'Active Market Participation', description: 'Began systematic trading across equities, FX, and commodities. Built early risk frameworks through hands-on exposure to live market conditions.' },
-  { year: '2023', title: 'Proprietary Trading', description: 'Managed funded capital across indices and commodities, generating consistent monthly returns and ranking in top weekly payouts through macro-driven trade ideas.' },
+  { year: '2021', title: 'Active Market Participation', description: 'Began systematic trading across equities, FX, and commodities, building early risk frameworks through hands-on exposure to live market conditions.' },
+  { year: '2023', title: 'Proprietary Trading', description: 'Managed funded capital across indices and commodities, generating consistent monthly returns through macro-driven trade ideas.' },
   { year: '2024', title: 'University of Surrey', description: 'Began BSc Economics. Deepened work in strategic and tactical asset allocation, factor analysis, and client-suitability frameworks.' },
-  { year: '2025', title: 'Spring Programmes', description: 'Completed spring insight programmes at American Express and Susquehanna International Group across finance, trading, and research.' },
-  { year: '2026', title: 'LBMA & Keystone Macro', description: 'Summer internship within the LBMA Good Delivery ecosystem, coordinating physical bullion movements and precious-metals trade settlement. Launched Keystone Macro the same year.' },
+  { year: '2025', title: 'Spring Programmes', description: 'Completed competitive spring insight programmes spanning finance, trading, and research.' },
+  { year: '2026', title: 'Precious Metals & Keystone Macro', description: 'Summer internship within the physical bullion and precious-metals settlement ecosystem. Launched Keystone Macro the same year.' },
 ];
 
 export default function About() {
@@ -32,7 +32,7 @@ export default function About() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Hero */}
         <motion.div
-          className="text-center mb-12"
+          className="text-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -40,14 +40,14 @@ export default function About() {
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6">
             About Keystone Macro
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            Independent macro research built by Kai Card, an Economics student at the University of Surrey.
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            Independent macro and multi-asset research, built by Kai Card — Economics student at the University of Surrey.
           </p>
         </motion.div>
 
         {/* Story */}
         <motion.div
-          className="rounded-xl border border-border/55 bg-card/50 p-6 sm:p-8 mb-12"
+          className="rounded-xl border border-border/55 bg-card/50 p-6 sm:p-8 mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -58,21 +58,16 @@ export default function About() {
               Keystone Macro is Kai Card’s independent macro and multi-asset research platform, developed alongside Economics studies at the University of Surrey and hands-on market work.
             </p>
             <p>
-              Experience includes proprietary trading across indices and commodities, spring programmes at American Express and Susquehanna, and a summer internship within the LBMA Good Delivery ecosystem. The platform uses AI to assist analysis, while new intelligence includes direct attribution and automated long-form drafts require review before publication.
+              Experience spans proprietary trading across indices and commodities, competitive spring insight programmes in finance and trading, and a summer internship within the physical bullion and precious-metals settlement ecosystem. The platform uses AI to assist analysis; new intelligence carries direct attribution, and automated long-form drafts are reviewed before publication.
             </p>
             <p>
-              The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding 
-              central bank dynamics, and constructing portfolios that are genuinely calibrated to client 
-              objectives, constraints, and behavioural realities — not just market conditions.
-            </p>
-            <p>
-              Every section of this platform reflects a practitioner's approach to investment research: process-driven, risk-aware, and grounded in real-world portfolio construction thinking.
+              The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding central bank dynamics, and constructing portfolios genuinely calibrated to client objectives, constraints, and behavioural realities — not just market conditions.
             </p>
           </div>
         </motion.div>
 
         {/* Principles */}
-        <div ref={ref} className="mb-12">
+        <div ref={ref} className="mb-12 sm:mb-16">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Core Principles</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {principles.map((p, i) => (
@@ -94,56 +89,37 @@ export default function About() {
         </div>
 
         {/* Timeline */}
-        <div className="mb-12">
+        <div className="mb-12 sm:mb-16">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-8 text-center">Experience</h2>
-          <div className="relative">
-            <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px bg-border" />
-            {timeline.map((t, i) => (
-              <motion.div
-                key={t.year}
-                className={`relative flex items-start gap-6 mb-8 ${
-                  i % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'
-                }`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-              >
-                <div className={`flex-1 ${i % 2 === 0 ? 'sm:text-right' : 'sm:text-left'} hidden sm:block`}>
-                  {i % 2 === 0 ? (
-                    <div className="rounded-xl border border-border/55 bg-card/40 p-5">
-                      <span className="text-primary font-semibold text-sm">{t.year}</span>
-                      <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
-                      <p className="text-sm text-muted-foreground">{t.description}</p>
-                    </div>
-                  ) : <div />}
-                </div>
-                <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center z-10 shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                </div>
-                <div className={`flex-1 ${i % 2 !== 0 ? 'sm:text-left' : ''}`}>
-                  {i % 2 !== 0 ? (
-                    <div className="rounded-xl border border-border/55 bg-card/40 p-5">
-                      <span className="text-primary font-semibold text-sm">{t.year}</span>
-                      <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
-                      <p className="text-sm text-muted-foreground">{t.description}</p>
-                    </div>
-                  ) : (
-                    <div className="glass rounded-xl p-5 sm:hidden">
-                      <span className="text-primary font-semibold text-sm">{t.year}</span>
-                      <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
-                      <p className="text-sm text-muted-foreground">{t.description}</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+          <div className="relative max-w-3xl mx-auto">
+            <div className="absolute left-[15px] top-3 bottom-3 w-px bg-border" aria-hidden="true" />
+            <div className="space-y-5">
+              {timeline.map((t, i) => (
+                <motion.div
+                  key={t.year}
+                  className="relative flex items-start gap-5"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                >
+                  <div className="relative z-10 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-card">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0 rounded-xl border border-border/55 bg-card/45 p-5">
+                    <span className="text-primary font-semibold text-sm">{t.year}</span>
+                    <h3 className="font-semibold mt-1 mb-2">{t.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{t.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Early careers */}
         <motion.section
           id="early-careers"
-          className="mb-12 rounded-xl border border-border/55 bg-card/45 p-6 sm:p-8"
+          className="mb-12 sm:mb-16 rounded-xl border border-border/55 bg-card/45 p-6 sm:p-8"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -175,7 +151,7 @@ export default function About() {
           <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
             Open to conversations on macro markets, portfolio strategy, asset allocation, and professional opportunities in investment management.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/Contact">
               <Button className="gap-2">
                 Contact <ArrowRight className="w-4 h-4" />
