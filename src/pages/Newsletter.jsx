@@ -5,8 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Mail, CheckCircle, ArrowRight, Lock, Sparkles, Sun, Moon, BookOpen, Globe, BarChart2, UserPlus, X } from 'lucide-react';
+import { Mail, CheckCircle, ArrowRight, Sparkles, Sun, Moon, BookOpen, Globe, BarChart2, UserPlus, X } from 'lucide-react';
 import PageBackground from '@/components/layout/PageBackground';
+import PremiumArchive from '@/components/newsletter/PremiumArchive';
 import { useAuth } from '@/lib/AuthContext';
 
 const FREE_FEATURES = [
@@ -159,11 +160,7 @@ export default function Newsletter() {
           {freeSuccess ? <p className="flex items-center gap-2 text-emerald-400"><CheckCircle className="w-4 h-4" /> You’re subscribed.</p> : <form onSubmit={subscribeFree} className="space-y-3"><AccountNotice user={user} navigateToLogin={navigateToLogin} />{user && <div className="flex flex-col sm:flex-row gap-3"><Input placeholder="Your name (optional)" value={freeName} onChange={e => setFreeName(e.target.value)} /><Button type="submit" variant="outline" disabled={freeLoading}>{freeLoading ? 'Subscribing…' : 'Join free digest'}</Button></div>}</form>}
         </section>
 
-        <section className="rounded-xl border border-border/55 bg-card/35 p-6 text-center mb-5">
-          <Lock className="w-5 h-5 text-primary mx-auto mb-3" />
-          <h2 className="font-display text-2xl font-semibold mb-2">Premium archive</h2>
-          <p className="text-sm text-muted-foreground max-w-lg mx-auto">{accessLoading ? 'Checking your access…' : isPaid ? 'Your subscription is active. Archive delivery is restricted to your verified account.' : 'Full edition bodies are available only after a paid subscription is verified.'}</p>
-        </section>
+        <PremiumArchive isPaid={isPaid} accessLoading={accessLoading} />
 
         <div id="manage" className="grid sm:grid-cols-2 gap-3">
           <CancelBox type="free" title="Leave the free digest" description="Stops future free weekly email." user={user} navigateToLogin={navigateToLogin} />
