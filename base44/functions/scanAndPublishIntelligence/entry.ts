@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const now = new Date();
 
-    // ── Quiet hours: skip 00:00–06:00 BST ────────────────────────────────────
+    // ── Quiet hours: skip 00:00-06:00 BST ────────────────────────────────────
     const londonHour = parseInt(now.toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Europe/London' }), 10);
     if (londonHour >= 0 && londonHour < 6) {
       return Response.json({ ok: true, skipped_reason: 'quiet_hours', hour_bst: londonHour });
@@ -53,15 +53,15 @@ Deno.serve(async (req) => {
     const londonTime = now.toLocaleTimeString('en-GB', {
       hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
     });
-    const cutoffISO = new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString();
+    const cutoffISO = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
     const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     const cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
-    // ── Pick 3 topics this run, rotating by 30-min slot ───────────────────────
-    const slot = Math.floor(now.getTime() / (30 * 60 * 1000)) % TOPICS.length;
+    // ── Pick 4 topics this run, rotating by 15-min slot ───────────────────────
+    const slot = Math.floor(now.getTime() / (15 * 60 * 1000)) % TOPICS.length;
     const runTopics = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       runTopics.push(TOPICS[(slot + i) % TOPICS.length]);
     }
 
@@ -101,31 +101,32 @@ Deno.serve(async (req) => {
         const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
           model: 'gemini_3_flash',
           add_context_from_internet: true,
-          prompt: `You are the news desk editor at Keystone Macro — a Bloomberg/FT-calibre institutional intelligence platform.
+          prompt: `You are the news desk editor at Keystone Macro - a Bloomberg/FT-calibre institutional intelligence platform.
 
 Today is ${londonDate}, ${londonTime} London time.
 
 Search the web RIGHT NOW for the 2-3 most important and genuinely NEW developments in: **${topic.name}**
 
-HARD RULES — violating ANY of these means the story is REJECTED outright:
-1. ONLY stories confirmed to have broken or developed after ${cutoffISO}. Do NOT include anything from 2024, 2023, or any prior year. If a story is more than 8 hours old, reject it.
-2. VERIFY the story is genuinely current — check the publication date. If you cannot confirm it happened today or in the last 8 hours, do NOT include it.
+HARD RULES - violating ANY of these means the story is REJECTED outright:
+1. ONLY stories confirmed to have broken or developed after ${cutoffISO}. Do NOT include anything from 2024, 2023, or any prior year. If a story is more than 4 hours old, reject it.
+2. VERIFY the story is genuinely current, check the publication date. If you cannot confirm it happened in the last 4 hours, do NOT include it.
 3. Do NOT fabricate, hallucinate, speculate, or infer. If you cannot confirm a story via web search, return an empty array.
-4. Write in Keystone Macro's editorial voice — sharp, analytical, no waffle. Do NOT copy-paste from sources.
+4. Write in Keystone Macro's editorial voice - sharp, analytical, no waffle. Do NOT copy-paste from sources.
 5. Every story MUST include the direct HTTPS URL and publication name used to verify it. Reject aggregator/search-result URLs and reject any story without a traceable source.
 6. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
-7. If there are genuinely NO new stories in ${topic.name} in the past 8 hours, return an empty stories array.
+7. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array.
+8. Never use em dashes or en dashes in any field. Use commas, colons, or plain hyphens instead.
 
 For each confirmed story return:
 - headline: original 15-word max headline with a specific fact
 - sentiment: positive / negative / neutral
-- impact: 1 precise sentence — what the market implication is RIGHT NOW
-- desk_view: 2-3 sentences — the development, why it matters structurally, what it means for positioning
+- impact: 1 precise sentence - what the market implication is RIGHT NOW
+- desk_view: 2-3 sentences - the development, why it matters structurally, what it means for positioning
 - what_to_watch: 2 specific instruments or data points to monitor next (e.g. "GBPUSD, 2Y Gilt yield")
 - published_at: ISO timestamp shown by the source (must be after ${cutoffISO})
 - source_name: publication or primary-source organisation
 - source_url: direct HTTPS URL to the source page
-- is_breaking: ONLY mark true if this is a genuinely market-moving, unexpected, or rare event — a central bank surprise, major policy shift, geopolitical escalation, or significant data shock. Expect at most 1 in 5 stories to qualify.`,
+- is_breaking: ONLY mark true if this is a genuinely market-moving, unexpected, or rare event - a central bank surprise, major policy shift, geopolitical escalation, or significant data shock. Expect at most 1 in 5 stories to qualify.`,
           response_json_schema: TOPIC_SCHEMA,
         });
         return { topic, stories: result?.stories || [] };
@@ -141,7 +142,7 @@ For each confirmed story return:
       await new Promise(r => setTimeout(r, 2000));
     }
 
-    // ── Collect, shuffle, cap at 2 stories per run ───────────────────────────
+    // ── Collect and cap at 6 stories per run, newest first ───────────────────
     const allStories = [];
     for (const { topic, stories } of results) {
       for (const story of stories) {
@@ -150,12 +151,10 @@ For each confirmed story return:
       }
     }
 
-    for (let i = allStories.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [allStories[i], allStories[j]] = [allStories[j], allStories[i]];
-    }
+    // Lead with the freshest developments so the feed never lags behind the news
+    allStories.sort((a, b) => new Date(b.story.published_at || 0) - new Date(a.story.published_at || 0));
 
-    const cappedStories = allStories.slice(0, 4);
+    const cappedStories = allStories.slice(0, 6);
 
     // ── Deduplicate and publish ───────────────────────────────────────────────
     let created = 0;

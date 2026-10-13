@@ -75,9 +75,9 @@ const CATEGORY_IMPLICATIONS = {
   },
 };
 
-// Confirmed seed data for previous tab — always accurate
+// Confirmed seed data for previous tab - always accurate
 const SEED_PREVIOUS = [
-  { id: 's1',  date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.75–4.00%', forecast: '3.50–3.75%', actual: '3.50–3.75%', category: 'Central Bank', outcome: 'Fed cut 25bp to 3.50–3.75% as expected. Dot plot showed one more cut in 2026. GDP forecasts trimmed; PCE inflation upgraded. Powell flagged tariff and geopolitical uncertainty. Equities dipped; 10-year yields rose 4bp.' },
+  { id: 's1',  date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.75-4.00%', forecast: '3.50-3.75%', actual: '3.50-3.75%', category: 'Central Bank', outcome: 'Fed cut 25bp to 3.50-3.75% as expected. Dot plot showed one more cut in 2026. GDP forecasts trimmed; PCE inflation upgraded. Powell flagged tariff and geopolitical uncertainty. Equities dipped; 10-year yields rose 4bp.' },
   { id: 's2',  date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '4.00%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.75% as expected, 7-2 vote. MPC cited energy price spike as upside inflation risk. GBP fell 0.3%; gilts rallied.' },
   { id: 's3',  date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing PMI',          importance: 'high', previous: '50.3',        forecast: '49.5',        actual: '49.0',        category: 'PMI',          outcome: 'ISM Manufacturing fell to 49.0, below the 49.5 consensus. Prices paid surged to 69.4 on tariff pass-through. New orders fell sharply. USD weakened; equities sold off.' },
   { id: 's4',  date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Nonfarm Payrolls',               importance: 'high', previous: '151K',        forecast: '138K',        actual: '177K',        category: 'Labour',       outcome: 'NFP beat at 177K versus 138K forecast. Unemployment held at 4.2%. Resilient but softening labour market.' },
@@ -85,7 +85,7 @@ const SEED_PREVIOUS = [
   { id: 's6',  date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)',                   importance: 'high', previous: '3.0%',        forecast: '2.6%',        actual: '2.4%',        category: 'Inflation',    outcome: 'US CPI surprised to the downside at 2.4%. Core CPI fell to 2.8%. USD weakened sharply; 10-year yields dropped 12bp.' },
   { id: 's7',  date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.65%',       forecast: '2.40%',       actual: '2.40%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.40% as expected. Lagarde flagged tariff risks as a downside growth concern. EUR/USD fell 0.2%.' },
   { id: 's8',  date: '2026-04-29', utcTime: '12:30', country: 'US', event: 'GDP Advance Q1 (QoQ Ann.)',      importance: 'high', previous: '2.4%',        forecast: '0.4%',        actual: '-0.3%',       category: 'GDP',          outcome: 'US GDP contracted 0.3% annualised in Q1. Tariff-related import surge distorted the trade component. Recession fears spiked; USD fell sharply.' },
-  { id: 's9',  date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.50–3.75%',  forecast: '3.50–3.75%',  actual: '3.50–3.75%',  category: 'Central Bank', outcome: 'Fed held at 3.50–3.75% as expected. Powell flagged two-sided risks from tariff inflation and growth slowdown.' },
+  { id: 's9',  date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.50-3.75%',  forecast: '3.50-3.75%',  actual: '3.50-3.75%',  category: 'Central Bank', outcome: 'Fed held at 3.50-3.75% as expected. Powell flagged two-sided risks from tariff inflation and growth slowdown.' },
   { id: 's10', date: '2026-04-30', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '3.75%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE held at 3.75% with an 8-1 vote. MPC cited tariff uncertainty as a near-term inflation risk, pausing the cutting cycle. GBP firmed 0.3%.' },
   { id: 's11', date: '2026-04-30', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.40%',       forecast: '2.15%',       actual: '2.15%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.15% as expected. Lagarde described tariffs as a significant headwind. EUR/USD fell 0.25% on the dovish press conference.' },
 ];
@@ -98,7 +98,7 @@ async function fetchCalendarWeek() {
 }
 
 function toLocalTime(dateStr, utcTime) {
-  if (!utcTime || utcTime === 'All Day' || utcTime === '—') return utcTime || '—';
+  if (!utcTime || utcTime === 'All Day' || utcTime === '-') return utcTime || '-';
   try {
     return new Date(`${dateStr}T${utcTime}:00Z`)
       .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -130,14 +130,14 @@ function getWeekEnd(today) {
 }
 
 function isReleased(dateStr, utcTime) {
-  if (!utcTime || utcTime === 'All Day' || utcTime === '—') return true;
+  if (!utcTime || utcTime === 'All Day' || utcTime === '-') return true;
   if (dateStr < getTodayStr()) return true;
   return Date.now() >= new Date(`${dateStr}T${utcTime}:00Z`).getTime();
 }
 
 function ActualBadge({ actual, forecast, dateStr, utcTime }) {
   if (!actual || !isReleased(dateStr, utcTime)) {
-    return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">—</span>;
+    return <span className="text-muted-foreground/30 text-xs font-mono tabular-nums">-</span>;
   }
   const a = parseFloat(actual), f = parseFloat(forecast);
   const beat    = !isNaN(a) && !isNaN(f) && a > f;
@@ -164,7 +164,7 @@ function ExpandedPanel({ event, enrichment, enriching }) {
 
   const preview = event.outcome || (
     `${event.event} is scheduled at ${localTime} ${tz}.` +
-    (event.forecast && event.forecast !== '—' ? ` Market consensus: ${event.forecast}. Prior reading: ${event.previous}.` : '') +
+    (event.forecast && event.forecast !== '-' ? ` Market consensus: ${event.forecast}. Prior reading: ${event.previous}.` : '') +
     (event.category === 'Central Bank' ? ' Any guidance on the policy path will be the primary market driver.' :
      event.category === 'Speeches' ? ' Watch for any shift in tone on the inflation or growth outlook.' :
      ' Any surprise versus consensus will drive the initial market reaction.')
@@ -251,11 +251,11 @@ function EventRow({ event, today, enrichments, enriching }) {
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.previous || event.previous === '0' || event.previous === '—') ? '—' : event.previous}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.previous || event.previous === '0' || event.previous === '-') ? '-' : event.previous}</p>
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">FCST</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.forecast || event.forecast === '0' || event.forecast === '—') ? '—' : event.forecast}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.forecast || event.forecast === '0' || event.forecast === '-') ? '-' : event.forecast}</p>
           </div>
           <div className="text-right">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">ACTUAL</p>

@@ -15,7 +15,7 @@ function MetricRow({ label, value, direction }) {
     <div className="flex items-center justify-between gap-4 py-3 border-b border-border/20 last:border-0">
       <span className="text-xs text-muted-foreground/70">{cleanMarketCopy(label)}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold tabular-nums text-foreground/90">{cleanMarketCopy(String(value ?? '—'))}</span>
+        <span className="text-sm font-semibold tabular-nums text-foreground/90">{cleanMarketCopy(String(value ?? '-'))}</span>
         {direction && <DirectionBadge direction={direction} />}
       </div>
     </div>
@@ -65,7 +65,7 @@ export default function CreditAndCurve({ creditSpreads, yieldCurve, dxy, loading
       <DataCard eyebrow="FX benchmark" title="Dollar Index">
         {dxy ? (
           <div className="pt-2">
-            <div className="flex items-end justify-between gap-4"><span className="font-display text-3xl font-semibold tabular-nums">{cleanMarketCopy(String(dxy.price ?? '—'))}</span><div className={`flex items-center gap-1 text-sm font-semibold ${dxyColor}`}><DxyIcon className="w-4 h-4" />{cleanMarketCopy(String(dxy.change_pct ?? '—'))}</div></div>
+            <div className="flex items-end justify-between gap-4"><span className="font-display text-3xl font-semibold tabular-nums">{cleanMarketCopy(String(dxy.price ?? '-'))}</span><div className={`flex items-center gap-1 text-sm font-semibold ${dxyColor}`}><DxyIcon className="w-4 h-4" />{cleanMarketCopy(String(dxy.change_pct ?? '-'))}</div></div>
             <p className="text-xs text-muted-foreground/50 mt-3">{compactSignal(dxyDirection === 'up' ? 'Dollar firmer today' : dxyDirection === 'down' ? 'Dollar softer today' : 'Dollar broadly unchanged')}</p>
           </div>
         ) : <p className="text-xs text-muted-foreground/40 py-3">Dollar data is updating.</p>}

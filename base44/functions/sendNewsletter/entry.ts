@@ -144,15 +144,15 @@ const IMAGE_MAP = {
   commodity_fields: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=700&q=90&fit=crop',
 };
 
-// ─── Weekday editorial pillars (Mon–Fri) ─────────────────────────────────────
-// Same schedule, same names — but each weekday leads with a distinct macro lens
+// ─── Weekday editorial pillars (Mon-Fri) ─────────────────────────────────────
+// Same schedule, same names - but each weekday leads with a distinct macro lens
 // so consecutive editions never feel like "same column, different day".
 const WEEKDAY_PILLARS = {
-  1: { name: 'The Week Ahead',      focus: 'forward-looking — the biggest scheduled events, central bank meetings, data prints, and 2–3 things to watch this week. Light on backward-looking recaps. Sets the frame for the week.', accent: '#3b82f6', images: ['federal_reserve','world_diplomacy','bond_market','stock_exchange'], spotlight: { type: 'watch',  headline: "What We're Watching This Week" } },
-  2: { name: 'Rates & Liquidity',  focus: 'central banks, sovereign yields, curve moves, funding and liquidity conditions — the plumbing of markets.', accent: '#8b5cf6', images: ['federal_reserve','bond_market','currency_trading','gold_bars'], spotlight: { type: 'number', headline: 'Number of the Week' } },
-  3: { name: 'Cross-Asset Flows',  focus: 'how equities, FX, credit, and commodities are moving RELATIVE to each other — relative-value, rotation signals, dispersion — not each asset in isolation.', accent: '#06b6d4', images: ['stock_exchange','currency_trading','commodity_fields','tech_industry'], spotlight: { type: 'watch',  headline: 'Cross-Asset Watch' } },
-  4: { name: 'Geopolitics & Commodities', focus: 'energy, metals, supply chains, political risk premiums, sanctions, conflict economics — the real-world day.', accent: '#d97706', images: ['oil_refinery','commodity_fields','world_diplomacy','emerging_city'], spotlight: { type: 'number', headline: 'Number of the Week' } },
-  5: { name: 'The Scoreboard',     focus: 'weekly wrap — what actually mattered vs what was noise. Reflective, shorter. One defining number, one thing to watch Monday.', accent: '#10b981', images: ['stock_exchange','gold_bars','bond_market','tech_industry'], spotlight: { type: 'number', headline: 'The Week in One Number' } },
+  1: { name: 'The Week Ahead',      focus: 'forward-looking - the biggest scheduled events, central bank meetings, data prints, and 2-3 things to watch this week. Light on backward-looking recaps. Sets the frame for the week.', accent: '#3b82f6', images: ['federal_reserve','world_diplomacy','bond_market','stock_exchange'], spotlight: { type: 'watch',  headline: "What We're Watching This Week" } },
+  2: { name: 'Rates & Liquidity',  focus: 'central banks, sovereign yields, curve moves, funding and liquidity conditions - the plumbing of markets.', accent: '#8b5cf6', images: ['federal_reserve','bond_market','currency_trading','gold_bars'], spotlight: { type: 'number', headline: 'Number of the Week' } },
+  3: { name: 'Cross-Asset Flows',  focus: 'how equities, FX, credit, and commodities are moving RELATIVE to each other - relative-value, rotation signals, dispersion - not each asset in isolation.', accent: '#06b6d4', images: ['stock_exchange','currency_trading','commodity_fields','tech_industry'], spotlight: { type: 'watch',  headline: 'Cross-Asset Watch' } },
+  4: { name: 'Geopolitics & Commodities', focus: 'energy, metals, supply chains, political risk premiums, sanctions, conflict economics - the real-world day.', accent: '#d97706', images: ['oil_refinery','commodity_fields','world_diplomacy','emerging_city'], spotlight: { type: 'number', headline: 'Number of the Week' } },
+  5: { name: 'The Scoreboard',     focus: 'weekly wrap - what actually mattered vs what was noise. Reflective, shorter. One defining number, one thing to watch Monday.', accent: '#10b981', images: ['stock_exchange','gold_bars','bond_market','tech_industry'], spotlight: { type: 'number', headline: 'The Week in One Number' } },
 };
 
 // ─── Section card HTML ─────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
   const arrow = isUp ? '▲' : '▼';
   const sign = parseFloat(changePct) >= 0 ? '+' : '';
   function fmt(val) {
-    if (typeof val !== 'number') return '–';
+    if (typeof val !== 'number') return '-';
     const abs = Math.abs(val);
     const dp = abs >= 10000 ? 0 : abs >= 100 ? 1 : abs >= 1 ? 2 : 4;
     return val.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
@@ -232,13 +232,13 @@ function imageBlockHtml({ imageUrl, caption }) {
 function snapRow(m, isLast) {
   const rawFull = String(m.change || '').trim();
   const raw = rawFull.replace(/^[▲▼↑↓\+\-\s]+/, '').trim();
-  const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '—';
+  const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '-';
   const isPos = !isNA && (rawFull.startsWith('▲') || rawFull.startsWith('+') || rawFull.toLowerCase().includes('+'));
   const changeColor = isNA ? '#64748b' : isPos ? '#10b981' : '#f87171';
   const changeBg   = isNA ? 'rgba(100,116,139,0.15)' : isPos ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)';
   const accentBar  = isNA ? '#334155' : isPos ? '#10b981' : '#f87171';
   const arrow = isNA ? '' : isPos ? '▲' : '▼';
-  const displayChange = isNA ? '—' : `${arrow} ${raw}`;
+  const displayChange = isNA ? '-' : `${arrow} ${raw}`;
   return `<tr>
     <td style="padding-bottom:${isLast ? '0' : '8px'};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:4px solid ${accentBar};border-radius:10px;overflow:hidden;">
@@ -272,7 +272,7 @@ function spotlightBlockHtml({ pillar, spotlight, accent }) {
         <div style="height:3px;background:${accent};"></div>
         <div style="padding:24px 28px 26px;text-align:center;">
           <div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${accent};margin-bottom:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${header}</div>
-          <div style="font-size:44px;font-weight:800;color:#0f172a;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-1.5px;font-family:Georgia,'Times New Roman',serif;">${spotlight.value || '—'}</div>
+          <div style="font-size:44px;font-weight:800;color:#0f172a;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-1.5px;font-family:Georgia,'Times New Roman',serif;">${spotlight.value || '-'}</div>
           ${spotlight.context ? `<div style="font-size:13px;color:#475569;line-height:1.65;margin-top:14px;font-style:italic;font-family:Georgia,'Times New Roman',serif;max-width:420px;margin-left:auto;margin-right:auto;">${spotlight.context}</div>` : ''}
         </div>
       </div>
@@ -418,9 +418,9 @@ Deno.serve(async (req) => {
     const editionLabel = editionType === 'morning' ? 'Morning Brief' : 'Evening Wrap';
     const timeContext = editionType === 'morning'
       ? 'pre-market brief covering overnight developments, Asian session, European open and what to watch today'
-      : 'end-of-day wrap covering everything that moved markets today — equities, bonds, FX, commodities, M&A, macro data releases, geopolitical developments, central bank commentary, and corporate news';
+      : 'end-of-day wrap covering everything that moved markets today - equities, bonds, FX, commodities, M&A, macro data releases, geopolitical developments, central bank commentary, and corporate news';
 
-    // ── Weekday editorial pillar (Mon–Fri) ──────────────────────────────────
+    // ── Weekday editorial pillar (Mon-Fri) ──────────────────────────────────
     const dow = now.getDay();
     const pillar = WEEKDAY_PILLARS[dow] || WEEKDAY_PILLARS[3];
     const spotlightHint = pillar.spotlight;
@@ -429,34 +429,34 @@ Deno.serve(async (req) => {
     // ── Fetch recent editions to avoid repeating content ────────────────────
     const recentEditions = await base44.asServiceRole.entities.NewsletterEdition.list('-published_at', 5);
     const recentContext = recentEditions.length > 0
-      ? `\n\nPREVIOUS EDITIONS — do NOT repeat these subjects or angles:\n${recentEditions.map(e => `- [${e.publish_date}] "${e.title}"`).join('\n')}\nTake a FRESH ANGLE even on recurring themes.`
+      ? `\n\nPREVIOUS EDITIONS - do NOT repeat these subjects or angles:\n${recentEditions.map(e => `- [${e.publish_date}] "${e.title}"`).join('\n')}\nTake a FRESH ANGLE even on recurring themes.`
       : '';
 
     // ── Fetch real market snapshot ───────────────────────────────────────────
     const realSnapshot = await fetchSnapshotData();
     const snapshotSummary = realSnapshot.length > 0
       ? realSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' | ')
-      : 'Market data temporarily unavailable — describe direction and trends only, do NOT fabricate specific prices or levels.';
+      : 'Market data temporarily unavailable - describe direction and trends only, do NOT fabricate specific prices or levels.';
 
     // ── Two parallel LLM calls ───────────────────────────────────────────────
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.
 
-TODAY'S EDITORIAL PILLAR: "${pillar.name}" — ${pillar.focus}
+TODAY'S EDITORIAL PILLAR: "${pillar.name}" - ${pillar.focus}
 This edition should LEAD with today's pillar where it is genuinely material. Still surface other important moves, but the lead framing reflects the pillar.${recentContext}
 
-REAL MARKET DATA (just fetched from live feeds — use as context):
+REAL MARKET DATA (just fetched from live feeds - use as context):
 ${snapshotSummary}
 
 Return JSON:
-- subject_line: punchy unique subject line referencing the SINGLE biggest or most interesting development today — aligned to today's pillar where genuinely material, across M&A, geopolitics, commodities, central banks, FX, tech, bonds, or equities. Never default to equities or the S&P 500 unless it's actually the biggest story. Max 72 chars. No emojis.
+- subject_line: punchy unique subject line referencing the SINGLE biggest or most interesting development today - aligned to today's pillar where genuinely material, across M&A, geopolitics, commodities, central banks, FX, tech, bonds, or equities. Never default to equities or the S&P 500 unless it's actually the biggest story. Max 72 chars. No emojis.
 - footer_note: sharp 1-line closing observation. No emojis.
 - spotlight: a distinct editorial element for this edition:
   - type: "${spotlightHint.type}"
   - headline: "${spotlightHint.headline}"
-  - if type "number": value (one striking REAL data point with unit, e.g. "4.21%" or "$78.40" — prefer a figure directly from the market snapshot above, or a clearly verifiable fact), context (1 sentence on why it matters today)
-  - if type "watch": items (3 short forward-looking bullets — specific instruments, levels, or scheduled events to watch next)
+  - if type "number": value (one striking REAL data point with unit, e.g. "4.21%" or "$78.40" - prefer a figure directly from the market snapshot above, or a clearly verifiable fact), context (1 sentence on why it matters today)
+  - if type "watch": items (3 short forward-looking bullets - specific instruments, levels, or scheduled events to watch next)
   Use ONLY real data. Never fabricate a price, level, or percentage.`,
         add_context_from_internet: true,
         response_json_schema: {
@@ -478,28 +478,28 @@ Return JSON:
         }
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are the lead analyst at Keystone Macro writing the ${editionLabel} for ${dateStr} (${isoDate}) — a ${timeContext}.
+        prompt: `You are the lead analyst at Keystone Macro writing the ${editionLabel} for ${dateStr} (${isoDate}) - a ${timeContext}.
 
-TODAY'S EDITORIAL PILLAR: "${pillar.name}" — ${pillar.focus}
+TODAY'S EDITORIAL PILLAR: "${pillar.name}" - ${pillar.focus}
 Lead with this pillar's most material story when it genuinely matters today. Still cover other material moves across diverse categories, but the lead section and framing should reflect today's pillar.${recentContext}
 
-REAL MARKET DATA (all prices below are from live feeds — do NOT fabricate any number):
+REAL MARKET DATA (all prices below are from live feeds - do NOT fabricate any number):
 ${snapshotSummary}
 
 STRICT RULES:
 1. Every fact, figure, price, and event MUST be from TODAY (${isoDate}). Use the real data above. No fabrication of any price, level, or percentage.
 2. No URLs, hyperlinks, citations. Pure prose only.
 3. No emojis.
-4. Write like a senior Goldman Sachs analyst — sharp, specific, authoritative.
+4. Write like a senior Goldman Sachs analyst - sharp, specific, authoritative.
 
-Write EXACTLY 6 sections covering the most important stories today. Pick from DIVERSE categories — never more than 1 section per category, and avoid defaulting to equities as the lead. M&A, geopolitics, commodities, central bank decisions, FX moves, tech regulation, credit, emerging markets — whatever genuinely matters today. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) provide image_topic. The remaining 2 have neither.
+Write EXACTLY 6 sections covering the most important stories today. Pick from DIVERSE categories - never more than 1 section per category, and avoid defaulting to equities as the lead. M&A, geopolitics, commodities, central bank decisions, FX moves, tech regulation, credit, emerging markets - whatever genuinely matters today. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) provide image_topic. The remaining 2 have neither.
 
 Return JSON:
 - sections: array of 6 objects, each with:
   - label: category (Equities / Fixed Income / FX / Commodities / Macro / Geopolitics / Central Banks / M&A / Credit / Emerging Markets)
   - headline: specific punchy headline anchored to today's real event
   - body: 4-5 dense sentences with exact tickers, levels, % moves, named people/companies
-  - callout: 1 forward-looking sentence — specific upcoming catalyst
+  - callout: 1 forward-looking sentence - specific upcoming catalyst
   - chart_config (ONLY for 2 sections with most price movement): { yahoo_symbol, title, caption }
   - image_topic (ONLY for 2 narrative sections): choose ONLY from today's pillar image set: ${pillarImageContext}`,
         add_context_from_internet: true,
@@ -525,7 +525,7 @@ Return JSON:
       })
     ]);
 
-    const subject = metaRes.subject_line || `The Keystone Macro Brief — ${editionLabel} — ${dateStr}`;
+    const subject = metaRes.subject_line || `The Keystone Macro Brief - ${editionLabel} - ${dateStr}`;
     const marketSnapshot = realSnapshot;
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
@@ -568,7 +568,7 @@ Return JSON:
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: subscriber.email,
           from_name: 'Keystone Macro',
-          subject: `The Keystone Macro Brief — ${subject}`,
+          subject: `The Keystone Macro Brief - ${subject}`,
           body: htmlBody,
         });
         sent++;
@@ -602,7 +602,7 @@ Return JSON:
       await base44.asServiceRole.entities.NewsletterEdition.create(editionData);
     }
 
-    return Response.json({ message: `The Keystone Macro Brief — ${editionLabel} sent successfully`, sent, subject, errors: errors.length > 0 ? errors : undefined });
+    return Response.json({ message: `The Keystone Macro Brief - ${editionLabel} sent successfully`, sent, subject, errors: errors.length > 0 ? errors : undefined });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

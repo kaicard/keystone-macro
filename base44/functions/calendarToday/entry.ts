@@ -10,12 +10,12 @@ const ENDPOINTS = {
 
 Deno.serve(async (req) => {
   try {
-    // Public endpoint — accessible to anonymous visitors (no auth required)
+    // Public endpoint - accessible to anonymous visitors (no auth required)
     const body = await req.json().catch(() => ({}));
     const source = body.source ?? 'mql5';
     const range  = body.range  ?? 'today';
 
-    // Fetch fresh from jblanked — no caching to avoid payload size limits
+    // Fetch fresh from jblanked - no caching to avoid payload size limits
     const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
     const url = range === 'week' ? sourceMap.week : sourceMap.today;
     const apiKey = Deno.env.get('JBLANKED_API_KEY');
@@ -60,8 +60,8 @@ function normalise(item, idx) {
     event:      item.Name ?? item.name ?? '',
     importance: mapImpact(item.Impact ?? item.impact),
     category:   mapCategory(item.Category ?? item.category ?? '', item.Name ?? item.name ?? ''),
-    previous:   hasValue(prev) ? String(prev) : '—',
-    forecast:   hasValue(fore) ? String(fore) : '—',
+    previous:   hasValue(prev) ? String(prev) : '-',
+    forecast:   hasValue(fore) ? String(fore) : '-',
     actual,
     outcome:    (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
   };

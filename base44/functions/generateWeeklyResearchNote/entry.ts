@@ -84,7 +84,7 @@ Format:
 
     const title = result?.title || result?.response?.title || null;
     if (!title) {
-      return Response.json({ error: 'LLM returned no usable title — skipping' }, { status: 500 });
+      return Response.json({ error: 'LLM returned no usable title - skipping' }, { status: 500 });
     }
 
     // Generate slug from title

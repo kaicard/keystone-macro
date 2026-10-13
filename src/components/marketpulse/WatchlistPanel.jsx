@@ -5,7 +5,7 @@ import { MarketTile } from './LiveMarketData';
 import { getInstrumentStatus } from '@/lib/marketHours';
 
 function fmtPrice(price, name) {
-  if (price == null) return '—';
+  if (price == null) return '-';
   if (typeof price === 'string') return price;
   if (name?.includes('/')) return price.toFixed(4);
   if (price < 1) return price.toFixed(4);
@@ -14,7 +14,7 @@ function fmtPrice(price, name) {
 }
 
 function fmtChange(changePct) {
-  if (changePct == null) return '—';
+  if (changePct == null) return '-';
   if (typeof changePct === 'string') return changePct;
   return `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%`;
 }

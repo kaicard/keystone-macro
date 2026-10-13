@@ -77,7 +77,7 @@ const CustomTooltip = ({ active, payload, label, allInstruments, activeSeries, c
           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
           <span className="text-muted-foreground">{s.label}</span>
           <span className="font-semibold ml-auto pl-4">
-            {s.value != null ? s.value.toFixed(2) : '—'}
+            {s.value != null ? s.value.toFixed(2) : '-'}
           </span>
         </div>
       ))}

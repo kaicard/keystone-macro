@@ -41,7 +41,7 @@ export default function About() {
             About Keystone Macro
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Independent macro and multi-asset research, built by Kai Card — Economics student at the University of Surrey.
+            Independent macro and multi-asset research, built by Kai Card - Economics student at the University of Surrey.
           </p>
         </motion.div>
 
@@ -61,7 +61,7 @@ export default function About() {
               Experience spans proprietary trading across indices and commodities, competitive spring insight programmes in finance and trading, and a summer internship within the physical bullion and precious-metals settlement ecosystem. The platform uses AI to assist analysis; new intelligence carries direct attribution, and automated long-form drafts are reviewed before publication.
             </p>
             <p>
-              The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding central bank dynamics, and constructing portfolios genuinely calibrated to client objectives, constraints, and behavioural realities — not just market conditions.
+              The investment philosophy is rooted in macro-first thinking: identifying regimes, understanding central bank dynamics, and constructing portfolios genuinely calibrated to client objectives, constraints, and behavioural realities - not just market conditions.
             </p>
           </div>
         </motion.div>

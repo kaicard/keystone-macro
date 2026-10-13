@@ -90,19 +90,19 @@ Deno.serve(async (req) => {
     const releasedEvents = allEvents.filter(e => {
       // Must have an actual reading
       if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
-      // Skip speeches/conferences — no hard data
+      // Skip speeches/conferences - no hard data
       const name = (e.Name || '').toLowerCase();
       if (name.includes('press conference') || name.includes('speech') || name.includes('statement') || name.includes('testimony')) return false;
       // Skip zero/empty non-events
       if (e.Actual === 0 && e.Forecast === 0 && (e.Outcome || '') === '') return false;
-      // Skip already-saved slugs — this is the primary dedup gate
+      // Skip already-saved slugs - this is the primary dedup gate
       const slug = generateEventSlug(e);
       if (existingSlugs.has(slug)) return false;
       return true;
     });
 
     if (releasedEvents.length === 0) {
-      // Nothing new to process — prune old items and return early
+      // Nothing new to process - prune old items and return early
       const old = (existing || []).filter(i => (i.published_date || '') < cutoffDate);
       for (const oldItem of old) {
         await base44.asServiceRole.entities.IntelligenceItem.delete(oldItem.id);
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     }
 
     // ── LLM: Write analysis for each real data release ────────────────────────
-    // We pass ONLY the raw data figures — the LLM may not hallucinate numbers
+    // We pass ONLY the raw data figures - the LLM may not hallucinate numbers
     const eventsPayload = releasedEvents.slice(0, 8).map((e, i) => `EVENT ${i + 1}:
 Name: ${e.Name}
 Currency: ${e.Currency}
@@ -129,21 +129,22 @@ Quality: ${e.Quality || ''}`).join('\n\n');
 
 Below are VERIFIED economic data releases sourced directly from MQL5 and Forex Factory. Your job is to write clean, analytical intelligence items for each one.
 
-ABSOLUTE RULES — failure to follow these will make the output unusable:
-1. Use ONLY the Actual, Forecast, and Previous figures provided — NEVER invent or modify any number
+ABSOLUTE RULES - failure to follow these will make the output unusable:
+1. Use ONLY the Actual, Forecast, and Previous figures provided - NEVER invent or modify any number
 2. Do NOT reference current asset prices, equity index levels, or FX spot rates
-3. Do NOT add context from outside these events — no "analysts expected", no market reactions
+3. Do NOT add context from outside these events - no "analysts expected", no market reactions
 4. Headline must state the exact actual figure and beat/miss vs forecast
-5. Write in Bloomberg terminal style — factual, precise, no filler phrases
+5. Write in Bloomberg terminal style - factual, precise, no filler phrases
+6. Never use em dashes or en dashes anywhere in your output. Use commas, colons, or plain hyphens instead.
 
 ${eventsPayload}
 
 For EACH event provide:
 - event_index: the 1-based integer matching EVENT number above
-- headline: max 15 words — must include exact actual figure and beat/miss (e.g. "US Core PCE 2.6% — beats 2.7% forecast")
+- headline: max 15 words - must include exact actual figure and beat/miss (e.g. "US Core PCE 2.6%, beats 2.7% forecast")
 - sentiment: positive / negative / neutral (from market perspective: beat = positive for growth data)
-- impact: exactly 2 sentences — what the data print showed and the direct market implication
-- desk_view: exactly 3 sentences — structural context, cross-asset read-through, what to monitor next 48h
+- impact: exactly 2 sentences - what the data print showed and the direct market implication
+- desk_view: exactly 3 sentences - structural context, cross-asset read-through, what to monitor next 48h
 - what_to_watch: 3 instruments max, format: "INSTRUMENT (reason); INSTRUMENT (reason)"`,
       response_json_schema: {
         type: 'object',

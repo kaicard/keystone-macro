@@ -10,21 +10,21 @@ import AppLayout from '@/components/layout/AppLayout';
 // Existing pages
 import Home from '@/pages/Home';
 import Research from '@/pages/Research.jsx';
-import ResearchArticle from '@/pages/ResearchArticle';         // NEW — individual research note
-import ResearchIntelligence from '@/pages/ResearchIntelligence'; // NEW — individual intelligence item
+import ResearchArticle from '@/pages/ResearchArticle';         // NEW - individual research note
+import ResearchIntelligence from '@/pages/ResearchIntelligence'; // NEW - individual intelligence item
 import Portfolios from '@/pages/Portfolios';                   // WealthCases merged in here
 import MarketPulse from '@/pages/MarketPulse';                 // Trade Ideas tab added inside
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Admin from '@/pages/Admin';                             // Extended with new tabs
-import Insights from '@/pages/Insights';                        // NEW — subscriber growth & content dashboard
+import Insights from '@/pages/Insights';                        // NEW - subscriber growth & content dashboard
 import EconomicCalendar from '@/pages/EconomicCalendar';       // Fixed for all visitors
 import Terms from '@/pages/Terms';
 import Privacy from '@/pages/Privacy';
 import Methodology from '@/pages/Methodology';
 import Newsletter from '@/pages/Newsletter';                   // Upgraded to paid subscription
-import NewsletterEdition from '@/pages/NewsletterEdition';     // NEW — individual edition archive
-import KeystoneAI from '@/pages/KeystoneAI';                  // NEW — dedicated AI chat page
+import NewsletterEdition from '@/pages/NewsletterEdition';     // NEW - individual edition archive
+import KeystoneAI from '@/pages/KeystoneAI';                  // NEW - dedicated AI chat page
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -59,7 +59,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      {/* Auth routes — unprotected */}
+      {/* Auth routes - unprotected */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -70,18 +70,18 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Navigate to="/Home" replace />} />
         <Route path="/Home" element={<Home />} />
 
-        {/* Research — notes get their own URL */}
+        {/* Research - notes get their own URL */}
         <Route path="/Research" element={<Research />} />
         <Route path="/Research/:slug" element={<ResearchArticle />} />
         <Route path="/Research/Intelligence/:slug" element={<ResearchIntelligence />} />
 
-        {/* Portfolios — WealthCases merged inside as a tab */}
+        {/* Portfolios - WealthCases merged inside as a tab */}
         <Route path="/Portfolios" element={<Portfolios />} />
 
-        {/* WealthCases legacy route — redirects to Portfolios */}
+        {/* WealthCases legacy route - redirects to Portfolios */}
         <Route path="/WealthCases" element={<Navigate to="/Portfolios" replace />} />
 
-        {/* Market Pulse — Trade Ideas tab inside */}
+        {/* Market Pulse - Trade Ideas tab inside */}
         <Route path="/MarketPulse" element={<MarketPulse />} />
 
         {/* AI */}
@@ -91,7 +91,7 @@ const AuthenticatedApp = () => {
         {/* Economic Calendar */}
         <Route path="/EconomicCalendar" element={<EconomicCalendar />} />
 
-        {/* Newsletter — paid subscription + edition archive */}
+        {/* Newsletter - paid subscription + edition archive */}
         <Route path="/Newsletter" element={<Newsletter />} />
         <Route path="/Newsletter/:slug" element={<NewsletterEdition />} />
 

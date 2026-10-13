@@ -46,7 +46,7 @@ export default function AILabPreview() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold mb-0.5">Chat History</p>
-                  <p className="text-xs text-muted-foreground">Signed-in users get saved conversations — revisit, reference, or delete past chats, just like your favourite AI assistant.</p>
+                  <p className="text-xs text-muted-foreground">Signed-in users get saved conversations - revisit, reference, or delete past chats, just like your favourite AI assistant.</p>
                 </div>
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function AILabPreview() {
                     <Sparkles className="w-3 h-3 text-primary" />
                   </div>
                   <div className="px-3 py-2 rounded-xl rounded-tl-sm bg-muted/50 border border-border/40 text-xs leading-relaxed max-w-[80%]">
-                    The Fed's on hold — sticky services inflation keeps them cautious, but growth softening limits how long they stay hawkish. **Duration looks attractive** into any growth scare; the risk is a tariff-driven inflation re-acceleration.
+                    The Fed's on hold - sticky services inflation keeps them cautious, but growth softening limits how long they stay hawkish. **Duration looks attractive** into any growth scare; the risk is a tariff-driven inflation re-acceleration.
                   </div>
                 </motion.div>
               </div>

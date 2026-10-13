@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Radio, RefreshCw, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Radio, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import PaginationControls from '@/components/common/PaginationControls';
+import usePagination from '@/hooks/usePagination';
 
 const CATEGORY_STYLES = {
   Macro: 'bg-amber-400/10 text-amber-400',
@@ -15,7 +17,10 @@ const CATEGORY_STYLES = {
   Credit: 'bg-cyan-400/10 text-cyan-400',
 };
 
-const INITIAL_VISIBLE = 5;
+const PAGE_SIZE = 5;
+
+// The news service writes a dash placeholder when a story carries no publish time.
+const hasTime = (value) => !!value && /\d{1,2}:\d{2}/.test(value);
 
 export default function LiveNewsFeed() {
   const [headlines, setHeadlines] = useState([]);
@@ -23,7 +28,6 @@ export default function LiveNewsFeed() {
   const [expanded, setExpanded] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshCount, setRefreshCount] = useState(0);
-  const [showAll, setShowAll] = useState(false);
 
   const fetchHeadlines = useCallback(async () => {
     setLoading(true);
@@ -31,15 +35,15 @@ export default function LiveNewsFeed() {
       const res = await base44.functions.invoke('liveNews', {});
       if (res?.data?.headlines?.length) {
         const sorted = [...res.data.headlines].sort((a, b) => {
-          if (!a.published_time || a.published_time === '—') return 1;
-          if (!b.published_time || b.published_time === '—') return -1;
+          if (!hasTime(a.published_time)) return 1;
+          if (!hasTime(b.published_time)) return -1;
           return b.published_time.localeCompare(a.published_time);
         });
         setHeadlines(sorted);
         setLastUpdated(res.data.fetched_at ? new Date(res.data.fetched_at) : new Date());
       }
     } catch (e) {
-      // Silently fail — existing headlines remain visible
+      // Silently fail - existing headlines remain visible
     } finally {
       setLoading(false);
     }
@@ -53,12 +57,12 @@ export default function LiveNewsFeed() {
 
   const handleRefresh = () => {
     setRefreshCount(c => c + 1);
-    setShowAll(false);
     setExpanded(null);
     fetchHeadlines();
   };
 
-  const visibleHeadlines = showAll ? headlines : headlines.slice(0, INITIAL_VISIBLE);
+  const pager = usePagination(headlines.length, PAGE_SIZE);
+  const visibleHeadlines = headlines.slice(0, pager.visible);
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -119,7 +123,7 @@ export default function LiveNewsFeed() {
                           </span>
                         )}
                         <span className="text-xs text-muted-foreground/50 font-mono">
-                          {item.published_time && item.published_time !== '—' ? item.published_time : ''}
+                          {hasTime(item.published_time) ? item.published_time : ''}
                         </span>
                       </div>
                       <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors">
@@ -166,18 +170,18 @@ export default function LiveNewsFeed() {
         )}
       </div>
 
-      {/* Load more / show less */}
-      {headlines.length > INITIAL_VISIBLE && (
+      {headlines.length > PAGE_SIZE && (
         <div className="border-t border-border/30 px-6 py-3">
-          <button
-            onClick={() => setShowAll(s => !s)}
-            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-1"
-          >
-            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAll ? 'rotate-90' : ''}`} />
-            {showAll
-              ? 'Show less'
-              : `Show ${headlines.length - INITIAL_VISIBLE} earlier stories from today`}
-          </button>
+          <PaginationControls
+            visible={pager.visible}
+            total={headlines.length}
+            pageSize={PAGE_SIZE}
+            itemLabel="stories"
+            onShowMore={pager.showMore}
+            onHideMore={pager.hideMore}
+            onShowAll={pager.showAll}
+            onHideAll={pager.hideAll}
+          />
         </div>
       )}
     </div>

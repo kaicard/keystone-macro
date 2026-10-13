@@ -8,7 +8,7 @@ import { useLiveQuotes } from '@/hooks/useLiveQuotes';
 import { getExchangeStatus } from '@/lib/marketHours';
 
 function fmtPrice(price, name) {
-  if (price == null) return '—';
+  if (price == null) return '-';
   if (typeof price === 'string') return price;
   if (name?.includes('/')) return price.toFixed(4);
   if (price < 1) return price.toFixed(4);
@@ -17,7 +17,7 @@ function fmtPrice(price, name) {
 }
 
 function fmtPct(val) {
-  if (val == null) return '—';
+  if (val == null) return '-';
   return `${val > 0 ? '+' : ''}${val.toFixed(2)}%`;
 }
 
@@ -80,7 +80,7 @@ export default function MarketPulsePreview() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
   const { data, loading } = useLiveQuotes();
 
-  // FX & commodities are always tradeable — no "closed" issue
+  // FX & commodities are always tradeable - no "closed" issue
   const fx = data?.fx || [];
   const commodities = data?.commodities || [];
   const crypto = data?.crypto || [];

@@ -18,7 +18,7 @@ import InstrumentChartModal from '@/components/marketpulse/InstrumentChartModal'
 import PerformanceChart from '@/components/marketpulse/PerformanceChart';
 
 function fmtPrice(price, name) {
-  if (price == null) return '—';
+  if (price == null) return '-';
   if (typeof price === 'string') return price;
   if (name?.includes('/')) return price.toFixed(4);
   if (price < 1) return price.toFixed(4);
@@ -27,7 +27,7 @@ function fmtPrice(price, name) {
 }
 
 function fmtChange(changePct) {
-  if (changePct == null) return '—';
+  if (changePct == null) return '-';
   if (typeof changePct === 'string') return changePct;
   return `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%`;
 }
@@ -205,7 +205,7 @@ export default function MarketPulse() {
             />
           </motion.div>
 
-          {/* Market intelligence — compact editorial layout */}
+          {/* Market intelligence - compact editorial layout */}
           <motion.div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.65fr] gap-4 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <RegimePanel regime={context?.regime} loading={contextLoading} />
             <MarketSummary summary={context?.market_summary} loading={contextLoading} />
@@ -290,7 +290,7 @@ export default function MarketPulse() {
 
               <TabsContent value="sectors">
                 <div>
-                  <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Sector Performance — Today</h3>
+                  <h3 className="font-semibold mb-3 text-[11px] text-muted-foreground uppercase tracking-[0.12em]">Sector Performance - Today</h3>
                   <SectorHeatmap sectors={context?.sectors} loading={contextLoading} />
                 </div>
               </TabsContent>

@@ -8,8 +8,8 @@ function getCacheTTL() {
   const utcDay = now.getUTCDay();
   const isWeekend = utcDay === 0 || utcDay === 6;
   if (isWeekend) return 10 * 60 * 1000;
-  if (utcH >= 0 && utcH < 7) return 90 * 1000;    // Asia hours — 90s
-  if (utcH >= 7 && utcH < 21) return 60 * 1000;   // EU/UK/US hours — 60s
+  if (utcH >= 0 && utcH < 7) return 90 * 1000;    // Asia hours - 90s
+  if (utcH >= 7 && utcH < 21) return 60 * 1000;   // EU/UK/US hours - 60s
   return 5 * 60 * 1000; // overnight
 }
 
@@ -42,7 +42,7 @@ function getMarketStatuses() {
 }
 
 const TICKERS = [
-  // Indices — global
+  // Indices - global
   { sym: '^GSPC',    name: 'S&P 500',        cat: 'indices' },
   { sym: '^NDX',     name: 'NASDAQ 100',     cat: 'indices' },
   { sym: '^DJI',     name: 'Dow Jones',      cat: 'indices' },
@@ -116,7 +116,7 @@ const YF_HEADERS = {
   'Cache-Control': 'no-cache',
 };
 
-// Batch fetch via v7 quote endpoint — most efficient, fetches all at once
+// Batch fetch via v7 quote endpoint - most efficient, fetches all at once
 async function fetchAllTickers(symbols) {
   const chunks = [];
   const CHUNK_SIZE = 20;
@@ -289,7 +289,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Truly first-ever fetch — no choice but to block
+    // Truly first-ever fetch - no choice but to block
     const { organized, fetched_at } = await fetchAndCache(base44, cached?.[0]?.id || null);
     return Response.json({ ok: true, data: organized, cached: false, ts: new Date(fetched_at).getTime() });
 

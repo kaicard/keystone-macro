@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
       return Response.json({ active: false, error: 'Full edition bodies are available only after a paid subscription is verified.' }, { status: 403 });
     }
 
-    // Single edition (full body) — used by the edition reader page.
+    // Single edition (full body) - used by the edition reader page.
     if (body.slug) {
       const matches = await base44.asServiceRole.entities.NewsletterEdition.filter({ slug: body.slug, status: 'published' });
       const edition = matches?.[0];
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       return Response.json({ active: true, edition });
     }
 
-    // Archive listing — bodies omitted to keep the payload light.
+    // Archive listing - bodies omitted to keep the payload light.
     const editions = await base44.asServiceRole.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 100);
     return Response.json({
       active: true,

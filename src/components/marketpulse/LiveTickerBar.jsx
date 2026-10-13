@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 function fmt(price, name) {
-  if (price == null) return '—';
+  if (price == null) return '-';
   if (name?.includes('/')) return price.toFixed(4);
   if (price < 1) return price.toFixed(4);
   if (price < 100) return price.toFixed(2);
@@ -69,7 +69,7 @@ export default function LiveTickerBar({ data }) {
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-card/90 to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card/90 to-transparent z-10 pointer-events-none" />
 
-      {/* Two identical tracks offset by 50% — no key reset, animation runs continuously */}
+      {/* Two identical tracks offset by 50% - no key reset, animation runs continuously */}
       <div className="flex" style={{ width: 'max-content' }}>
         <div
           className="flex"

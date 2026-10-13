@@ -66,13 +66,13 @@ async function fetchSnapshotData() {
 function snapRow(m, isLast) {
   const rawFull = String(m.change || '').trim();
   const raw = rawFull.replace(/^[▲▼↑↓\+\-\s]+/, '').trim();
-  const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '—';
+  const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '-';
   const isPos = !isNA && (rawFull.startsWith('▲') || rawFull.startsWith('+') || rawFull.toLowerCase().includes('+'));
   const changeColor = isNA ? '#64748b' : isPos ? '#10b981' : '#f87171';
   const changeBg   = isNA ? 'rgba(100,116,139,0.15)' : isPos ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)';
   const accentBar  = isNA ? '#334155' : isPos ? '#10b981' : '#f87171';
   const arrow = isNA ? '' : isPos ? '▲' : '▼';
-  const displayChange = isNA ? '—' : `${arrow} ${raw}`;
+  const displayChange = isNA ? '-' : `${arrow} ${raw}`;
   return `<tr>
     <td style="padding-bottom:${isLast ? '0' : '8px'};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a2540;border:1px solid #263352;border-left:4px solid ${accentBar};border-radius:10px;overflow:hidden;">
@@ -139,7 +139,7 @@ function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, pr
           </div>`).join('')}
         </div>
         <div style="border-radius:8px;background:#fef3c7;border-left:3px solid #d97706;padding:14px 18px;margin-bottom:20px;">
-          <div style="font-size:13px;color:#92400e;line-height:1.7;">These editions and notes are archived for premium subscribers. Educational research and market analysis only — not investment advice.</div>
+          <div style="font-size:13px;color:#92400e;line-height:1.7;">These editions and notes are archived for premium subscribers. Educational research and market analysis only - not investment advice.</div>
         </div>
         <a href="https://keystonemacro.com/Newsletter" style="display:inline-block;background:linear-gradient(135deg,#d97706,#f59e0b);color:#ffffff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Explore Premium →</a>
       </div>
@@ -250,14 +250,14 @@ Deno.serve(async (req) => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Week range: Mon–Fri
+    // Week range: Mon-Fri
     const dayOfWeek = now.getDay(); // 0=Sun, 5=Fri
     const daysToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     const monday = new Date(now); monday.setDate(now.getDate() - daysToMon);
     const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
-    const weekRange = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${friday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    const weekRange = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${friday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    // Get subscribers — if test_email, just use that
+    // Get subscribers - if test_email, just use that
     let recipients = [];
     if (testEmail) {
       recipients = [{ email: testEmail }];
@@ -274,14 +274,14 @@ Deno.serve(async (req) => {
     const realSnapshot = await fetchSnapshotData();
     const snapshotSummary = realSnapshot.length > 0
       ? realSnapshot.map(m => `${m.label}: ${m.value} (${m.change})`).join(' | ')
-      : 'Market data temporarily unavailable — describe direction and trends only, do NOT fabricate specific prices or levels.';
+      : 'Market data temporarily unavailable - describe direction and trends only, do NOT fabricate specific prices or levels.';
 
     // Generate weekly content via LLM
     const [metaRes, sectionsRes] = await Promise.all([
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week: ${weekRange}.
 
-REAL MARKET DATA (just fetched — current levels):
+REAL MARKET DATA (just fetched - current levels):
 ${snapshotSummary}
 
 Return JSON:
@@ -297,12 +297,12 @@ Return JSON:
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week covered: ${weekRange}.
 
-REAL MARKET DATA (current live levels — do NOT fabricate any price, level, or percentage):
+REAL MARKET DATA (current live levels - do NOT fabricate any price, level, or percentage):
 ${snapshotSummary}
 
-Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. Cover only stories that genuinely happened this week — never invent events, figures, or company news.
+Write 4 sections summarising the BIGGEST macro and market themes of THIS WEEK. Pick the 4 most important: e.g. Equities, Macro Data, Central Banks, Geopolitics, FX, Commodities. Cover only stories that genuinely happened this week - never invent events, figures, or company news.
 
-No URLs, no emojis. Write authoritatively but accessibly — not as dense as a premium note. Each body is 3-4 sentences. Use the real data above for any specific numbers.
+No URLs, no emojis. Write authoritatively but accessibly - not as dense as a premium note. Each body is 3-4 sentences. Use the real data above for any specific numbers.
 
 Return JSON:
 - sections: array of 4 objects each with: label, headline (specific to this week), body (3-4 sentences, weekly recap)`,
@@ -316,7 +316,7 @@ Return JSON:
       })
     ]);
 
-    // Real premium content published this week — listed from actual records, never invented.
+    // Real premium content published this week - listed from actual records, never invented.
     const mondayISO = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
     const [editions, notes] = await Promise.all([
       base44.asServiceRole.entities.NewsletterEdition.filter({ status: 'published' }, '-publish_date', 50),
@@ -332,7 +332,7 @@ Return JSON:
       ...weekNotes.map(n => ({ title: n.title, teaser: n.subtitle || n.executive_summary || '' })),
     ].slice(0, 3);
 
-    const subject = metaRes.subject_line || `Keystone Macro Weekly — ${weekRange}`;
+    const subject = metaRes.subject_line || `Keystone Macro Weekly - ${weekRange}`;
     const marketSnapshot = realSnapshot;
     const sections = sectionsRes.sections || [];
 
@@ -345,12 +345,12 @@ Return JSON:
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: recipient.email,
           from_name: 'Keystone Macro',
-          subject: `Keystone Macro Weekly — ${subject}`,
+          subject: `Keystone Macro Weekly - ${subject}`,
           body: htmlBody,
         });
         sent++;
       } catch (_) {
-        // Non-registered users can't receive via SendEmail — they'll read on-site
+        // Non-registered users can't receive via SendEmail - they'll read on-site
         skipped.push(recipient.email);
       }
     }

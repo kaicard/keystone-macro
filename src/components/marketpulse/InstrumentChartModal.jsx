@@ -70,7 +70,7 @@ export default function InstrumentChartModal({ item, onClose }) {
                 </p>
                 <p className={`text-sm font-semibold flex items-center justify-end gap-1 ${changeColor}`}>
                   {isFlat ? <Minus className="w-3.5 h-3.5" /> : isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                  {item.change_pct != null ? `${item.change_pct > 0 ? '+' : ''}${item.change_pct.toFixed(2)}%` : '—'}
+                  {item.change_pct != null ? `${item.change_pct > 0 ? '+' : ''}${item.change_pct.toFixed(2)}%` : '-'}
                 </p>
               </div>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors ml-2">

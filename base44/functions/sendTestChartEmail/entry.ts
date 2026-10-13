@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// ─── Chart builder — high quality, clean, properly spaced ──────────────────────
+// ─── Chart builder - high quality, clean, properly spaced ──────────────────────
 function buildChartUrl({ labels, data, isUp, height = 260 }) {
   const validData = data.filter(d => d != null && !isNaN(d));
   if (validData.length < 3) return null;
@@ -130,7 +130,7 @@ async function fetchIntradayData(symbol) {
   return { labels, data, open, close, high, low, changeAbs, changePct, isUp, currency: meta.currency || '', symbol };
 }
 
-// ─── Unsplash free image — contextual, clean, no copyright issues ──────────────
+// ─── Unsplash free image - contextual, clean, no copyright issues ──────────────
 // Using Unsplash Source API (free, no API key needed, returns actual images)
 // We pick specific photo IDs that are highly relevant to finance topics
 const UNSPLASH_TOPICS = {
@@ -177,7 +177,7 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
   const sign = parseFloat(changePct) >= 0 ? '+' : '';
 
   function fmt(val) {
-    if (typeof val !== 'number') return '–';
+    if (typeof val !== 'number') return '-';
     const abs = Math.abs(val);
     const dp = abs >= 10000 ? 0 : abs >= 100 ? 1 : abs >= 1 ? 2 : 4;
     return val.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
@@ -213,7 +213,7 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
         </td>`).join('')}
       </tr>
     </table>
-    <!-- Chart — full bleed -->
+    <!-- Chart - full bleed -->
     <img src="${chartUrl}" alt="${title} intraday" style="display:block;width:100%;max-width:100%;border:none;" />
     <!-- Caption -->
     ${caption ? `<div style="padding:12px 22px 14px;border-top:1px solid #eef2f7;">
@@ -275,7 +275,7 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
   const headerGradient = 'background:linear-gradient(90deg,#3b82f6,#6366f1,#818cf8);';
   const editionColor = '#6366f1';
 
-  // Snapshot as clean horizontal rows — one instrument per row, fully readable on mobile
+  // Snapshot as clean horizontal rows - one instrument per row, fully readable on mobile
   const snap = (marketSnapshot || []).slice(0, 5);
 
   function snapRow(m, isLast) {
@@ -283,7 +283,7 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
     const rawFull = String(m.change || '').trim();
     const raw = rawFull.replace(/^[▲▼↑↓\+\-\s]+/, '').trim();
     const originalLower = rawFull.toLowerCase();
-    const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '—';
+    const isNA = !rawFull || rawFull === 'N/A' || rawFull === '0' || rawFull === '0%' || rawFull === '-';
     // Determine direction from the original string
     const isPos = !isNA && (rawFull.startsWith('▲') || rawFull.startsWith('+') || originalLower.includes('+'));
     const isNeg = !isNA && (rawFull.startsWith('▼') || rawFull.startsWith('-') || (!isPos && originalLower.includes('-')));
@@ -291,7 +291,7 @@ function buildEmailHtml({ subject, dateStr, marketSnapshot, sectionBlocks, foote
     const changeBg   = isNA ? 'rgba(100,116,139,0.15)' : isPos ? 'rgba(16,185,129,0.15)' : 'rgba(248,113,113,0.15)';
     const accentBar  = isNA ? '#334155' : isPos ? '#10b981' : '#f87171';
     const arrow = isNA ? '' : isPos ? '▲' : '▼';
-    const displayChange = isNA ? '—' : `${arrow} ${raw}`;
+    const displayChange = isNA ? '-' : `${arrow} ${raw}`;
     const marginBottom = isLast ? '0' : '8px';
     return `<tr>
       <td style="padding-bottom:${marginBottom};">
@@ -428,19 +428,19 @@ Deno.serve(async (req) => {
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead macro analyst at Keystone Macro. Today is ${dateStr} (${isoDate}).
 Return JSON with today's REAL, VERIFIED closing/current data sourced from live financial markets.
-CRITICAL: Every field must have a real value — no nulls, no "N/A", no "0", no empty strings.
+CRITICAL: Every field must have a real value - no nulls, no "N/A", no "0", no empty strings.
 
 - subject_line: the single most important market story today in one punchy line (max 70 chars, no emojis, no clickbait)
 - market_snapshot: exactly 5 objects for these instruments. Each MUST have:
     - label: instrument name (e.g. "S&P 500", "10Y UST Yield", "DXY", "Gold", "Brent Crude")
     - value: today's real closing/current price or level as a formatted string (e.g. "5,283.40", "4.52%", "104.23", "$3,285.10", "$73.45")
-    - change: today's real change with sign and percentage, formatted as e.g. "▲ +1.2%" or "▼ -0.8%" or "▲ +12.50 (+0.24%)" — MUST be non-empty for all 5 instruments
+    - change: today's real change with sign and percentage, formatted as e.g. "▲ +1.2%" or "▼ -0.8%" or "▲ +12.50 (+0.24%)" - MUST be non-empty for all 5 instruments
   Instruments (use these exact sources):
-    1. S&P 500 — current index level + % change from prior close
-    2. 10Y UST Yield — current yield in % + change in basis points (e.g. "▲ +4.2 bps")
-    3. DXY Index — current level + % change from prior close
-    4. Gold (spot or front-month futures) — current price in USD + % change
-    5. Brent Crude (front-month futures) — current price in USD + % change
+    1. S&P 500 - current index level + % change from prior close
+    2. 10Y UST Yield - current yield in % + change in basis points (e.g. "▲ +4.2 bps")
+    3. DXY Index - current level + % change from prior close
+    4. Gold (spot or front-month futures) - current price in USD + % change
+    5. Brent Crude (front-month futures) - current price in USD + % change
 - footer_note: one sharp closing insight about today's session. No emojis.`,
         add_context_from_internet: true,
         response_json_schema: {
@@ -459,12 +459,12 @@ STRICT RULES:
 1. Every figure, price, % move, name, and event MUST be real and verified from today (${isoDate}). No fabrication.
 2. No URLs, hyperlinks, source citations, footnotes. Pure prose.
 3. No emojis.
-4. Write like a senior sell-side analyst — sharp, specific, authoritative.
+4. Write like a senior sell-side analyst - sharp, specific, authoritative.
 
 Write EXACTLY 4 sections. Choose the 4 most important market-moving themes from today.
 
-For EXACTLY 2 sections — the ones with the most significant, chart-worthy intraday price movement today — provide a chart_config.
-For EXACTLY 2 sections — where context, geopolitics, or macro narrative matters more than price action — provide an image_topic instead.
+For EXACTLY 2 sections - the ones with the most significant, chart-worthy intraday price movement today - provide a chart_config.
+For EXACTLY 2 sections - where context, geopolitics, or macro narrative matters more than price action - provide an image_topic instead.
 
 Do NOT provide both chart_config and image_topic for the same section.
 
@@ -473,7 +473,7 @@ Return JSON:
   - label: category tag (Equities / Fixed Income / FX / Commodities / Macro / Geopolitics / Central Banks / M&A / Credit / Emerging Markets)
   - headline: specific punchy headline anchored to today's real event
   - body: 4 dense sentences with exact tickers, levels, % moves, named people/companies
-  - callout: 1 forward-looking sentence — a specific upcoming catalyst
+  - callout: 1 forward-looking sentence - a specific upcoming catalyst
   - chart_config (ONLY for 2 sections with most price movement): {
       yahoo_symbol: exact Yahoo Finance ticker (e.g. "^GSPC" for S&P, "GC=F" for Gold, "^TNX" for 10Y yield, "CL=F" for WTI, "EURUSD=X" for EUR/USD, "^NDX" for Nasdaq 100),
       title: instrument display name (e.g. "S&P 500", "Gold Spot", "EUR/USD"),
@@ -511,7 +511,7 @@ Return JSON:
       })
     ]);
 
-    const subject = metaRes.subject_line || `Evening Wrap — ${dateStr}`;
+    const subject = metaRes.subject_line || `Evening Wrap - ${dateStr}`;
     const marketSnapshot = metaRes.market_snapshot || [];
     const sections = sectionsRes.sections || [];
     const footerNote = metaRes.footer_note || 'Markets close. The analysis never stops.';
@@ -556,7 +556,7 @@ Return JSON:
       const s = sections[i];
       const accent = ACCENTS[i % ACCENTS.length];
 
-      // Chart — only for the one chosen section
+      // Chart - only for the one chosen section
       let chartHtml = '';
       if (i === chartSectionIdx && chartDataMap[i]) {
         const d = chartDataMap[i];
@@ -577,7 +577,7 @@ Return JSON:
         }
       }
 
-      // Image — only for the one chosen section
+      // Image - only for the one chosen section
       let imageHtml = '';
       if (i === imageSectionIdx) {
         imageHtml = imageBlockHtml({
@@ -601,7 +601,7 @@ Return JSON:
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: 'kaicard05@gmail.com',
-      subject: `[TEST] The Keystone Macro Brief — Evening Wrap — ${dateStr}`,
+      subject: `[TEST] The Keystone Macro Brief - Evening Wrap - ${dateStr}`,
       body: htmlBody,
       from_name: 'The Keystone Macro Brief',
     });

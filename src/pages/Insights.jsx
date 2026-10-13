@@ -209,7 +209,7 @@ export default function Insights() {
           <div className="flex items-start gap-2 mt-4 p-3 rounded-lg bg-muted/30 border border-border/30">
             <Lock className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground/70 leading-relaxed">
-              Note: Open and click engagement data (email opens, link clicks, page views) is available in the Base44 Analytics dashboard — Dashboard → Analytics → Traffic Overview. This view shows subscriber growth and content production trends from your stored data.
+              Note: Open and click engagement data (email opens, link clicks, page views) is available in the Base44 Analytics dashboard - Dashboard → Analytics → Traffic Overview. This view shows subscriber growth and content production trends from your stored data.
             </p>
           </div>
         </div>

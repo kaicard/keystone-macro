@@ -52,7 +52,7 @@ export default function PortfolioBuilder() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <div className="glass rounded-xl p-4 mb-6 flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-        <span className="text-xs text-muted-foreground">Educational Portfolio Builder — Illustrative only, not financial advice</span>
+        <span className="text-xs text-muted-foreground">Educational Portfolio Builder - Illustrative only, not financial advice</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

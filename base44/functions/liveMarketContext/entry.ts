@@ -22,7 +22,7 @@ const BOND_TICKERS = [
   { sym: 'JP10Y=X',name: 'JP 10Y JGB' },
 ];
 
-// S&P 500 sector ETFs — real, tradeable tickers
+// S&P 500 sector ETFs - real, tradeable tickers
 const SECTOR_ETFS = [
   { sym: 'XLK',  name: 'Technology' },
   { sym: 'XLF',  name: 'Financials' },
@@ -155,7 +155,7 @@ async function refreshInBackground(base44, existingId) {
     });
   }
 
-  // ── Regime & Market Summary — LLM with real bond/sector data as context ───
+  // ── Regime & Market Summary - LLM with real bond/sector data as context ───
   const bondSummary = bonds.map(b => `${b.name}: ${b.yield} (${b.change_bps})`).join(', ');
   const sectorSummary = sectors.map(s => `${s.name}: ${s.change_pct}`).join(', ');
   const moverSummary = `Gainers: ${top_movers.gainers.map(m => `${m.ticker} ${m.change_pct}`).join(', ')}. Losers: ${top_movers.losers.map(m => `${m.ticker} ${m.change_pct}`).join(', ')}`;
@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Truly first-ever fetch — no choice but to block
+    // Truly first-ever fetch - no choice but to block
     await refreshInBackground(base44, cached?.[0]?.id || null);
     const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     const freshEntry = fresh?.[0];

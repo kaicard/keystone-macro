@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     const interval = TF_INTERVAL[tf] || '1d';
     const maxPts = MAX_POINTS[tf] || 60;
 
-    // Fetch all instruments in parallel — no caching (avoids payload size limit)
+    // Fetch all instruments in parallel - no caching (avoids payload size limit)
     const results = await Promise.allSettled(
       keys.map(async (key) => {
         const symbol = INSTRUMENT_MAP[key];

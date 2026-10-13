@@ -18,7 +18,7 @@ export function truncateWords(value, limit) {
 
 export function compactSignal(value) {
   const clean = cleanMarketCopy(value);
-  const firstClause = clean.split(/[,;]|\s—\s/)[0]?.trim() || clean;
+  const firstClause = clean.split(/[,;]|\s[\u2014\u2013-]\s/)[0]?.trim() || clean;
   return truncateWords(firstClause, 6) || 'Not available';
 }
 

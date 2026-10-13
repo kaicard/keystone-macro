@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
 
     const paid = (await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email }))?.[0];
     const type = paid && ['active', 'cancelling'].includes(paid.status) ? 'paid' : 'free';
-    const subject = type === 'paid' ? 'Welcome to The Keystone Macro Brief' : "You're on the list — Keystone Macro Weekly";
+    const subject = type === 'paid' ? 'Welcome to The Keystone Macro Brief' : "You're on the list - Keystone Macro Weekly";
     const body = type === 'paid'
       ? '<p>Your premium Keystone Macro subscription is active.</p><p>You now have access to morning and evening editions and the subscriber archive.</p>'
       : '<p>You are subscribed to the free weekly Keystone Macro digest.</p>';

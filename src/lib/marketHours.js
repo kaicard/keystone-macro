@@ -1,4 +1,4 @@
-// Market hours utility — determines open/closed status per exchange
+// Market hours utility - determines open/closed status per exchange
 // All times are converted to UTC for comparison
 
 export const EXCHANGES = {
@@ -38,7 +38,7 @@ export const EXCHANGES = {
     tz: 'Asia/Tokyo',
     open: { h: 9, m: 0 },
     close: { h: 15, m: 30 },
-    // Simplified — TSE has lunch break 11:30-12:30 but we ignore for display
+    // Simplified - TSE has lunch break 11:30-12:30 but we ignore for display
     holidays: [
       '2026-01-01', '2026-01-12', '2026-02-11', '2026-02-23',
       '2026-03-20', '2026-04-29', '2026-05-03', '2026-05-04', '2026-05-05',
@@ -65,7 +65,7 @@ export const INSTRUMENT_EXCHANGE = {
   'DAX': 'EU', 'CAC 40': 'EU',
   'Nikkei 225': 'JP',
   'Hang Seng': 'HK',
-  // FX trades 24/5 (Mon–Fri)
+  // FX trades 24/5 (Mon-Fri)
   'GBP/USD': 'FX', 'EUR/USD': 'FX', 'USD/JPY': 'FX',
   'USD/CHF': 'FX', 'AUD/USD': 'FX', 'EUR/GBP': 'FX',
   // Crypto is 24/7
@@ -110,7 +110,7 @@ function isWeekend(weekday) {
 export function getExchangeStatus(exchangeKey) {
   if (exchangeKey === 'CRYPTO') return { open: true, label: '24/7' };
   if (exchangeKey === 'FX') {
-    // FX is open Mon-Fri across global sessions (roughly Sun 22:00 UTC – Fri 22:00 UTC)
+    // FX is open Mon-Fri across global sessions (roughly Sun 22:00 UTC - Fri 22:00 UTC)
     const now = new Date();
     const utcDay = now.getUTCDay(); // 0=Sun, 6=Sat
     const utcH = now.getUTCHours();
@@ -122,7 +122,7 @@ export function getExchangeStatus(exchangeKey) {
     return { open: true, label: 'Open' };
   }
   if (exchangeKey === 'COMMODITY') {
-    // Commodities on CME: roughly Mon 00:00 – Fri 23:00 CT
+    // Commodities on CME: roughly Mon 00:00 - Fri 23:00 CT
     const now = new Date();
     const utcDay = now.getUTCDay();
     const utcH = now.getUTCHours();
@@ -157,7 +157,7 @@ export function getExchangeStatus(exchangeKey) {
 
 export function getInstrumentStatus(instrumentName) {
   const exchKey = INSTRUMENT_EXCHANGE[instrumentName];
-  if (!exchKey) return { open: true, label: '' }; // unknown — don't flag
+  if (!exchKey) return { open: true, label: '' }; // unknown - don't flag
   return getExchangeStatus(exchKey);
 }
 

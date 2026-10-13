@@ -62,7 +62,7 @@ export default function ScenarioSimulator() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <div className="glass rounded-xl p-4 mb-6 flex items-center gap-2">
         <AlertTriangle className="w-4 h-4 text-primary" />
-        <span className="text-xs text-muted-foreground">Educational scenario analysis — Illustrative only, not predictive</span>
+        <span className="text-xs text-muted-foreground">Educational scenario analysis - Illustrative only, not predictive</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">

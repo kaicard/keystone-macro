@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Public endpoint — accessible to anonymous visitors (no auth required)
+    // Public endpoint - accessible to anonymous visitors (no auth required)
 
     const body = await req.json().catch(() => ({}));
     const events = body.events || [];

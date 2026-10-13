@@ -42,8 +42,8 @@ export default function Terms() {
           <Section title="2. Educational Purpose Only">
             <p>
               Keystone Macro is an educational and informational platform only. All content published on this
-              Platform — including but not limited to research notes, market commentary, portfolio analysis,
-              economic calendar data, and AI-generated outputs — is provided solely for educational and
+              Platform - including but not limited to research notes, market commentary, portfolio analysis,
+              economic calendar data, and AI-generated outputs - is provided solely for educational and
               informational purposes.
             </p>
             <p>

@@ -109,8 +109,8 @@ function BeatFeed({ beat }) {
     const res = await base44.functions.invoke('beatNews', { beat });
     if (res?.data?.articles?.length) {
       const sorted = [...res.data.articles].sort((a, b) => {
-        if (!a.published_time || a.published_time === '—') return 1;
-        if (!b.published_time || b.published_time === '—') return -1;
+        if (!/\d{1,2}:\d{2}/.test(a.published_time || '')) return 1;
+        if (!/\d{1,2}:\d{2}/.test(b.published_time || '')) return -1;
         return b.published_time.localeCompare(a.published_time);
       });
       setArticles(sorted);
@@ -180,7 +180,7 @@ export default function NewsHub() {
         <span className="text-xs text-muted-foreground ml-1">Click any story to expand</span>
       </div>
 
-      {/* Beat tabs — horizontal scroll */}
+      {/* Beat tabs - horizontal scroll */}
       <div className="flex overflow-x-auto gap-1 p-3 border-b border-border/30 scrollbar-hide">
         {BEATS.map(beat => (
           <button

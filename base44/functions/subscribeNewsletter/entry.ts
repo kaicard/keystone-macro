@@ -17,9 +17,9 @@ Deno.serve(async (req) => {
     if (!existing || existing.status !== 'active') {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: user.email,
-        subject: "You're on the list — Keystone Macro Weekly",
+        subject: "You're on the list - Keystone Macro Weekly",
         from_name: 'Keystone Macro',
-        body: '<p>Welcome to Keystone Macro Weekly.</p><p>You will receive the free Friday macro digest. You can manage your subscription from your signed-in account.</p><p>— Keystone Macro</p>',
+        body: '<p>Welcome to Keystone Macro Weekly.</p><p>You will receive the free Friday macro digest. You can manage your subscription from your signed-in account.</p><p>- Keystone Macro</p>',
       }).catch(() => {});
     }
 

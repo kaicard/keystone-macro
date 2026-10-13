@@ -73,10 +73,10 @@ Preferences: ${prefLabels.join(', ') || 'None specified'}
 
 CRITICAL CAPITAL CONSTRAINTS - You MUST apply these rules based on the capital amount (${capitalFormatted}):
 - Under ${selectedCurrency?.symbol}10,000: Focus on liquid ETFs and index funds only. No direct property, private equity, hedge funds, or alternatives. Keep it simple with 3-4 asset classes max.
-- ${selectedCurrency?.symbol}10,000–${selectedCurrency?.symbol}50,000: ETFs, index funds, and liquid securities. Minimal alternatives. No direct real estate or private assets.
-- ${selectedCurrency?.symbol}50,000–${selectedCurrency?.symbol}250,000: Can include diversified equities, bonds, some liquid alternatives (REITs, commodity ETFs). No direct property or private equity.
-- ${selectedCurrency?.symbol}250,000–${selectedCurrency?.symbol}1,000,000: Can include a broader alternatives sleeve. Possibly some direct property exposure. Modest illiquid allocation.
-- Above ${selectedCurrency?.symbol}1,000,000: Full institutional toolkit available — private equity, hedge funds, direct real estate, infrastructure, private credit.
+- ${selectedCurrency?.symbol}10,000-${selectedCurrency?.symbol}50,000: ETFs, index funds, and liquid securities. Minimal alternatives. No direct real estate or private assets.
+- ${selectedCurrency?.symbol}50,000-${selectedCurrency?.symbol}250,000: Can include diversified equities, bonds, some liquid alternatives (REITs, commodity ETFs). No direct property or private equity.
+- ${selectedCurrency?.symbol}250,000-${selectedCurrency?.symbol}1,000,000: Can include a broader alternatives sleeve. Possibly some direct property exposure. Modest illiquid allocation.
+- Above ${selectedCurrency?.symbol}1,000,000: Full institutional toolkit available - private equity, hedge funds, direct real estate, infrastructure, private credit.
 
 All instrument examples must be appropriate for this capital level. Express all monetary examples in ${currency} (${selectedCurrency?.symbol}). All weights must sum to exactly 100%.
 

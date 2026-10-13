@@ -19,7 +19,7 @@ const cases = [
     subtitle: '£250k investable assets',
     description: 'Established professional seeking diversified growth with some income, balancing career earnings with portfolio returns.',
     risk: 'Medium',
-    horizon: '10–15 years',
+    horizon: '10-15 years',
   },
   {
     icon: Building2,
@@ -27,7 +27,7 @@ const cases = [
     subtitle: 'Capital preservation & growth',
     description: 'Business owner after liquidity event requiring structured allocation, downside protection, and inflation hedging.',
     risk: 'Low-Medium',
-    horizon: '7–10 years',
+    horizon: '7-10 years',
   },
   {
     icon: Clock,
@@ -35,7 +35,7 @@ const cases = [
     subtitle: 'Income & preservation focus',
     description: 'Pre-retiree transitioning from accumulation to decumulation, prioritising capital preservation and reliable income.',
     risk: 'Low',
-    horizon: '3–5 years',
+    horizon: '3-5 years',
   },
 ];
 

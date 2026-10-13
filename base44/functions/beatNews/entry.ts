@@ -48,18 +48,18 @@ Deno.serve(async (req) => {
 Search the internet RIGHT NOW for the 8 most important recent news stories in this beat: ${BEAT_PROMPTS[beat]}
 
 STRICT RULES:
-- Only include articles you can confirm exist in your search results — do NOT fabricate or hallucinate stories
+- Only include articles you can confirm exist in your search results - do NOT fabricate or hallucinate stories
 - Only include stories published after ${cutoff}
-- published_time must be the ACTUAL timestamp from the article, in HH:MM London time — write "—" if you cannot determine it
-- url must be the EXACT URL from your search results — write "" if you cannot confirm the real URL
-- Be specific — include actual figures, names, and percentages from the real articles
+- published_time must be the ACTUAL timestamp from the article, in HH:MM London time - write "-" if you cannot determine it
+- url must be the EXACT URL from your search results - write "" if you cannot confirm the real URL
+- Be specific - include actual figures, names, and percentages from the real articles
 
 Each article must have:
 - headline: the actual headline verbatim or close paraphrase (not generic)
 - source: publication name (FT, Bloomberg, Reuters, WSJ, Guardian, BBC, CNBC, AP, etc.)
 - summary: 2-3 sentence summary covering what happened, why it matters, and the market/economic implication
 - sentiment: "positive", "negative", or "neutral" (from an investor's perspective)
-- published_time: ACTUAL publication time from article metadata in HH:MM London time; "—" if unknown
+- published_time: ACTUAL publication time from article metadata in HH:MM London time; "-" if unknown
 - url: exact direct URL from your search results
 - url_hint: the domain (e.g. "ft.com", "bloomberg.com")
 

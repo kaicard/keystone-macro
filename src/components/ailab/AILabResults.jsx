@@ -232,7 +232,7 @@ export default function AILabResults({ result }) {
         <p className="text-sm text-muted-foreground leading-relaxed">{result.if_conditions_change}</p>
       </div>
 
-      <p className="text-xs text-muted-foreground/30 text-center">Live market data. Delayed where applicable. Illustrative exposures only — not investment recommendations.</p>
+      <p className="text-xs text-muted-foreground/30 text-center">Live market data. Delayed where applicable. Illustrative exposures only - not investment recommendations.</p>
     </motion.div>
   );
 }
