@@ -213,16 +213,17 @@ For each confirmed story return:
     }
 
     // ── Prune items older than 7 days ─────────────────────────────────────────
-    const old = (existing || []).filter(i => (i.published_date || '') < cutoffDate);
-    for (const oldItem of old) {
-      await base44.asServiceRole.entities.IntelligenceItem.delete(oldItem.id);
+    const oldQuery = { published_date: { $lt: cutoffDate } };
+    const pruned = await base44.asServiceRole.entities.IntelligenceItem.count(oldQuery);
+    if (pruned > 0) {
+      await base44.asServiceRole.entities.IntelligenceItem.deleteMany(oldQuery);
     }
 
     return Response.json({
       ok: true,
       created,
       skipped,
-      pruned: old.length,
+      pruned,
       topics_scanned: runTopics.map(t => t.name),
       ran_at: now.toISOString(),
     });
