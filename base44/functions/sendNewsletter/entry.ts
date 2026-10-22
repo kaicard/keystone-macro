@@ -403,6 +403,17 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ── Authorization: admin only (workflow steps run as an app admin) ────────
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const editionType = body.edition_type || 'morning';
 

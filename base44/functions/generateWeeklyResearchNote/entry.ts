@@ -4,10 +4,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow scheduler calls (no session). If called from frontend, require admin.
+    // ── Authorization: admin only (workflow steps run as an app admin) ────────
     let user = null;
     try { user = await base44.auth.me(); } catch (_) {}
-    if (user !== null && user?.role !== 'admin') {
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 

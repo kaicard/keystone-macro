@@ -38,6 +38,17 @@ function fingerprintHeadline(headline) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ── Authorization: admin only (workflow steps run as an app admin) ────────
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const now = new Date();
 
     // ── Quiet hours: skip 00:00-06:00 BST ────────────────────────────────────

@@ -417,6 +417,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // ── Authorization: admin only (workflow steps run as an app admin) ────────
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const isoDate = now.toISOString().split('T')[0];

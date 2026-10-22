@@ -244,8 +244,22 @@ function buildWeeklyEmailHtml({ subject, weekRange, marketSnapshot, sections, pr
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ── Authorization: admin only (workflow steps run as an app admin) ────────
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
-    const testEmail = body.test_email || null; // if provided, only send to this email
+    // Test sends are restricted to the caller's own address, so this endpoint
+    // can never relay mail to an arbitrary third party.
+    const requestedTestEmail = body.test_email || null;
+    const testEmail = requestedTestEmail && requestedTestEmail === user.email ? requestedTestEmail : null;
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
