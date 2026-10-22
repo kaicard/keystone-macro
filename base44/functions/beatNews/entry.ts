@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { sanitizeArticles } from '../../shared/safeUrl.ts';
 
 const BEAT_PROMPTS = {
   markets:         'Global financial markets: equity indices, ETFs, volatility, cross-asset moves, fund flows, options activity.',
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
       const entry = cached[0];
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (age < CACHE_TTL_MS) {
-        return Response.json({ articles: JSON.parse(entry.payload), fetched_at: entry.fetched_at, from_cache: true });
+        return Response.json({ articles: sanitizeArticles(JSON.parse(entry.payload)), fetched_at: entry.fetched_at, from_cache: true });
       }
     }
 
@@ -87,7 +88,7 @@ IMPORTANT: Return the articles ordered by published_time, newest first (most rec
       }
     });
 
-    const articles = result?.articles || [];
+    const articles = sanitizeArticles(result?.articles);
     const now = new Date().toISOString();
 
     // Update cache

@@ -29,51 +29,6 @@ const preferenceOptions = [
   { id: 'gold', label: 'Gold hedge' }, { id: 'esg', label: 'ESG tilt' },
 ];
 
-const PORTFOLIO_SCHEMA = {
-  type: "object",
-  properties: {
-    portfolio_name: { type: "string" },
-    saa: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          asset_class: { type: "string" },
-          weight: { type: "number" },
-          rationale: { type: "string" },
-          illustrative_instruments: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: { name: { type: "string" }, reason: { type: "string" } }
-            }
-          }
-        }
-      }
-    },
-    taa_tilts: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: { asset_class: { type: "string" }, tilt: { type: "string" }, reason: { type: "string" } }
-      }
-    },
-    overall_rationale: { type: "string" },
-    performance_context: { type: "string" },
-    scenario_sensitivity: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: { scenario: { type: "string" }, effect: { type: "string" }, impact: { type: "string" } }
-      }
-    },
-    risk_considerations: { type: "string" },
-    strengths: { type: "string" },
-    weaknesses: { type: "string" },
-    if_conditions_change: { type: "string" }
-  }
-};
-
 export default function PortfolioLab() {
   const [risk, setRisk] = useState('');
   const [horizon, setHorizon] = useState('');
@@ -91,44 +46,10 @@ export default function PortfolioLab() {
   const generate = async () => {
     setLoading(true);
     setResult(null);
-    const prefLabels = preferences.map(id => preferenceOptions.find(p => p.id === id)?.label).filter(Boolean);
-    const selectedCurrency = currencyOptions.find(c => c.code === currency);
-    const capitalNum = parseFloat(capital.replace(/[^0-9.]/g, ''));
-    const capitalFormatted = `${selectedCurrency?.symbol}${Number(capitalNum).toLocaleString()}`;
-
-    const prompt = `You are an institutional portfolio construction expert. Generate a detailed educational portfolio for:
-
-Capital to Invest: ${capitalFormatted} ${currency}
-Risk Tolerance: ${risk}
-Time Horizon: ${horizon}
-Objective: ${objective}
-Market Regime: ${regime}
-Preferences: ${prefLabels.join(', ') || 'None specified'}
-
-CRITICAL CAPITAL CONSTRAINTS - You MUST apply these rules based on the capital amount (${capitalFormatted}):
-- Under ${selectedCurrency?.symbol}10,000: Focus on liquid ETFs and index funds only. No direct property, private equity, hedge funds, or alternatives. Keep it simple with 3-4 asset classes max.
-- ${selectedCurrency?.symbol}10,000-${selectedCurrency?.symbol}50,000: ETFs, index funds, and liquid securities. Minimal alternatives. No direct real estate or private assets.
-- ${selectedCurrency?.symbol}50,000-${selectedCurrency?.symbol}250,000: Can include diversified equities, bonds, some liquid alternatives (REITs, commodity ETFs). No direct property or private equity.
-- ${selectedCurrency?.symbol}250,000-${selectedCurrency?.symbol}1,000,000: Can include a broader alternatives sleeve. Possibly some direct property exposure. Modest illiquid allocation.
-- Above ${selectedCurrency?.symbol}1,000,000: Full institutional toolkit available - private equity, hedge funds, direct real estate, infrastructure, private credit.
-
-All instrument examples must be appropriate for this capital level. Express all monetary examples in ${currency} (${selectedCurrency?.symbol}). All weights must sum to exactly 100%.
-
-For the Strategic Asset Allocation (SAA), each asset class must include:
-- asset_class name
-- weight (percentage, all weights must sum to 100)
-- rationale (clear explanation of why this weight)
-- illustrative_instruments: array of 3-4 example instruments/ETFs/securities with name and reason
-
-Also provide tactical tilts (TAA), overall portfolio rationale, performance context, scenario sensitivity (3 scenarios), risk considerations, strengths, weaknesses, and if conditions change narrative.
-
-This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples only.`;
-
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: PORTFOLIO_SCHEMA
+    const res = await base44.functions.invoke('generatePortfolio', {
+      capital, currency, risk, horizon, objective, regime, preferences,
     });
-    setResult(res);
+    setResult(res.data);
     setLoading(false);
   };
 

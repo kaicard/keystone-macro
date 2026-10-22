@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { sanitizeCreditSpreads } from '../../shared/safeUrl.ts';
 
 const CACHE_KEY = 'liveMarketContextV2';
 const CACHE_TTL_MS = 35 * 60 * 1000;
@@ -203,7 +204,7 @@ DISPLAY RULES:
     yield_curve,
     regime: llmData?.regime || null,
     market_summary: llmData?.market_summary || '',
-    credit_spreads: llmData?.credit_spreads || [],
+    credit_spreads: sanitizeCreditSpreads(llmData?.credit_spreads),
   };
 
   const fetched_at = new Date().toISOString();
@@ -225,6 +226,7 @@ Deno.serve(async (req) => {
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
+        data.credit_spreads = sanitizeCreditSpreads(data.credit_spreads);
         // Serve any cached data immediately and refresh in the background.
         // This avoids a slow blocking fetch when the cache is merely stale.
         if (age >= STALE_THRESHOLD_MS) {
@@ -239,6 +241,7 @@ Deno.serve(async (req) => {
     const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     const freshEntry = fresh?.[0];
     const data = freshEntry?.payload ? JSON.parse(freshEntry.payload) : {};
+    data.credit_spreads = sanitizeCreditSpreads(data.credit_spreads);
     return Response.json({ ok: true, data, cached: false, fetched_at: freshEntry?.fetched_at || new Date().toISOString() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });

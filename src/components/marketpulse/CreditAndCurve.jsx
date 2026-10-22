@@ -27,7 +27,7 @@ function DataCard({ eyebrow, title, children, source }) {
     <section className="rounded-2xl border border-border/35 bg-card/45 p-5 min-h-[168px] flex flex-col">
       <header className="mb-3"><p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/45 font-semibold">{eyebrow}</p><h3 className="text-sm font-semibold mt-1">{title}</h3></header>
       <div className="flex-1">{children}</div>
-      {source?.source_url && <a href={source.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 self-start mt-3 text-[9px] text-muted-foreground/40 hover:text-primary">Source: {cleanMarketCopy(source.source_name || 'Open data')} <ArrowUpRight className="w-2.5 h-2.5" /></a>}
+      {/^https?:\/\//i.test(source?.source_url || '') && <a href={source.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 self-start mt-3 text-[9px] text-muted-foreground/40 hover:text-primary">Source: {cleanMarketCopy(source.source_name || 'Open data')} <ArrowUpRight className="w-2.5 h-2.5" /></a>}
     </section>
   );
 }

@@ -25,7 +25,9 @@ const SENTIMENT_STYLES = {
 function ArticleCard({ article, index }) {
   const [expanded, setExpanded] = useState(false);
   const domain = article.url_hint || '';
-  const searchUrl = article.url || (domain
+  // Only http(s) URLs are safe in an href; anything else falls back to a search link.
+  const safeUrl = /^https?:\/\//i.test(article.url || '') ? article.url : '';
+  const searchUrl = safeUrl || (domain
     ? `https://${domain}/search?q=${encodeURIComponent(article.headline)}`
     : `https://www.google.com/search?q=${encodeURIComponent(article.headline)}`);
 
