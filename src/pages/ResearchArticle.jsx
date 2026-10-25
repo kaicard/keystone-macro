@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { stripCitationMarkers } from '@/lib/stripCitations';
 
 const CATEGORY_CONFIG = {
   'Macro':               { color: 'bg-amber-400/10 text-amber-400 border-amber-400/20',  accent: 'from-amber-500/[0.08]',  bar: 'from-amber-400 via-primary to-transparent' },
@@ -216,7 +217,7 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">Executive Summary</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.executive_summary}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{stripCitationMarkers(note.executive_summary)}</p>
                 </div>
               </div>
             )}
@@ -227,7 +228,7 @@ export default function ResearchArticle() {
                 <div className="h-px w-full bg-gradient-to-r from-border/60 via-border/20 to-transparent" />
                 <div className="p-7 sm:p-8">
                   <ReactMarkdown components={bodyComponents} remarkPlugins={[remarkGfm]}>
-                    {normalizeMarkdownBody(note.body)}
+                    {stripCitationMarkers(normalizeMarkdownBody(note.body))}
                   </ReactMarkdown>
                 </div>
               </div>
@@ -244,7 +245,7 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/80">Key Risks</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/75">{note.key_risks}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/75">{stripCitationMarkers(note.key_risks)}</p>
                 </div>
               </div>
             )}
@@ -260,7 +261,7 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/80">Key Takeaway</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{note.takeaway}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/85 font-medium">{stripCitationMarkers(note.takeaway)}</p>
                 </div>
               </div>
             )}
@@ -276,7 +277,7 @@ export default function ResearchArticle() {
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">What Would Change My Mind</span>
                   </div>
-                  <p className="text-[15px] leading-[1.9] text-foreground/75">{note.what_would_change_mind}</p>
+                  <p className="text-[15px] leading-[1.9] text-foreground/75">{stripCitationMarkers(note.what_would_change_mind)}</p>
                 </div>
               </div>
             )}

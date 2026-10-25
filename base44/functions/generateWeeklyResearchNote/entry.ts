@@ -1,5 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Safety net: the model occasionally still emits bare numbered citation markers
+// such as "[4]" or "[4, 9]". They have no reference list to point at, so strip
+// them before the note is stored. Markdown links are left untouched.
+const CITATION_MARKER = /[ \t]*\[\d+(?:\s*,\s*\d+)*\](?!\()/g;
+const stripCitations = (text) => (typeof text === 'string' ? text.replace(CITATION_MARKER, '') : text);
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -60,7 +66,9 @@ Format:
 - takeaway: Concise actionable takeaway (2-4 sentences)
 - what_would_change_mind: What evidence would alter this view
 - read_time_minutes: Estimated read time (integer, 5-12)
-- sources: 3-8 objects with title, publisher, url, and accessed_at. URLs must be direct HTTPS source pages, never search-result pages.`;
+- sources: 3-8 objects with title, publisher, url, and accessed_at. URLs must be direct HTTPS source pages, never search-result pages.
+
+CRITICAL: NEVER write numbered citation markers such as [1], [4] or [4, 9] anywhere in the text. Sources belong only in the sources array.`;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
@@ -107,11 +115,11 @@ Format:
       subtitle:               result.subtitle,
       category,
       tags:                   result.tags,
-      executive_summary:      result.executive_summary,
-      body:                   result.body,
-      key_risks:              result.key_risks,
-      takeaway:               result.takeaway,
-      what_would_change_mind: result.what_would_change_mind,
+      executive_summary:      stripCitations(result.executive_summary),
+      body:                   stripCitations(result.body),
+      key_risks:              stripCitations(result.key_risks),
+      takeaway:               stripCitations(result.takeaway),
+      what_would_change_mind: stripCitations(result.what_would_change_mind),
       read_time_minutes:      result.read_time_minutes,
       publish_date:           publishDate,
       status:                 'published',

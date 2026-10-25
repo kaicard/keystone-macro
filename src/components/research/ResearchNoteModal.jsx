@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Calendar, Tag, AlertTriangle, Lightbulb, TrendingUp, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
+import { stripCitationMarkers } from '@/lib/stripCitations';
 
 const categoryColors = {
   'Macro': 'bg-chart-1/10 text-chart-1',
@@ -87,7 +88,7 @@ export default function ResearchNoteModal({ note, onClose }) {
             {note.executive_summary && (
               <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
                 <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Executive Summary</p>
-                <p className="text-sm leading-relaxed text-foreground/90">{note.executive_summary}</p>
+                <p className="text-sm leading-relaxed text-foreground/90">{stripCitationMarkers(note.executive_summary)}</p>
               </div>
             )}
 
@@ -101,7 +102,7 @@ export default function ResearchNoteModal({ note, onClose }) {
                 [&_li]:text-sm [&_li]:text-muted-foreground [&_li]:leading-relaxed
                 [&_strong]:text-foreground [&_strong]:font-semibold
                 [&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground/80 [&_blockquote]:italic">
-                <ReactMarkdown>{note.body}</ReactMarkdown>
+                <ReactMarkdown>{stripCitationMarkers(note.body)}</ReactMarkdown>
               </div>
             )}
 
@@ -112,7 +113,7 @@ export default function ResearchNoteModal({ note, onClose }) {
                   <AlertTriangle className="w-4 h-4 text-red-400" />
                   <h3 className="text-sm font-semibold text-red-400">Key Risks</h3>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{note.key_risks}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{stripCitationMarkers(note.key_risks)}</p>
               </div>
             )}
 
@@ -123,7 +124,7 @@ export default function ResearchNoteModal({ note, onClose }) {
                   <Lightbulb className="w-4 h-4 text-primary" />
                   <h3 className="text-sm font-semibold text-primary">Key Takeaway</h3>
                 </div>
-                <p className="text-sm leading-relaxed font-medium">{note.takeaway}</p>
+                <p className="text-sm leading-relaxed font-medium">{stripCitationMarkers(note.takeaway)}</p>
               </div>
             )}
 
@@ -134,7 +135,7 @@ export default function ResearchNoteModal({ note, onClose }) {
                   <Eye className="w-4 h-4 text-accent" />
                   <h3 className="text-sm font-semibold">What Would Change My Mind</h3>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{note.what_would_change_mind}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{stripCitationMarkers(note.what_would_change_mind)}</p>
               </div>
             )}
           </div>
