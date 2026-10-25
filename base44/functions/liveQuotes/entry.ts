@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
 
 const CACHE_KEY = 'liveQuotes';
 
@@ -107,80 +108,8 @@ const TICKERS = [
   { sym: 'DX-Y.NYB', name: 'DXY',            cat: 'dxy' },
 ];
 
-const YF_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'application/json, text/plain, */*',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Referer': 'https://finance.yahoo.com/',
-  'Origin': 'https://finance.yahoo.com',
-  'Cache-Control': 'no-cache',
-};
-
-// Batch fetch via v7 quote endpoint - most efficient, fetches all at once
-async function fetchAllTickers(symbols) {
-  const chunks = [];
-  const CHUNK_SIZE = 20;
-  for (let i = 0; i < symbols.length; i += CHUNK_SIZE) {
-    chunks.push(symbols.slice(i, i + CHUNK_SIZE));
-  }
-
-  const results = {};
-  
-  // Promise.all with timeout per chunk (15 seconds max per chunk)
-  await Promise.allSettled(chunks.map(async (chunk) => {
-    const syms = chunk.join(',');
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(syms)}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChange,regularMarketChangePercent`;
-      const res = await fetch(url, { headers: YF_HEADERS, signal: controller.signal });
-      clearTimeout(timeoutId);
-      
-      if (res.ok) {
-        const json = await res.json();
-        for (const q of (json?.quoteResponse?.result || [])) {
-          if (q?.regularMarketPrice !== null && q?.regularMarketPrice !== undefined && q?.regularMarketPreviousClose !== null && q?.regularMarketPreviousClose !== undefined) {
-            results[q.symbol] = {
-              price: q.regularMarketPrice,
-              change_pct: q.regularMarketChangePercent ?? ((q.regularMarketPrice - q.regularMarketPreviousClose) / q.regularMarketPreviousClose) * 100,
-            };
-          }
-        }
-      }
-    } catch (_) {}
-  }));
-
-  // Fallback: individual v8 chart for any symbols that still failed
-  const missing = symbols.filter(sym => !results[sym]);
-  if (missing.length > 0) {
-    for (const sym of missing) {
-      for (const host of ['query1', 'query2']) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-          
-          const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1m&range=1d&includePrePost=false`;
-          const res = await fetch(url, { headers: YF_HEADERS, signal: controller.signal });
-          clearTimeout(timeoutId);
-          
-          if (!res.ok) continue;
-          const json = await res.json();
-          const meta = json?.chart?.result?.[0]?.meta;
-          if (!meta) continue;
-          const price = meta.regularMarketPrice;
-          const prev = meta.regularMarketPreviousClose ?? meta.previousClose ?? meta.chartPreviousClose;
-          if (price !== null && price !== undefined && prev !== null && prev !== undefined && price > 0 && prev > 0) {
-            results[sym] = { price, change_pct: ((price - prev) / prev) * 100 };
-            break;
-          }
-        } catch (_) {}
-      }
-    }
-  }
-
-  return results;
-}
+// Quotes come from the shared Yahoo helper: the v7 batch endpoint it used to
+// call now returns 401, and its per-symbol fallback was too slow to ever finish.
 
 function direction(change) {
   if (change > 0.05) return 'up';
@@ -228,7 +157,7 @@ function isValidPrice(ticker, price) {
 
 async function fetchAndCache(base44, existingCacheId) {
   const symbols = TICKERS.map(t => t.sym);
-  const quoteMap = await fetchAllTickers(symbols);
+  const quoteMap = await fetchYahooQuoteMap(symbols);
 
   const organized = {
     indices: [], equities: [], etfs: [], fx: [], commodities: [], crypto: [],
@@ -237,13 +166,13 @@ async function fetchAndCache(base44, existingCacheId) {
 
   for (const t of TICKERS) {
     const q = quoteMap[t.sym];
-    if (!q || !isValidPrice(t.sym, q.price)) continue;
+    if (!q || !isValidPrice(t.sym, q.regularMarketPrice)) continue;
     const item = {
       ticker: t.sym,
       name: t.name,
-      price: q.price,
-      change_pct: q.change_pct,
-      direction: direction(q.change_pct),
+      price: q.regularMarketPrice,
+      change_pct: q.regularMarketChangePercent,
+      direction: direction(q.regularMarketChangePercent),
       category: t.cat,
     };
     if (t.cat === 'vix') organized.vix = item;
@@ -280,6 +209,14 @@ Deno.serve(async (req) => {
 
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
+        const hasQuotes = ['indices', 'equities', 'etfs', 'fx', 'commodities', 'crypto']
+          .some(k => data?.[k]?.length);
+        // A payload with no quotes is the residue of a failed refresh, so rebuild
+        // it now rather than leaving the board empty.
+        if (!hasQuotes) {
+          const { organized } = await fetchAndCache(base44, entry.id);
+          return Response.json({ ok: true, data: organized, cached: false, ts: Date.now() });
+        }
         // Serve any cached data immediately and refresh in background when stale.
         // This avoids blocking the user on a slow Yahoo Finance fetch.
         if (age >= STALE_TTL_MS) {

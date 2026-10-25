@@ -1,15 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { sanitizeCreditSpreads } from '../../shared/safeUrl.ts';
+import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
 
 const CACHE_KEY = 'liveMarketContextV2';
 const CACHE_TTL_MS = 35 * 60 * 1000;
 const STALE_THRESHOLD_MS = 18 * 60 * 1000;
-
-const YF_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'application/json',
-  'Referer': 'https://finance.yahoo.com/',
-};
 
 // Bond yield tickers on Yahoo Finance
 const BOND_TICKERS = [
@@ -47,23 +42,8 @@ const SP500_COMPONENTS = [
   'VZ','PM','RTX','UPS','QCOM','HON','BMY','T','CAT','AMGN',
 ];
 
-async function fetchYahooQuotes(symbols) {
-  const chunks = [];
-  for (let i = 0; i < symbols.length; i += 20) chunks.push(symbols.slice(i, i + 20));
-  const results = {};
-  await Promise.all(chunks.map(async (chunk) => {
-    try {
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(chunk.join(','))}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChange,regularMarketChangePercent`;
-      const res = await fetch(url, { headers: YF_HEADERS });
-      if (!res.ok) return;
-      const json = await res.json();
-      for (const q of (json?.quoteResponse?.result || [])) {
-        if (q?.regularMarketPrice != null) results[q.symbol] = q;
-      }
-    } catch (_) {}
-  }));
-  return results;
-}
+// Quotes come from the shared Yahoo helper: the v7 batch endpoint it used to
+// call now returns 401 for every caller.
 
 function direction(change) {
   if (change > 0.01) return 'up';
@@ -79,7 +59,7 @@ async function refreshInBackground(base44, existingId) {
     ...SP500_COMPONENTS,
   ];
 
-  const quoteMap = await fetchYahooQuotes(allSymbols);
+  const quoteMap = await fetchYahooQuoteMap(allSymbols);
 
   // ── Bonds ──────────────────────────────────────────────────────────────────
   const bonds = BOND_TICKERS.map(t => {
@@ -214,6 +194,8 @@ DISPLAY RULES:
   } else {
     await base44.asServiceRole.entities.MarketCache.create({ key: CACHE_KEY, payload, fetched_at });
   }
+
+  return data;
 }
 
 Deno.serve(async (req) => {
@@ -221,12 +203,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
-    if (cached?.length > 0) {
-      const entry = cached[0];
+    // Duplicate rows can exist for this key - always work from the newest one.
+    const entry = (cached || []).sort((a, b) => new Date(b.fetched_at) - new Date(a.fetched_at))[0];
+    if (entry) {
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
         data.credit_spreads = sanitizeCreditSpreads(data.credit_spreads);
+        // No quotes at all means a previous refresh failed - rebuild before serving.
+        if (!data?.bonds?.length && !data?.sectors?.length) {
+          const rebuilt = await refreshInBackground(base44, entry.id);
+          return Response.json({ ok: true, data: rebuilt, cached: false, fetched_at: new Date().toISOString() });
+        }
         // Serve any cached data immediately and refresh in the background.
         // This avoids a slow blocking fetch when the cache is merely stale.
         if (age >= STALE_THRESHOLD_MS) {
@@ -237,12 +225,8 @@ Deno.serve(async (req) => {
     }
 
     // Truly first-ever fetch - no choice but to block
-    await refreshInBackground(base44, cached?.[0]?.id || null);
-    const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
-    const freshEntry = fresh?.[0];
-    const data = freshEntry?.payload ? JSON.parse(freshEntry.payload) : {};
-    data.credit_spreads = sanitizeCreditSpreads(data.credit_spreads);
-    return Response.json({ ok: true, data, cached: false, fetched_at: freshEntry?.fetched_at || new Date().toISOString() });
+    const freshData = await refreshInBackground(base44, entry?.id || null);
+    return Response.json({ ok: true, data: freshData, cached: false, fetched_at: new Date().toISOString() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
