@@ -9,7 +9,7 @@ const cases = [
     icon: GraduationCap,
     title: 'Young Professional',
     subtitle: 'Building wealth from £25k',
-    description: 'Graduate starting a long-term investment journey with a focus on equity accumulation and tax-efficient wrappers.',
+    description: 'Graduate building a long-term portfolio, focused on equity accumulation and tax-efficient wrappers.',
     risk: 'Medium-High',
     horizon: '20+ years',
   },

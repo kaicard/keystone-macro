@@ -381,7 +381,7 @@ export default function IntelligenceFeed() {
                 <h2 className="text-sm font-semibold text-foreground/95">Research Intelligence</h2>
                 {!isLoading && <span className="text-[11px] tabular-nums text-muted-foreground/40">{filtered.length}</span>}
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground/45">Curated macro and cross-asset developments</p>
+              <p className="mt-0.5 text-xs text-muted-foreground/45">Macro and cross-asset developments</p>
             </div>
           </div>
           <div className="flex items-center gap-2 lg:hidden">

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 const ANALYSIS_SCHEMA = {
   type: 'object',
@@ -80,7 +81,7 @@ Return exactly these fields:
 
 EDITORIAL RULES
 - British English. Sharp, analytical, no filler, no marketing language.
-- Never use em dashes or en dashes. Use commas, colons or plain hyphens.
+${HOUSE_STYLE}
 - No price targets, no buy or sell recommendations, no position sizing, no personalised advice. Describe implications and scenarios, never instruct the reader.
 - Do not address the reader directly as an investor and never imply the reader should act.
 - Do not fabricate data, quotes or sources.`;

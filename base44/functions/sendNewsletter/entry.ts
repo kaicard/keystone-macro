@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 // ─── Prettify label ────────────────────────────────────────────────────────────
 function prettyLabel(raw) {
@@ -454,6 +455,8 @@ Deno.serve(async (req) => {
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro. Today is ${dateStr} (${isoDate}). This is the ${editionLabel}.
 
+${HOUSE_STYLE}
+
 TODAY'S EDITORIAL PILLAR: "${pillar.name}" - ${pillar.focus}
 This edition should LEAD with today's pillar where it is genuinely material. Still surface other important moves, but the lead framing reflects the pillar.${recentContext}
 
@@ -490,6 +493,8 @@ Return JSON:
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the ${editionLabel} for ${dateStr} (${isoDate}) - a ${timeContext}.
+
+${HOUSE_STYLE}
 
 TODAY'S EDITORIAL PILLAR: "${pillar.name}" - ${pillar.focus}
 Lead with this pillar's most material story when it genuinely matters today. Still cover other material moves across diverse categories, but the lead section and framing should reflect today's pillar.${recentContext}

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 const TOPICS = [
   { name: 'Macro',       beat: 'macro',       category: 'Macro'       },
@@ -126,7 +127,7 @@ HARD RULES - violating ANY of these means the story is REJECTED outright:
 5. Every story MUST include the direct HTTPS URL and publication name used to verify it. Reject aggregator/search-result URLs and reject any story without a traceable source.
 6. Headlines: max 15 words, must contain a specific fact (number, name, action). No vague headlines.
 7. If there are genuinely NO new stories in ${topic.name} in the past 4 hours, return an empty stories array.
-8. Never use em dashes or en dashes in any field. Use commas, colons, or plain hyphens instead.
+8. ${HOUSE_STYLE}
 
 For each confirmed story return:
 - headline: original 15-word max headline with a specific fact

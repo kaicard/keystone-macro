@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 // Safety net: the model occasionally still emits bare numbered citation markers
 // such as "[4]" or "[4, 9]". They have no reference list to point at, so strip
@@ -30,6 +31,8 @@ Deno.serve(async (req) => {
     const recentTitles = existingNotes.map(n => `- ${n.title} (${n.publish_date})`).join('\n');
 
     const prompt = `You are a senior macro research analyst at Keystone Macro. Today is ${dateStr}.
+
+${HOUSE_STYLE}
 
 Generate a new institutional-grade research note for publication. It must be on a DIFFERENT topic than these recent notes:
 ${recentTitles}

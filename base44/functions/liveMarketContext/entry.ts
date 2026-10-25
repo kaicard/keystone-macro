@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 import { sanitizeCreditSpreads } from '../../shared/safeUrl.ts';
 import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
 
@@ -171,7 +172,9 @@ DISPLAY RULES:
 3. growth, inflation, policy, volatility, and leadership: each 2-5 words maximum.
 4. market_summary.headline: maximum 12 words.
 5. market_summary.bullets: exactly 2 bullets, each maximum 18 words, using only the real inputs above.
-6. For credit_spreads, use web context for current US IG OAS and US HY OAS. If verified values are unavailable, return an empty array. Put source details only in source_name and source_url.`,
+6. For credit_spreads, use web context for current US IG OAS and US HY OAS. If verified values are unavailable, return an empty array. Put source details only in source_name and source_url.
+
+${HOUSE_STYLE}`,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
     response_json_schema: REGIME_SCHEMA,

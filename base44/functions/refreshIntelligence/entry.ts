@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 const JBLANKED_API_KEY = Deno.env.get('JBLANKED_API_KEY');
 
@@ -146,7 +147,7 @@ ABSOLUTE RULES - failure to follow these will make the output unusable:
 3. Do NOT add context from outside these events - no "analysts expected", no market reactions
 4. Headline must state the exact actual figure and beat/miss vs forecast
 5. Write in Bloomberg terminal style - factual, precise, no filler phrases
-6. Never use em dashes or en dashes anywhere in your output. Use commas, colons, or plain hyphens instead.
+6. ${HOUSE_STYLE}
 
 ${eventsPayload}
 

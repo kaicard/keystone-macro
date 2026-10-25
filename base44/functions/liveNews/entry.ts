@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 const CACHE_KEY = 'liveNews';
 const CACHE_TTL_MS = 45 * 60 * 1000; // 45 minutes - stale-while-revalidate handles freshness
@@ -64,7 +65,7 @@ STRICT RULES:
 - Do NOT include any URLs, links, or source domains
 - For published_time: use the approximate time of the development in HH:MM London time - write "-" if unknown
 - Source field: write the general type, e.g. "Central Banks", "Labour Data", "Geopolitics", "Corporate" - NOT publication names
-- Never use em dashes or en dashes in any field. Use commas, colons, or plain hyphens instead.
+${HOUSE_STYLE}
 
 For each story provide:
 - headline: original Keystone Macro headline (max 15 words) - must be written fresh, not copied from any publication

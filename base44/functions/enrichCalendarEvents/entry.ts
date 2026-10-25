@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -25,6 +26,8 @@ Deno.serve(async (req) => {
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `Senior macro strategist. Today is ${today}. For each event return key, verdict, analysis (exactly 2 sentences: what happened + market implication), and key_points (max 2 bullets). Verdict: "beat"/"miss"/"in_line"/"pending" for data; "delivered"/"scheduled"/"in_progress" for speeches. Use only the numbers provided. No fabrication.
+
+${HOUSE_STYLE}
 
 Events: ${JSON.stringify(eventList)}`,
       response_json_schema: {

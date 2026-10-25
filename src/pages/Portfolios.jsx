@@ -74,7 +74,7 @@ const modelPortfolios = [
   },
   {
     name: 'Student / Beginner', icon: GraduationCap, risk: 'Moderate', iconColor: 'text-cyan-400',
-    objective: 'Simple, low-cost portfolio for someone beginning their investment journey. Focus on broad diversification.',
+    objective: 'Simple, low-cost portfolio for someone just starting out. Focus on broad diversification.',
     suitable_investor: 'New investor, student, or first-time saver with small capital and long time horizon.',
     time_horizon: '10+ years',
     volatility_estimate: '10-14% annualised',

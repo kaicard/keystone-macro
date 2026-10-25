@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 // The prompt and output schema live here: the client only sends the user's
 // selections, validated against these fixed option sets.
@@ -126,7 +127,9 @@ Also provide:
 - Strengths and weaknesses in current regime
 - If conditions change narrative
 
-This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples only.`;
+This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples only.
+
+${HOUSE_STYLE}`;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 import { sanitizeArticles } from '../../shared/safeUrl.ts';
 
 const BEAT_PROMPTS = {
@@ -45,6 +46,8 @@ Deno.serve(async (req) => {
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are a financial news editor. Current date/time: ${londonDate}, ${londonTime} London time.
+
+${HOUSE_STYLE}
 
 Search the internet RIGHT NOW for the 8 most important recent news stories in this beat: ${BEAT_PROMPTS[beat]}
 

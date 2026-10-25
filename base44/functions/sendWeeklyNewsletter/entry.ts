@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
 // ─── Fetch real snapshot data via v8 chart endpoint ────────────────────────────
 async function fetchSnapshotData() {
@@ -295,6 +296,8 @@ Deno.serve(async (req) => {
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week: ${weekRange}.
 
+${HOUSE_STYLE}
+
 REAL MARKET DATA (just fetched - current levels):
 ${snapshotSummary}
 
@@ -310,6 +313,8 @@ Return JSON:
       }),
       base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the lead analyst at Keystone Macro writing the FREE weekly digest. Today is ${dateStr}. Week covered: ${weekRange}.
+
+${HOUSE_STYLE}
 
 REAL MARKET DATA (current live levels - do NOT fabricate any price, level, or percentage):
 ${snapshotSummary}
