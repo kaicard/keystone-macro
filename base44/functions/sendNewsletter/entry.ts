@@ -156,6 +156,27 @@ const WEEKDAY_PILLARS = {
   5: { name: 'The Scoreboard',     focus: 'weekly wrap - what actually mattered vs what was noise. Reflective, shorter. One defining number, one thing to watch Monday.', accent: '#10b981', images: ['stock_exchange','gold_bars','bond_market','tech_industry'], spotlight: { type: 'number', headline: 'The Week in One Number' } },
 };
 
+// ─── Parse a stored edition body back into section blocks ──────────────────────
+function parseStoredBody(body) {
+  return String(body || '')
+    .split(/\n\n---\n\n/)
+    .map(chunk => {
+      const head = chunk.match(/^##\s+(.+)$/m);
+      if (!head) return null;
+      const raw = head[1].trim();
+      const idx = raw.indexOf(':');
+      const rest = chunk.slice(chunk.indexOf(head[0]) + head[0].length).trim();
+      const calloutMatch = rest.match(/^>\s?([\s\S]*)$/m);
+      return {
+        label: idx > -1 ? raw.slice(0, idx).trim() : raw,
+        headline: idx > -1 ? raw.slice(idx + 1).trim() : '',
+        body: calloutMatch ? rest.slice(0, calloutMatch.index).trim() : rest,
+        callout: calloutMatch ? calloutMatch[1].trim() : '',
+      };
+    })
+    .filter(s => s && s.headline);
+}
+
 // ─── Section card HTML ─────────────────────────────────────────────────────────
 function sectionCardHtml({ label, headline, body, callout, accent }) {
   const cleanBody = (body || '')
@@ -417,6 +438,54 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const editionType = body.edition_type || 'morning';
+
+    // ── Replay mode: resend a stored edition to specific recipients ─────────
+    if (body.resend_slug) {
+      const recipients = (body.to || []).filter(Boolean);
+      if (recipients.length === 0) {
+        return Response.json({ error: 'No recipients provided' }, { status: 400 });
+      }
+      const matches = await base44.asServiceRole.entities.NewsletterEdition.filter({ slug: body.resend_slug });
+      if (!matches || matches.length === 0) {
+        return Response.json({ error: `No edition found for ${body.resend_slug}` }, { status: 404 });
+      }
+      const ed = matches[0];
+      const isMorning = ed.edition_type === 'morning';
+      const label = isMorning ? 'Morning Brief' : 'Evening Wrap';
+      const [y, mo, d] = String(ed.publish_date || '').split('-').map(Number);
+      const dateStr = new Date(Date.UTC(y, mo - 1, d))
+        .toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const marketSnapshot = String(ed.market_summary || '')
+        .split('·')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(s => {
+          const m = s.match(/^(.+?):\s*(.+?)\s*\(([^)]*)\)\s*$/);
+          return m ? { label: m[1].trim(), value: m[2].trim(), change: m[3].trim() } : null;
+        })
+        .filter(Boolean);
+      const sectionBlocks = parseStoredBody(ed.body)
+        .map((s, i) => sectionCardHtml({ label: s.label, headline: s.headline, body: s.body, callout: s.callout, accent: SECTION_ACCENTS[i % SECTION_ACCENTS.length] }))
+        .join('');
+      const htmlBody = buildEmailHtml({ subject: ed.title, editionLabel: label, dateStr, marketSnapshot, sectionBlocks, footerNote: '', spotlightHtml: '', isMorning });
+
+      const sent = [];
+      const errors = [];
+      for (const to of recipients) {
+        try {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to,
+            from_name: 'Keystone Macro',
+            subject: `The Keystone Macro Brief - ${ed.title}`,
+            body: htmlBody,
+          });
+          sent.push(to);
+        } catch (err) {
+          errors.push({ email: to, error: err.message });
+        }
+      }
+      return Response.json({ message: `${label} ${ed.publish_date} resent`, sent, errors: errors.length > 0 ? errors : undefined });
+    }
 
     const subscribers = await base44.asServiceRole.entities.NewsletterSubscription.filter({ status: 'active' });
     if (!subscribers || subscribers.length === 0) {
