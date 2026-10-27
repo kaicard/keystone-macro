@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { selectNewsletterPhoto, newsletterPhotoHtml } from '../../shared/newsletterPhotography.ts';
 
 // ─── Prettify label ────────────────────────────────────────────────────────────
 function prettyLabel(raw) {
@@ -132,19 +133,6 @@ async function fetchSnapshotData() {
   return snapshot;
 }
 
-const IMAGE_MAP = {
-  oil_refinery:     'https://images.unsplash.com/photo-1574018856533-3e5c20f8c3c4?w=700&q=90&fit=crop',
-  federal_reserve:  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=700&q=90&fit=crop',
-  stock_exchange:   'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=700&q=90&fit=crop',
-  gold_bars:        'https://images.unsplash.com/photo-1610375461369-d613b564f4c4?w=700&q=90&fit=crop',
-  currency_trading: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=700&q=90&fit=crop',
-  world_diplomacy:  'https://images.unsplash.com/photo-1554734867-bf3c00a49371?w=700&q=90&fit=crop',
-  tech_industry:    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=700&q=90&fit=crop',
-  emerging_city:    'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=700&q=90&fit=crop',
-  bond_market:      'https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?w=700&q=90&fit=crop',
-  commodity_fields: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=700&q=90&fit=crop',
-};
-
 // ─── Weekday editorial pillars (Mon-Fri) ─────────────────────────────────────
 // Same schedule, same names - but each weekday leads with a distinct macro lens
 // so consecutive editions never feel like "same column, different day".
@@ -236,16 +224,6 @@ function chartCardHtml({ title, symbol, chartUrl, caption, open, close, high, lo
       </table>
       <img src="${chartUrl}" alt="${title} intraday" style="display:block;width:100%;max-width:100%;border:none;" />
       ${caption ? `<div style="padding:12px 22px 14px;border-top:1px solid #eef2f7;"><div style="font-size:11px;color:#64748b;line-height:1.65;font-style:italic;">${caption}</div></div>` : ''}
-    </div>
-  </td></tr>`;
-}
-
-// ─── Image block HTML ──────────────────────────────────────────────────────────
-function imageBlockHtml({ imageUrl, caption }) {
-  return `<tr><td style="padding:0 0 16px 0;">
-    <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <img src="${imageUrl}" alt="" style="display:block;width:100%;max-width:100%;height:auto;min-height:200px;object-fit:cover;border:none;" />
-      ${caption ? `<div style="background:#f8fafc;padding:10px 20px;border-top:1px solid #f1f5f9;"><div style="font-size:10px;color:#94a3b8;line-height:1.5;font-style:italic;">${caption}</div></div>` : ''}
     </div>
   </td></tr>`;
 }
@@ -422,7 +400,7 @@ function buildEmailHtml({ subject, editionLabel, dateStr, marketSnapshot, sectio
 }
 
 // ─── Main handler ──────────────────────────────────────────────────────────────
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -438,6 +416,15 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const editionType = body.edition_type || 'morning';
+
+    // Photo-only preview: no content generation, email sends, edition saves or rotation changes.
+    if (body.preview_photo === true) {
+      if (!Array.isArray(body.photo_sections) || body.photo_sections.length > 2) {
+        return Response.json({ error: 'Provide up to two photo_sections' }, { status: 400 });
+      }
+      const photo = await selectNewsletterPhoto(base44, body.photo_sections, { remember: false });
+      return Response.json({ photo, html: newsletterPhotoHtml(photo), preview: true });
+    }
 
     // ── Replay mode: resend a stored edition to specific recipients ─────────
     if (body.resend_slug) {
@@ -505,7 +492,6 @@ Deno.serve(async (req) => {
     const dow = now.getDay();
     const pillar = WEEKDAY_PILLARS[dow] || WEEKDAY_PILLARS[3];
     const spotlightHint = pillar.spotlight;
-    const pillarImageContext = pillar.images.join(' | ');
 
     // ── Fetch recent editions to avoid repeating content ────────────────────
     const recentEditions = await base44.asServiceRole.entities.NewsletterEdition.list('-published_at', 5);
@@ -577,7 +563,7 @@ STRICT RULES:
 3. No emojis.
 4. Write like a senior Goldman Sachs analyst - sharp, specific, authoritative.
 
-Write EXACTLY 6 sections covering the most important stories today. Pick from DIVERSE categories - never more than 1 section per category, and avoid defaulting to equities as the lead. M&A, geopolitics, commodities, central bank decisions, FX moves, tech regulation, credit, emerging markets - whatever genuinely matters today. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) provide image_topic. The remaining 2 have neither.
+Write EXACTLY 6 sections covering the most important stories today. Pick from DIVERSE categories - never more than 1 section per category, and avoid defaulting to equities as the lead. M&A, geopolitics, commodities, central bank decisions, FX moves, tech regulation, credit, emerging markets - whatever genuinely matters today. For EXACTLY 2 sections (most significant price movement) provide chart_config. For EXACTLY 2 sections (narrative/context matters more) suggest a real illustrative photograph using image_query and image_subject. The remaining 2 have neither.
 
 Return JSON:
 - sections: array of 6 objects, each with:
@@ -586,7 +572,8 @@ Return JSON:
   - body: 4-5 dense sentences with exact tickers, levels, % moves, named people/companies
   - callout: 1 forward-looking sentence - specific upcoming catalyst
   - chart_config (ONLY for 2 sections with most price movement): { yahoo_symbol, title, caption }
-  - image_topic (ONLY for 2 narrative sections): choose ONLY from today's pillar image set: ${pillarImageContext}`,
+  - image_query (ONLY for 2 narrative sections): a short, specific Wikimedia Commons photo search naming the actual institution, company, infrastructure, product or location discussed in THIS section. Include the correct country or city where material. Examples: "Eccles Building Washington", "Bank of England London", "TSMC semiconductor factory Taiwan", "Port of Shanghai container terminal". No URLs or invented photo titles. Never pick a subject just because it fits today's weekday pillar or a broad asset class. For sovereign bonds, use the relevant treasury or central bank, NOT housing models, coins or a generic skyline.
+  - image_subject (alongside image_query): the exact concrete subject name copied from this section's headline or body, which MUST also appear in the photograph's title or description. Never suggest a subject absent from the section. These are illustrative archive photos, NOT evidence of today's event. Prefer different subjects across editions.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -601,7 +588,8 @@ Return JSON:
                   body: { type: 'string' },
                   callout: { type: 'string' },
                   chart_config: { type: 'object', properties: { yahoo_symbol: { type: 'string' }, title: { type: 'string' }, caption: { type: 'string' } } },
-                  image_topic: { type: 'string' }
+                  image_query: { type: 'string' },
+                  image_subject: { type: 'string' }
                 }
               }
             }
@@ -625,7 +613,12 @@ Return JSON:
         try { const d = await fetchIntradayData(trySymbol); if (d) { chartDataMap[chartSectionIdx] = d; break; } } catch (_) {}
       }
     }
-    const imageSectionIdx = sections.findIndex((s, i) => i !== chartSectionIdx && s.image_topic && IMAGE_MAP[s.image_topic]);
+    let photo = null;
+    try {
+      photo = await selectNewsletterPhoto(base44, sections.map((s, i) => i === chartSectionIdx ? { ...s, image_query: null } : s));
+    } catch (error) {
+      console.warn('Newsletter photo omitted:', error.message);
+    }
 
     // ── Build section HTML blocks ────────────────────────────────────────────
     let sectionBlocks = '';
@@ -638,8 +631,8 @@ Return JSON:
         const url = buildChartUrl({ labels: d.labels, data: d.data, isUp: d.isUp, height: 290 });
         if (url) sectionBlocks += chartCardHtml({ title: s.chart_config.title, symbol: s.chart_config.yahoo_symbol, chartUrl: url, caption: s.chart_config.caption, open: d.open, close: d.close, high: d.high, low: d.low, changePct: d.changePct, isUp: d.isUp });
       }
-      if (i === imageSectionIdx) {
-        sectionBlocks += imageBlockHtml({ imageUrl: IMAGE_MAP[s.image_topic], caption: s.label });
+      if (photo && i === photo.sectionIndex) {
+        sectionBlocks += newsletterPhotoHtml(photo);
       }
     }
 
@@ -691,4 +684,4 @@ Return JSON:
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}
