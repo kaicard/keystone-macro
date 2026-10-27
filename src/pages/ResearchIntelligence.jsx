@@ -12,6 +12,7 @@ import {
   AlertTriangle, Star, Radio, Activity, Eye,
 } from 'lucide-react';
 import { cleanMarketCopy } from '@/lib/cleanMarketCopy';
+import { useAuth } from '@/lib/AuthContext';
 
 const CATEGORY_TONE = {
   Macro: 'text-amber-300 border-amber-400/25 bg-amber-400/[0.07]',
@@ -43,6 +44,7 @@ function SidebarRow({ label, children }) {
 }
 
 export default function ResearchIntelligence() {
+  const { isAuthenticated, navigateToLogin } = useAuth();
   const { slug } = useParams();
   const [item, setItem] = useState(null);
   const [loadingItem, setLoadingItem] = useState(true);
@@ -73,6 +75,7 @@ export default function ResearchIntelligence() {
       setAnalysis(item.full_analysis);
       return;
     }
+    if (!isAuthenticated) return;
     let active = true;
     setLoadingAnalysis(true);
     base44.functions.invoke('getIntelligenceAnalysis', { slug })
@@ -86,7 +89,7 @@ export default function ResearchIntelligence() {
         if (active) setLoadingAnalysis(false);
       });
     return () => { active = false; };
-  }, [item, slug]);
+  }, [item, slug, isAuthenticated]);
 
   if (loadingItem) {
     return (
@@ -231,6 +234,7 @@ export default function ResearchIntelligence() {
         {/* ── BODY ─────────────────────────────────────────────────────── */}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-8">
           <div>
+            {!analysis && !isAuthenticated && <Button variant="outline" onClick={navigateToLogin} className="mb-5">Sign in to request full analysis</Button>}
             {loadingAnalysis ? (
               <div className="space-y-4">
                 <div className="rounded-xl border border-primary/15 bg-primary/[0.04] p-6">

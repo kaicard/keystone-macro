@@ -31,7 +31,7 @@ function makeTitle(text) {
 }
 
 export default function KeystoneAI() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, navigateToLogin } = useAuth();
   const queryClient = useQueryClient();
 
   const [messages, setMessages] = useState([]);
@@ -70,6 +70,7 @@ export default function KeystoneAI() {
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
+    if (!isAuthenticated) { navigateToLogin(); return; }
     setInput('');
     const userMsgObj = { role: 'user', content: userMsg };
     const newMessages = [...messages, userMsgObj];
@@ -86,10 +87,10 @@ export default function KeystoneAI() {
       const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
       setMessages(finalMessages);
       persistConversation(finalMessages, userMsg).catch(err => console.error('Chat save failed:', err));
-    } catch {
+    } catch (error) {
       setMessages(messages);
       setInput(userMsg);
-      setSendError('Unable to get a response. Your question is ready to send again.');
+      setSendError(error.response?.data?.error || 'Unable to get a response. Your question is ready to send again.');
     } finally {
       setLoading(false);
     }
@@ -218,7 +219,7 @@ export default function KeystoneAI() {
                 <p className="text-xs text-muted-foreground/40 text-center mt-1">
                   {isAuthenticated
                     ? 'Chats are saved to your account · For informational purposes only · Not financial advice'
-                    : 'Sign in to save your chat history · For informational purposes only · Not financial advice'}
+                    : 'Sign in to use Keystone AI · For informational purposes only · Not financial advice'}
                 </p>
               </div>
             </div>

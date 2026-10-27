@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 import AILabResults from '@/components/ailab/AILabResults';
+import { useAuth } from '@/lib/AuthContext';
 
 const currencyOptions = [
   { code: 'GBP', symbol: '£', label: 'GBP (£)' },
@@ -30,6 +31,8 @@ const preferenceOptions = [
 ];
 
 export default function PortfolioLab() {
+  const { isAuthenticated, navigateToLogin } = useAuth();
+  const [generateError, setGenerateError] = useState('');
   const [risk, setRisk] = useState('');
   const [horizon, setHorizon] = useState('');
   const [objective, setObjective] = useState('');
@@ -44,13 +47,20 @@ export default function PortfolioLab() {
   const canGenerate = risk && horizon && objective && regime && capital;
 
   const generate = async () => {
+    if (!isAuthenticated) { navigateToLogin(); return; }
+    setGenerateError('');
     setLoading(true);
     setResult(null);
-    const res = await base44.functions.invoke('generatePortfolio', {
-      capital, currency, risk, horizon, objective, regime, preferences,
-    });
-    setResult(res.data);
-    setLoading(false);
+    try {
+      const res = await base44.functions.invoke('generatePortfolio', {
+        capital, currency, risk, horizon, objective, regime, preferences,
+      });
+      setResult(res.data);
+    } catch (error) {
+      setGenerateError(error.response?.data?.error || 'Unable to generate a portfolio. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,6 +109,7 @@ export default function PortfolioLab() {
             ))}
           </div>
 
+          {generateError && <p role="alert" className="text-xs text-destructive">{generateError}</p>}
           <Button className="w-full gap-2" onClick={generate} disabled={!canGenerate || loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeystoneIcon className="w-4 h-4" />}
             {loading ? 'Generating...' : 'Generate Portfolio'}

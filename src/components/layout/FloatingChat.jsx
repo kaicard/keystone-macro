@@ -5,6 +5,7 @@ import { X, Send, RotateCcw, Maximize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
+import { useAuth } from '@/lib/AuthContext';
 
 function TypingDots() {
   return (
@@ -18,6 +19,8 @@ function TypingDots() {
 }
 
 export default function FloatingChat() {
+  const { isAuthenticated, navigateToLogin } = useAuth();
+  const [sendError, setSendError] = useState('');
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -32,19 +35,26 @@ export default function FloatingChat() {
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (!isAuthenticated) { navigateToLogin(); return; }
+    setSendError('');
     setInput('');
     const newMsgs = [...messages, { role: 'user', content: text }];
     setMessages(newMsgs);
     setLoading(true);
 
-    const response = await base44.functions.invoke('keystoneChat', {
-      mode: 'widget',
-      message: text,
-      history: messages,
-    });
-    const reply = response?.data?.reply || '';
-    setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-    setLoading(false);
+    try {
+      const response = await base44.functions.invoke('keystoneChat', {
+        mode: 'widget', message: text, history: messages,
+      });
+      const reply = response?.data?.reply || '';
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      setMessages(messages);
+      setInput(text);
+      setSendError(error.response?.data?.error || 'Unable to get a response. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKey = (e) => {
@@ -162,6 +172,7 @@ export default function FloatingChat() {
 
             {/* Input */}
             <div className="border-t border-border/30 p-3 bg-card/30 shrink-0">
+              {sendError && <p role="alert" className="mb-2 text-xs text-destructive">{sendError}</p>}
               <div className="flex gap-2 items-end">
                 <textarea
                   value={input}

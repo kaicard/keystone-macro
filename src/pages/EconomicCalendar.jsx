@@ -8,6 +8,7 @@ import {
   Activity, Filter, Loader2, RefreshCw
 } from 'lucide-react';
 import EnrichedAnalysis from '@/components/calendar/EnrichedAnalysis';
+import { useAuth } from '@/lib/AuthContext';
 
 const CATEGORY_COLORS = {
   'Central Bank': 'text-amber-400 bg-amber-400/10',
@@ -299,6 +300,7 @@ function DateGroup({ dateStr, events, today, enrichments, enriching }) {
 }
 
 export default function EconomicCalendar() {
+  const { isAuthenticated } = useAuth();
   const [tab, setTab]             = useState('today');
   const [impactFilter, setImpact] = useState('all');
   const [today, setToday]         = useState(getTodayStr);
@@ -342,8 +344,9 @@ export default function EconomicCalendar() {
     return () => clearInterval(interval);
   }, [loadFF]);
 
-  // Enrich high/medium events with LLM analysis (beat/miss verdicts, speech summaries)
+  // Enrichment requires a signed-in reader; the underlying calendar remains public.
   useEffect(() => {
+    if (!isAuthenticated) return;
     const enrichable = ffEvents.filter(e => e.importance === 'high' || e.importance === 'medium');
     if (enrichable.length === 0) return;
 
@@ -380,7 +383,7 @@ export default function EconomicCalendar() {
       const data = res?.data?.analyses || {};
       setEnrichments(prev => ({ ...prev, ...data }));
     }).catch(() => {}).finally(() => setEnriching(false));
-  }, [ffEvents]);
+  }, [ffEvents, isAuthenticated]);
 
   const weekEnd = useMemo(() => getWeekEnd(today), [today]);
 
