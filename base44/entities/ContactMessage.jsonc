@@ -19,6 +19,7 @@
       "enum": [
         "general",
         "collaboration",
+        "early-careers",
         "media",
         "speaking"
       ],
@@ -40,7 +41,11 @@
     "message"
   ],
   "rls": {
-    "create": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {
       "user_condition": {
         "role": "admin"
