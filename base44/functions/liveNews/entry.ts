@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { getCaller, limitRequests } from '../../shared/requestSecurity.ts';
+import { waitUntil } from 'base44:runtime';
 
 const CACHE_KEY = 'liveNews';
 const CACHE_TTL_MS = 45 * 60 * 1000; // 45 minutes - stale-while-revalidate handles freshness
@@ -95,10 +97,12 @@ IMPORTANT: Return the stories ordered by published_time, newest first.`;
   }
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await getCaller(base44);
 
+    // Only fixed, public news fields are read for visitors. No anonymous AI calls or cache writes.
     // Check cache first
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     if (cached?.length > 0) {
@@ -106,10 +110,11 @@ Deno.serve(async (req) => {
       const age = Date.now() - new Date(entry.fetched_at).getTime();
       if (entry.payload) {
         const headlines = JSON.parse(entry.payload);
-        // Return stale data immediately - refresh in background if past threshold
+        // Visitors receive the existing snapshot without commissioning paid work.
+        if (!user) return Response.json({ ok: true, headlines, cached: true, fetched_at: entry.fetched_at });
         if (age >= STALE_THRESHOLD_MS && age < CACHE_TTL_MS) {
-          // Background refresh (don't await)
-          refreshInBackground(base44, entry.id).catch(() => {});
+          const limited = await limitRequests(base44, user, 'news-refresh');
+          if (!limited) waitUntil(refreshInBackground(base44, entry.id));
         }
         if (age < CACHE_TTL_MS) {
           return Response.json({ ok: true, headlines, cached: true, fetched_at: entry.fetched_at });
@@ -117,7 +122,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cache miss or fully expired - fetch fresh (blocking)
+    if (!user) return Response.json({ ok: true, headlines: [], cached: true, fetched_at: null });
+    const limited = await limitRequests(base44, user, 'news-refresh');
+    if (limited) return limited;
+    // Authenticated cache miss or fully expired - fetch fresh (blocking)
     await refreshInBackground(base44, cached?.[0]?.id || null);
     const fresh = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     const freshEntry = fresh?.[0];
@@ -126,4 +134,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ ok: false, error: error.message, headlines: [] }, { status: 200 });
   }
-});
+}

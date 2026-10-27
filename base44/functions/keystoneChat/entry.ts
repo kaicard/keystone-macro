@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
 
 // System prompts live here so the client never builds the LLM prompt itself.
 const ANALYST_PROMPT = `You are a senior macro research analyst at Keystone Macro - sharp, opinionated, and genuinely enjoyable to talk to. You have deep expertise in global macro, fixed income, equities, commodities, FX, and geopolitics.
@@ -61,7 +62,9 @@ function extractReply(response: any): string {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const user = await getCaller(base44);
+    if (!user) return signInRequired();
+    const body = await req.json().catch(() => ({}));
     const message = typeof body?.message === 'string' ? body.message.trim() : '';
     const mode = body?.mode === 'widget' ? 'widget' : 'analyst';
 
@@ -69,6 +72,11 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ error: 'A message is required' }, { status: 400 });
     }
 
+    if (message.length > 12000 || JSON.stringify(body.history || []).length > 60000) {
+      return Response.json({ error: 'Message or conversation is too long.' }, { status: 400 });
+    }
+    const limited = await limitRequests(base44, user, 'chat', { minute: 15, day: 200 });
+    if (limited) return limited;
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const history = buildHistory(body?.history);
     const historyBlock = history ? `HISTORY:\n${history}\n\n` : '';

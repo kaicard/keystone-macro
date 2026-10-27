@@ -18,12 +18,20 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!(await base44.auth.isAuthenticated())) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
     setLoading(true);
-    await base44.entities.ContactMessage.create(form);
-    await base44.functions.invoke('sendContactEmail', form);
-    setSubmitted(true);
-    setLoading(false);
-    toast({ title: 'Message sent', description: 'Thank you for reaching out. I\'ll get back to you shortly.' });
+    try {
+      await base44.functions.invoke('sendContactEmail', form);
+      setSubmitted(true);
+      toast({ title: 'Message sent', description: 'Thank you for reaching out. I\'ll get back to you shortly.' });
+    } catch (error) {
+      toast({ title: 'Message could not be sent', description: error.response?.data?.error || 'Please try again later.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,7 +83,8 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h2 className="font-semibold text-lg mb-6">Send a Message</h2>
+            <h2 className="font-semibold text-lg mb-2">Send a Message</h2>
+            <p className="text-xs text-muted-foreground mb-6">Sign in to send a message. This helps prevent spam.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Name</Label>

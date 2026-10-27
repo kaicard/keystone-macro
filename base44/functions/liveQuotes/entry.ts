@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
 import { waitUntil } from 'base44:runtime';
+import { getCaller, limitRequests } from '../../shared/requestSecurity.ts';
 
 const CACHE_KEY = 'liveQuotes';
 
@@ -198,6 +199,7 @@ async function fetchAndCache(base44, existingCacheId) {
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await getCaller(base44);
 
     const CACHE_TTL_MS = getCacheTTL();
     const STALE_TTL_MS = getStaleTTL();
@@ -210,24 +212,32 @@ export default async function(req) {
 
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
+        // This fixed key contains public quotes. Visitors cannot initiate upstream fetches or writes.
+        if (!user) return Response.json({ ok: true, data, cached: true, ts: new Date(entry.fetched_at).getTime() });
         const hasQuotes = ['indices', 'equities', 'etfs', 'fx', 'commodities', 'crypto']
           .some(k => data?.[k]?.length);
         // A payload with no quotes is the residue of a failed refresh, so rebuild
         // it now rather than leaving the board empty.
         if (!hasQuotes) {
+          const limited = await limitRequests(base44, user, 'quote-refresh', { minute: 6, day: 500 });
+          if (limited) return limited;
           const { organized } = await fetchAndCache(base44, entry.id);
           return Response.json({ ok: true, data: organized, cached: false, ts: Date.now() });
         }
         // Serve any cached data immediately and refresh in background when stale.
         // This avoids blocking the user on a slow Yahoo Finance fetch.
         if (age >= STALE_TTL_MS) {
-          waitUntil(fetchAndCache(base44, entry.id));
+          const limited = await limitRequests(base44, user, 'quote-refresh', { minute: 6, day: 500 });
+          if (!limited) waitUntil(fetchAndCache(base44, entry.id));
         }
         return Response.json({ ok: true, data, cached: true, ts: new Date(entry.fetched_at).getTime() });
       }
     }
 
-    // Truly first-ever fetch - no choice but to block
+    if (!user) return Response.json({ ok: true, data: {}, cached: true, ts: null });
+    const limited = await limitRequests(base44, user, 'quote-refresh', { minute: 6, day: 500 });
+    if (limited) return limited;
+    // Only authenticated callers may start a refresh.
     const { organized, fetched_at } = await fetchAndCache(base44, cached?.[0]?.id || null);
     return Response.json({ ok: true, data: organized, cached: false, ts: new Date(fetched_at).getTime() });
 

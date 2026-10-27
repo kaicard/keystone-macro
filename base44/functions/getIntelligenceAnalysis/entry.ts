@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
 
 const ANALYSIS_SCHEMA = {
   type: 'object',
@@ -39,7 +40,7 @@ export default async function (req) {
       return Response.json({ ok: false, error: 'slug is required' }, { status: 400 });
     }
 
-    const matches = await base44.asServiceRole.entities.IntelligenceItem.filter({ slug });
+    const matches = await base44.entities.IntelligenceItem.filter({ slug });
     const item = Array.isArray(matches) ? matches[0] : matches?.items?.[0];
     if (!item) {
       return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
@@ -49,6 +50,11 @@ export default async function (req) {
       return Response.json({ ok: true, cached: true, analysis: item.full_analysis });
     }
 
+    // Existing published analysis remains public; only signed-in readers can commission new AI work.
+    const user = await getCaller(base44);
+    if (!user) return signInRequired();
+    const limited = await limitRequests(base44, user, 'intelligence-analysis', { minute: 4, day: 40 });
+    if (limited) return limited;
     const publishedAt = item.source_published_at || item.published_at;
     const publishedLabel = publishedAt
       ? new Date(publishedAt).toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'full', timeStyle: 'short' })

@@ -2,6 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 import { sanitizeCreditSpreads } from '../../shared/safeUrl.ts';
 import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
+import { getCaller, limitRequests } from '../../shared/requestSecurity.ts';
+import { waitUntil } from 'base44:runtime';
 
 const CACHE_KEY = 'liveMarketContextV2';
 const CACHE_TTL_MS = 35 * 60 * 1000;
@@ -201,10 +203,12 @@ ${HOUSE_STYLE}`,
   return data;
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await getCaller(base44);
 
+    // This fixed cache key holds public market context only, never account data.
     const cached = await base44.asServiceRole.entities.MarketCache.filter({ key: CACHE_KEY });
     // Duplicate rows can exist for this key - always work from the newest one.
     const entry = (cached || []).sort((a, b) => new Date(b.fetched_at) - new Date(a.fetched_at))[0];
@@ -213,24 +217,31 @@ Deno.serve(async (req) => {
       if (entry.payload) {
         const data = JSON.parse(entry.payload);
         data.credit_spreads = sanitizeCreditSpreads(data.credit_spreads);
+        if (!user) return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
         // No quotes at all means a previous refresh failed - rebuild before serving.
         if (!data?.bonds?.length && !data?.sectors?.length) {
+          const limited = await limitRequests(base44, user, 'market-context-refresh');
+          if (limited) return limited;
           const rebuilt = await refreshInBackground(base44, entry.id);
           return Response.json({ ok: true, data: rebuilt, cached: false, fetched_at: new Date().toISOString() });
         }
         // Serve any cached data immediately and refresh in the background.
         // This avoids a slow blocking fetch when the cache is merely stale.
         if (age >= STALE_THRESHOLD_MS) {
-          refreshInBackground(base44, entry.id).catch(() => {});
+          const limited = await limitRequests(base44, user, 'market-context-refresh');
+          if (!limited) waitUntil(refreshInBackground(base44, entry.id));
         }
         return Response.json({ ok: true, data, cached: true, fetched_at: entry.fetched_at });
       }
     }
 
-    // Truly first-ever fetch - no choice but to block
+    if (!user) return Response.json({ ok: true, data: {}, cached: true, fetched_at: null });
+    const limited = await limitRequests(base44, user, 'market-context-refresh');
+    if (limited) return limited;
+    // Only authenticated callers may start a refresh.
     const freshData = await refreshInBackground(base44, entry?.id || null);
     return Response.json({ ok: true, data: freshData, cached: false, fetched_at: new Date().toISOString() });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
-});
+}

@@ -100,8 +100,10 @@ const AuthenticatedApp = () => {
         {/* Static */}
         <Route path="/About" element={<About />} />
         <Route path="/Contact" element={<Contact />} />
-        <Route path="/Admin" element={<Admin />} />
-        <Route path="/Insights" element={<Insights />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route path="/Admin" element={<Admin />} />
+          <Route path="/Insights" element={<Insights />} />
+        </Route>
         <Route path="/Terms" element={<Terms />} />
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Methodology" element={<Methodology />} />

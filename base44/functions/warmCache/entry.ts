@@ -1,9 +1,12 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { getCaller } from '../../shared/requestSecurity.ts';
 
 // Scheduled function that pre-warms all market caches so users get instant loads
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await getCaller(base44);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
 
     // Warm caches sequentially in small batches to avoid rate limits
     const BEATS = ['markets', 'global_equities', 'us_economy', 'uk_economy', 'eu_economy', 'commodities', 'tech', 'geopolitics', 'rates_credit'];
@@ -33,4 +36,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
-});
+}

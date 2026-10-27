@@ -1,7 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { getCaller } from '../../shared/requestSecurity.ts';
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
+    const base44 = createClientFromRequest(req);
+    const user = await getCaller(base44);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
     const instruments = [
       { sym: '^GSPC', name: 'S&P 500' },
       { sym: '^TNX', name: 'US 10Y Yield' },
@@ -48,4 +52,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}

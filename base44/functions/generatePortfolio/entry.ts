@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
 
 // The prompt and output schema live here: the client only sends the user's
 // selections, validated against these fixed option sets.
@@ -72,7 +73,9 @@ const PORTFOLIO_SCHEMA = {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const user = await getCaller(base44);
+    if (!user) return signInRequired();
+    const body = await req.json().catch(() => ({}));
 
     const currency = typeof body?.currency === 'string' && CURRENCY_SYMBOLS[body.currency] ? body.currency : null;
     const risk = RISK_OPTIONS.includes(body?.risk) ? body.risk : null;
@@ -131,6 +134,8 @@ This is for EDUCATIONAL purposes. Frame all instruments as illustrative examples
 
 ${HOUSE_STYLE}`;
 
+    const limited = await limitRequests(base44, user, 'portfolio', { minute: 3, day: 30 });
+    if (limited) return limited;
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: PORTFOLIO_SCHEMA,

@@ -1,14 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
+import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    // Public endpoint - accessible to anonymous visitors (no auth required)
+    const user = await getCaller(base44);
+    if (!user) return signInRequired();
 
     const body = await req.json().catch(() => ({}));
     const events = body.events || [];
+    if (!Array.isArray(events) || events.length > 100 || JSON.stringify(events).length > 50000) {
+      return Response.json({ error: 'Provide at most 100 calendar events.' }, { status: 400 });
+    }
     if (!events.length) return Response.json({ analyses: {} });
+    const limited = await limitRequests(base44, user, 'calendar-analysis', { minute: 4, day: 80 });
+    if (limited) return limited;
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -63,4 +70,4 @@ Events: ${JSON.stringify(eventList)}`,
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
-});
+}

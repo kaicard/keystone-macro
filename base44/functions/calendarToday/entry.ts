@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { getJBlankedCalendar } from '../../shared/jblankedCalendar.ts';
+import { getCaller } from '../../shared/requestSecurity.ts';
 
 export default async function(req) {
   try {
@@ -10,7 +11,8 @@ export default async function(req) {
     if (!['mql5', 'forex-factory', 'fxstreet'].includes(source) || !['today', 'week'].includes(range)) {
       return Response.json({ error: 'Unsupported calendar source or range' }, { status: 400 });
     }
-    const result = await getJBlankedCalendar(base44, source);
+    const user = await getCaller(base44);
+    const result = await getJBlankedCalendar(base44, source, { allowRefresh: Boolean(user) });
     const today = new Date().toISOString().slice(0, 10);
     const events = result.events.map(normalise).filter(event => range === 'week' || event.date === today);
     return Response.json({ events, source, range, cached: result.cached, stale: result.stale, fetched_at: result.fetchedAt });

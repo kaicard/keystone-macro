@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 import { sanitizeArticles } from '../../shared/safeUrl.ts';
+import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
 
 const BEAT_PROMPTS = {
   markets:         'Global financial markets: equity indices, ETFs, volatility, cross-asset moves, fund flows, options activity.',
@@ -16,13 +17,13 @@ const BEAT_PROMPTS = {
 
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const beat = body?.beat;
 
-    if (!beat || !BEAT_PROMPTS[beat]) {
+    if (typeof beat !== 'string' || !Object.hasOwn(BEAT_PROMPTS, beat)) {
       return Response.json({ error: 'Invalid beat' }, { status: 400 });
     }
 
@@ -38,7 +39,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch fresh
+    // Anonymous readers only receive existing public news; paid refreshes require login.
+    const user = await getCaller(base44);
+    if (!user) {
+      const entry = cached?.[0];
+      return Response.json({ articles: entry?.payload ? sanitizeArticles(JSON.parse(entry.payload)) : [], fetched_at: entry?.fetched_at || null, from_cache: true, stale: true });
+    }
+    const limited = await limitRequests(base44, user, 'beat-news-refresh');
+    if (limited) return limited;
     const fetchNow = new Date();
     const londonDate = fetchNow.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/London' });
     const londonTime = fetchNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
@@ -112,4 +120,4 @@ IMPORTANT: Return the articles ordered by published_time, newest first (most rec
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}

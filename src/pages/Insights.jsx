@@ -10,8 +10,6 @@ import TierBreakdown from '@/components/insights/TierBreakdown';
 import ContentOutputChart from '@/components/insights/ContentOutputChart';
 import CategoryBreakdown from '@/components/insights/CategoryBreakdown';
 
-const ADMIN_EMAILS = ['kaicard05@gmail.com', 'hello@keystonemacro.com'];
-
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function getWeekKey(date) {
@@ -41,10 +39,10 @@ export default function Insights() {
     checkAuth();
   }, []);
 
-  const { data: freeSubs = [] } = useQuery({ queryKey: ['insights-free'], queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 200) });
-  const { data: premiumSubs = [] } = useQuery({ queryKey: ['insights-prem'], queryFn: () => base44.entities.NewsletterSubscription.list('-created_date', 200) });
-  const { data: editions = [] } = useQuery({ queryKey: ['insights-editions'], queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 200) });
-  const { data: notes = [] } = useQuery({ queryKey: ['insights-notes'], queryFn: () => base44.entities.ResearchNote.list('-publish_date', 200) });
+  const { data: freeSubs = [] } = useQuery({ queryKey: ['insights-free'], enabled: user?.role === 'admin', queryFn: () => base44.entities.NewsletterSubscriber.list('-created_date', 200) });
+  const { data: premiumSubs = [] } = useQuery({ queryKey: ['insights-prem'], enabled: user?.role === 'admin', queryFn: () => base44.entities.NewsletterSubscription.list('-created_date', 200) });
+  const { data: editions = [] } = useQuery({ queryKey: ['insights-editions'], enabled: user?.role === 'admin', queryFn: () => base44.entities.NewsletterEdition.list('-publish_date', 200) });
+  const { data: notes = [] } = useQuery({ queryKey: ['insights-notes'], enabled: user?.role === 'admin', queryFn: () => base44.entities.ResearchNote.list('-publish_date', 200) });
 
   const threeMonthsAgo = useMemo(() => {
     const d = new Date();
@@ -134,8 +132,8 @@ export default function Insights() {
     );
   }
 
-  if (!user || !ADMIN_EMAILS.includes(user.email)) {
-    return <Navigate to="/Home" replace />;
+  if (user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
   }
 
   const recentEditions = editions.filter(e => e.status === 'published').slice(0, 5);

@@ -128,8 +128,6 @@ function ResearchForm({ note, onSave, onClose }) {
   );
 }
 
-const ADMIN_EMAILS = ['kaicard05@gmail.com', 'hello@keystonemacro.com'];
-
 export default function Admin() {
   const queryClient = useQueryClient();
   const [editingNote, setEditingNote] = useState(null);
@@ -138,9 +136,10 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [subscriberFilter, setSubscriberFilter] = useState('all');
 
-  const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
+  const { data: notes = [] } = useQuery({ queryKey: ['admin-notes'], enabled: user?.role === 'admin', queryFn: () => base44.entities.ResearchNote.list('-created_date', 100) });
   const { data: subscribersData = [] } = useQuery({
     queryKey: ['admin-subs'],
+    enabled: user?.role === 'admin',
     queryFn: async () => {
       const [free, paid] = await Promise.all([
         base44.entities.NewsletterSubscriber.list('-created_date', 100),
@@ -151,7 +150,7 @@ export default function Admin() {
       return [...paidList, ...freeList].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     }
   });
-  const { data: messages = [] } = useQuery({ queryKey: ['admin-msgs'], queryFn: () => base44.entities.ContactMessage.list('-created_date', 100) });
+  const { data: messages = [] } = useQuery({ queryKey: ['admin-msgs'], enabled: user?.role === 'admin', queryFn: () => base44.entities.ContactMessage.list('-created_date', 100) });
 
   const createNote = useMutation({
     mutationFn: (data) => base44.entities.ResearchNote.create(data),
@@ -190,7 +189,7 @@ export default function Admin() {
     );
   }
 
-  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+  if (user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 

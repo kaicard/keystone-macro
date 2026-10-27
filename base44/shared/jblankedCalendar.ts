@@ -4,19 +4,21 @@ const pending = new Map();
 const SOURCES = new Set(['mql5', 'forex-factory', 'fxstreet']);
 const FIELDS = ['EventID', 'eventID', 'Date', 'date', 'Currency', 'currency', 'Name', 'name', 'Impact', 'impact', 'Category', 'category', 'Actual', 'actual', 'Previous', 'previous', 'Forecast', 'forecast', 'Outcome', 'outcome', 'Quality'];
 
-export async function getJBlankedCalendar(base44, source) {
+export async function getJBlankedCalendar(base44, source, { allowRefresh = true } = {}) {
   if (!SOURCES.has(source)) throw new Error('Unsupported calendar source');
   const now = new Date();
   const monday = new Date(now);
   monday.setUTCDate(now.getUTCDate() - ((now.getUTCDay() + 6) % 7));
   const key = `jb:week:${source}:${monday.toISOString().slice(0, 10)}`;
+  // Anonymous readers can only access an existing public snapshot, never initiate provider usage.
+  if (!allowRefresh) return loadCalendar(base44, source, key, now, false);
   if (pending.has(key)) return pending.get(key);
-  const work = loadCalendar(base44, source, key, now);
+  const work = loadCalendar(base44, source, key, now, true);
   pending.set(key, work);
   try { return await work; } finally { pending.delete(key); }
 }
 
-async function loadCalendar(base44, source, key, now) {
+async function loadCalendar(base44, source, key, now, allowRefresh) {
   const cache = base44.asServiceRole.entities.MarketCache;
   const { items } = await cache.filter({ key }, { sort: '-updated_date', limit: 1 });
   const entry = items[0];
@@ -31,7 +33,8 @@ async function loadCalendar(base44, source, key, now) {
     if (stored.chunk_ids.some(id => !byId.has(id))) throw new Error('Calendar cache incomplete');
     return JSON.parse(stored.chunk_ids.map(id => byId.get(id)).join(''));
   };
-  if (fresh || coolingDown) return { events: await readStored(), cached: true, stale: !fresh, fetchedAt: entry.fetched_at };
+  if (!allowRefresh && !stored?.chunk_ids?.length) return { events: [], cached: true, stale: true, fetchedAt: entry?.fetched_at || null };
+  if (!allowRefresh || fresh || coolingDown) return { events: await readStored(), cached: true, stale: !fresh, fetchedAt: entry.fetched_at };
 
   let events;
   try {
