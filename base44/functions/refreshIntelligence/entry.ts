@@ -1,7 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 
-const JBLANKED_API_KEY = Deno.env.get('JBLANKED_API_KEY');
+import { getJBlankedCalendar } from '../../shared/jblankedCalendar.ts';
 
 function generateEventSlug(event) {
   const name = (event.Name || '')
@@ -44,7 +44,7 @@ function parseJBDate(dateStr) {
   return null;
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -70,28 +70,22 @@ Deno.serve(async (req) => {
     const recentExisting = (existing || []).filter(i => (i.published_date || '') >= cutoffDate);
     const existingSlugs = new Set(recentExisting.map(i => i.slug));
 
-    // ── Fetch today's high-impact economic releases from jblanked ─────────────
-    const jbHeaders = {
-      'Authorization': `Api-Key ${JBLANKED_API_KEY}`,
-      'Content-Type': 'application/json',
-    };
-
-    const [mql5Res, ffRes] = await Promise.all([
-      fetch('https://www.jblanked.com/news/api/mql5/calendar/today/?impact=High', { headers: jbHeaders }),
-      fetch('https://www.jblanked.com/news/api/forex-factory/calendar/today/?impact=High', { headers: jbHeaders }),
+    // Reuse the same weekly snapshots as the public calendar.
+    const snapshots = await Promise.all([
+      getJBlankedCalendar(base44, 'mql5'),
+      getJBlankedCalendar(base44, 'forex-factory'),
     ]);
-
-    const [mql5Data, ffData] = await Promise.all([
-      mql5Res.ok ? mql5Res.json() : [],
-      ffRes.ok ? ffRes.json() : [],
-    ]);
+    const utcToday = now.toISOString().slice(0, 10);
+    const [mql5Data, ffData] = snapshots.map(snapshot => snapshot.events.filter(event =>
+      String(event.Date ?? event.date ?? '').replace(/\./g, '-').slice(0, 10) === utcToday
+    ));
 
     // Deduplicate across the two sources by name+currency
     const seen = new Set();
     const allEvents = [...(Array.isArray(mql5Data) ? mql5Data : []), ...(Array.isArray(ffData) ? ffData : [])]
       .filter(e => {
         if (!e.Name || !e.Currency) return false;
-        if ((e.Impact || '').toLowerCase() !== 'high') return false;
+        if (!['high', '3'].includes(String(e.Impact ?? e.impact ?? '').toLowerCase())) return false;
         const key = `${e.Name.toLowerCase().trim()}-${e.Currency}`;
         if (seen.has(key)) return false;
         seen.add(key);
@@ -101,7 +95,9 @@ Deno.serve(async (req) => {
     // Only process events that have already released (have an Actual figure)
     const releasedEvents = allEvents.filter(e => {
       // Must have an actual reading
-      if (e.Actual === null || e.Actual === undefined || e.Actual === '') return false;
+      if (e.Actual === null || e.Actual === undefined || e.Actual === '' || e.Outcome === 'Data Not Loaded') return false;
+      const releaseTime = parseJBDate(e.Date);
+      if (releaseTime && new Date(releaseTime) > now) return false;
       // Skip speeches/conferences - no hard data
       const name = (e.Name || '').toLowerCase();
       if (name.includes('press conference') || name.includes('speech') || name.includes('statement') || name.includes('testimony')) return false;
@@ -112,6 +108,11 @@ Deno.serve(async (req) => {
       if (existingSlugs.has(slug)) return false;
       return true;
     });
+
+    const body = await req.json().catch(() => ({}));
+    if (body.dry_run === true) {
+      return Response.json({ ok: true, dry_run: true, data_events: releasedEvents.length, sources_cached: snapshots.map(snapshot => snapshot.cached) });
+    }
 
     if (releasedEvents.length === 0) {
       // Nothing new to process - prune old items and return early
@@ -237,4 +238,4 @@ For EACH event provide:
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
-});
+}

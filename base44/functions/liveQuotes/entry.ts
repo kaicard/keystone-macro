@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { fetchYahooQuoteMap } from '../../shared/yahooQuotes.ts';
+import { waitUntil } from 'base44:runtime';
 
 const CACHE_KEY = 'liveQuotes';
 
@@ -129,7 +130,7 @@ function isValidPrice(ticker, price) {
   
   // FX pairs
   if (ticker.includes('=X')) {
-    return price >= 0.5 && price <= 3;
+    return price >= 0.01 && price <= 500;
   }
   
   // Commodity futures
@@ -139,8 +140,8 @@ function isValidPrice(ticker, price) {
   if (['CL=F', 'BZ=F'].includes(ticker)) return price >= 20 && price <= 150;
   if (ticker === 'NG=F') return price >= 0.5 && price <= 10;
   if (ticker === 'HG=F') return price >= 1 && price <= 10;
-  if (ticker === 'ZW=F') return price >= 5 && price <= 15;          // Wheat
-  if (ticker === 'ZC=F') return price >= 3 && price <= 10;          // Corn
+  if (ticker === 'ZW=F') return price >= 100 && price <= 3000;      // Wheat, cents per bushel
+  if (ticker === 'ZC=F') return price >= 100 && price <= 2000;      // Corn, cents per bushel
   
   // Broad guardrails reject corrupt values without becoming stale price targets
   if (ticker === 'BTC-USD') return price >= 1000 && price <= 500000;
@@ -194,7 +195,7 @@ async function fetchAndCache(base44, existingCacheId) {
   return { organized, fetched_at };
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -220,7 +221,7 @@ Deno.serve(async (req) => {
         // Serve any cached data immediately and refresh in background when stale.
         // This avoids blocking the user on a slow Yahoo Finance fetch.
         if (age >= STALE_TTL_MS) {
-          fetchAndCache(base44, entry.id).catch(() => {});
+          waitUntil(fetchAndCache(base44, entry.id));
         }
         return Response.json({ ok: true, data, cached: true, ts: new Date(entry.fetched_at).getTime() });
       }
@@ -233,4 +234,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
-});
+}

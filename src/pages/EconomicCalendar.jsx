@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, TrendingUp, TrendingDown, Minus, Zap,
   ChevronDown, ChevronUp, BarChart2, AlertTriangle,
-  Activity, Filter, CheckCircle2, Loader2, RefreshCw
+  Activity, Filter, Loader2, RefreshCw
 } from 'lucide-react';
 import EnrichedAnalysis from '@/components/calendar/EnrichedAnalysis';
 
@@ -75,26 +75,13 @@ const CATEGORY_IMPLICATIONS = {
   },
 };
 
-// Confirmed seed data for previous tab - always accurate
-const SEED_PREVIOUS = [
-  { id: 's1',  date: '2026-03-19', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.75-4.00%', forecast: '3.50-3.75%', actual: '3.50-3.75%', category: 'Central Bank', outcome: 'Fed cut 25bp to 3.50-3.75% as expected. Dot plot showed one more cut in 2026. GDP forecasts trimmed; PCE inflation upgraded. Powell flagged tariff and geopolitical uncertainty. Equities dipped; 10-year yields rose 4bp.' },
-  { id: 's2',  date: '2026-03-20', utcTime: '12:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '4.00%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.75% as expected, 7-2 vote. MPC cited energy price spike as upside inflation risk. GBP fell 0.3%; gilts rallied.' },
-  { id: 's3',  date: '2026-04-01', utcTime: '14:00', country: 'US', event: 'ISM Manufacturing PMI',          importance: 'high', previous: '50.3',        forecast: '49.5',        actual: '49.0',        category: 'PMI',          outcome: 'ISM Manufacturing fell to 49.0, below the 49.5 consensus. Prices paid surged to 69.4 on tariff pass-through. New orders fell sharply. USD weakened; equities sold off.' },
-  { id: 's4',  date: '2026-04-03', utcTime: '12:30', country: 'US', event: 'Nonfarm Payrolls',               importance: 'high', previous: '151K',        forecast: '138K',        actual: '177K',        category: 'Labour',       outcome: 'NFP beat at 177K versus 138K forecast. Unemployment held at 4.2%. Resilient but softening labour market.' },
-  { id: 's5',  date: '2026-04-09', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '3.75%',       forecast: '3.50%',       actual: '3.50%',       category: 'Central Bank', outcome: 'BOE cut 25bp to 3.50% as expected, 7-2 vote. Bailey flagged tariff uncertainty as a growth headwind. GBP fell 0.4%; gilts rallied.' },
-  { id: 's6',  date: '2026-04-10', utcTime: '12:30', country: 'US', event: 'US CPI (YoY)',                   importance: 'high', previous: '3.0%',        forecast: '2.6%',        actual: '2.4%',        category: 'Inflation',    outcome: 'US CPI surprised to the downside at 2.4%. Core CPI fell to 2.8%. USD weakened sharply; 10-year yields dropped 12bp.' },
-  { id: 's7',  date: '2026-04-17', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.65%',       forecast: '2.40%',       actual: '2.40%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.40% as expected. Lagarde flagged tariff risks as a downside growth concern. EUR/USD fell 0.2%.' },
-  { id: 's8',  date: '2026-04-29', utcTime: '12:30', country: 'US', event: 'GDP Advance Q1 (QoQ Ann.)',      importance: 'high', previous: '2.4%',        forecast: '0.4%',        actual: '-0.3%',       category: 'GDP',          outcome: 'US GDP contracted 0.3% annualised in Q1. Tariff-related import surge distorted the trade component. Recession fears spiked; USD fell sharply.' },
-  { id: 's9',  date: '2026-04-29', utcTime: '18:00', country: 'US', event: 'FOMC Interest Rate Decision',    importance: 'high', previous: '3.50-3.75%',  forecast: '3.50-3.75%',  actual: '3.50-3.75%',  category: 'Central Bank', outcome: 'Fed held at 3.50-3.75% as expected. Powell flagged two-sided risks from tariff inflation and growth slowdown.' },
-  { id: 's10', date: '2026-04-30', utcTime: '11:00', country: 'UK', event: 'BOE Interest Rate Decision',     importance: 'high', previous: '3.75%',       forecast: '3.75%',       actual: '3.75%',       category: 'Central Bank', outcome: 'BOE held at 3.75% with an 8-1 vote. MPC cited tariff uncertainty as a near-term inflation risk, pausing the cutting cycle. GBP firmed 0.3%.' },
-  { id: 's11', date: '2026-04-30', utcTime: '12:15', country: 'EU', event: 'ECB Interest Rate Decision',     importance: 'high', previous: '2.40%',       forecast: '2.15%',       actual: '2.15%',       category: 'Central Bank', outcome: 'ECB cut 25bp to 2.15% as expected. Lagarde described tariffs as a significant headwind. EUR/USD fell 0.25% on the dovish press conference.' },
-];
+// Historical rows come only from the provider's current weekly snapshot.
 
 async function fetchCalendarWeek() {
   const res = await base44.functions.invoke('calendarToday', { source: 'forex-factory', range: 'week' });
   const events = res?.data?.events;
   if (!Array.isArray(events)) throw new Error('No events returned');
-  return events;
+  return { events, stale: !!res.data.stale, fetchedAt: res.data.fetched_at };
 }
 
 function toLocalTime(dateStr, utcTime) {
@@ -251,11 +238,11 @@ function EventRow({ event, today, enrichments, enriching }) {
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">PREV</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.previous || event.previous === '0' || event.previous === '-') ? '-' : event.previous}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.previous ?? '-'}</p>
           </div>
           <div className="text-right hidden md:block">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">FCST</p>
-            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{(!event.forecast || event.forecast === '0' || event.forecast === '-') ? '-' : event.forecast}</p>
+            <p className="text-xs font-mono text-muted-foreground/70 tabular-nums">{event.forecast ?? '-'}</p>
           </div>
           <div className="text-right">
             <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wide mb-0.5">ACTUAL</p>
@@ -318,6 +305,7 @@ export default function EconomicCalendar() {
   const [ffEvents, setFfEvents]   = useState([]);
   const [loading, setLoading]     = useState(false);
   const [liveStatus, setLiveStatus] = useState('idle');
+  const [fetchedAt, setFetchedAt] = useState(null);
   const [enrichments, setEnrichments] = useState({});
   const [enriching, setEnriching]     = useState(false);
   const enrichedKeys  = useRef(new Set());
@@ -334,9 +322,10 @@ export default function EconomicCalendar() {
     setLoading(true);
     setLiveStatus('loading');
     try {
-      const events = await fetchCalendarWeek();
-      setFfEvents(events);
-      setLiveStatus('live');
+      const result = await fetchCalendarWeek();
+      setFfEvents(result.events);
+      setFetchedAt(result.fetchedAt);
+      setLiveStatus(result.stale ? 'stale' : 'live');
     } catch (err) {
       console.error('Calendar fetch failed:', err);
       setLiveStatus('error');
@@ -347,7 +336,9 @@ export default function EconomicCalendar() {
 
   useEffect(() => {
     loadFF();
-    const interval = setInterval(loadFF, 3 * 60 * 1000);
+    const interval = setInterval(() => {
+      if (!document.hidden) loadFF();
+    }, 15 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadFF]);
 
@@ -393,11 +384,7 @@ export default function EconomicCalendar() {
 
   const weekEnd = useMemo(() => getWeekEnd(today), [today]);
 
-  const allEvents = useMemo(() => {
-    const ffKeys = new Set(ffEvents.map(e => `${e.date}|${e.event.toLowerCase()}`));
-    const seedPrev = SEED_PREVIOUS.filter(e => !ffKeys.has(`${e.date}|${e.event.toLowerCase()}`));
-    return [...ffEvents, ...seedPrev];
-  }, [ffEvents]);
+  const allEvents = ffEvents;
 
   const filtered = useMemo(() => {
     let base = allEvents.filter(e => {
@@ -494,6 +481,12 @@ export default function EconomicCalendar() {
           </div>
         </div>
 
+        <p className="mb-4 text-xs text-muted-foreground" role="status">
+          {liveStatus === 'error' ? 'Calendar refresh failed. Any displayed figures are from the last successful load. ' : liveStatus === 'stale' ? 'Provider unavailable. Showing the last saved calendar. ' : ''}
+          Shared calendar updates up to every 30 minutes on weekdays and hourly at weekends.
+          {fetchedAt && ` Last updated: ${new Date(fetchedAt).toLocaleString('en-GB')}.`}
+          {tab === 'previous' && ' Previous shows earlier events from the provider’s current week only.'}
+        </p>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           {loading && ffEvents.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
@@ -510,7 +503,7 @@ export default function EconomicCalendar() {
                 {liveStatus === 'error'
                   ? 'Try refreshing or check a different date range.'
                   : tab === 'today'
-                  ? 'No medium or high impact releases today. Check "This Week" for upcoming events.'
+                  ? 'No releases match the selected filter today. Check "This Week" for upcoming events.'
                   : 'Use Today, This Week, or Previous.'}
               </p>
             </div>

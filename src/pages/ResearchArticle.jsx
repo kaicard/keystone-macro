@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import useResearchArticle from '@/hooks/useResearchArticle';
+import ArticleLoadState from '@/components/research/ArticleLoadState';
 import PageBackground from '@/components/layout/PageBackground';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Clock, Calendar, Tag, AlertTriangle, Lightbulb,
-  Eye, Share2, CheckCheck, BookOpen, TrendingUp, Shield
+  Eye, Share2, CheckCheck, BookOpen, TrendingUp
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -86,22 +86,8 @@ const bodyComponents = {
 
 export default function ResearchArticle() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-
-  const { data: dbNotes = [] } = useQuery({
-    queryKey: ['research-notes'],
-    queryFn: () => base44.entities.ResearchNote.list('-publish_date', 100),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const allNotes = dbNotes;
-  const note = allNotes.find(n => (n.slug && n.slug === slug) || generateSlug(n.title) === slug);
-  const related = allNotes.filter(n => n !== note && n.category === note?.category).slice(0, 3);
-
-  useEffect(() => {
-    if (dbNotes.length > 0 && !note) navigate('/Research', { replace: true });
-  }, [dbNotes, note, navigate]);
+  const { data: note, related, isLoading, error, refetch } = useResearchArticle(slug);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -109,14 +95,7 @@ export default function ResearchArticle() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!note) return (
-    <div className="pt-20 min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-muted-foreground/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted-foreground text-sm">Loading article...</p>
-      </div>
-    </div>
-  );
+  if (isLoading || error || !note) return <ArticleLoadState loading={isLoading} error={error} retry={refetch} />;
 
   const cfg = CATEGORY_CONFIG[note.category] || CATEGORY_CONFIG['Macro'];
   const formattedDate = note.publish_date

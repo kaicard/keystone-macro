@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 export default function PageNotFound() {
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'prerender-status-code';
+    meta.content = '404';
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="text-center">

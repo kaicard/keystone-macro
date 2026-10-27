@@ -1,53 +1,37 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { getJBlankedCalendar } from '../../shared/jblankedCalendar.ts';
 
-const BASE = 'https://www.jblanked.com/news/api';
-
-const ENDPOINTS = {
-  mql5:            { today: `${BASE}/mql5/calendar/today/`,          week: `${BASE}/mql5/calendar/week/`          },
-  'forex-factory': { today: `${BASE}/forex-factory/calendar/today/`, week: `${BASE}/forex-factory/calendar/week/` },
-  fxstreet:        { today: `${BASE}/fxstreet/calendar/today/`,      week: `${BASE}/fxstreet/calendar/week/`      },
-};
-
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
-    // Public endpoint - accessible to anonymous visitors (no auth required)
+    const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const source = body.source ?? 'mql5';
-    const range  = body.range  ?? 'today';
-
-    // Fetch fresh from jblanked - no caching to avoid payload size limits
-    const sourceMap = ENDPOINTS[source] ?? ENDPOINTS['mql5'];
-    const url = range === 'week' ? sourceMap.week : sourceMap.today;
-    const apiKey = Deno.env.get('JBLANKED_API_KEY');
-
-    const response = await fetch(url, {
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Api-Key ${apiKey}` },
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return Response.json({ error: `API error ${response.status}`, details: err }, { status: response.status });
+    const range = body.range ?? 'today';
+    if (!['mql5', 'forex-factory', 'fxstreet'].includes(source) || !['today', 'week'].includes(range)) {
+      return Response.json({ error: 'Unsupported calendar source or range' }, { status: 400 });
     }
-
-    const data = await response.json();
-    const events = data.map((item, idx) => normalise(item, idx));
-
-    return Response.json({ events, source, range, cached: false });
+    const result = await getJBlankedCalendar(base44, source);
+    const today = new Date().toISOString().slice(0, 10);
+    const events = result.events.map(normalise).filter(event => range === 'week' || event.date === today);
+    return Response.json({ events, source, range, cached: result.cached, stale: result.stale, fetched_at: result.fetchedAt });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json({ error: err.message }, { status: 503 });
   }
-});
+}
 
 function normalise(item, idx) {
   const rawDate = item.Date ?? item.date ?? '';
-  const normalised = rawDate.replace(/^(\d{4})\.(\d{2})\.(\d{2})/, '$1-$2-$3');
-  const [datePart, timePart] = normalised.split(' ');
-  const utcTime = timePart ? timePart.slice(0, 5) : '00:00';
+  const normalised = String(rawDate).replace(/^(\d{4})\.(\d{2})\.(\d{2})/, '$1-$2-$3');
+  const [datePart, timePart] = normalised.split(/[T ]/);
+  const utcTime = timePart ? timePart.slice(0, 5) : 'All Day';
 
-  const hasValue = (v) => v != null && v !== '' && v !== 0 && v !== '0';
+  const hasValue = (v) => v != null && v !== '';
 
   const rawActual = item.Actual ?? item.actual;
-  const actual   = hasValue(rawActual) ? String(rawActual) : null;
+  const outcome = item.Outcome ?? item.outcome;
+  const releasedAt = new Date(`${datePart}T${utcTime}:00Z`).getTime();
+  const pending = outcome === 'Data Not Loaded' || releasedAt > Date.now();
+  const actual = !pending && hasValue(rawActual) ? String(rawActual) : null;
 
   const prev = item.Previous ?? item.previous;
   const fore = item.Forecast ?? item.forecast;
@@ -63,7 +47,7 @@ function normalise(item, idx) {
     previous:   hasValue(prev) ? String(prev) : '-',
     forecast:   hasValue(fore) ? String(fore) : '-',
     actual,
-    outcome:    (item.Outcome === 'Data Not Loaded' || !item.Outcome) ? null : (item.Outcome ?? item.outcome ?? null),
+    outcome:    [undefined, null, '', 'Data Not Loaded'].includes(item.Outcome ?? item.outcome) ? null : (item.Outcome ?? item.outcome),
   };
 }
 
@@ -86,7 +70,8 @@ function mapImpact(impact) {
 function mapCategory(cat, name) {
   const combined = ((cat || '') + ' ' + (name || '')).toLowerCase();
   if (combined.includes('speak') || combined.includes('speech') || combined.includes('testimony') || combined.includes('press conference') || combined.includes('remarks')) return 'Speeches';
-  if (combined.includes('rate') || combined.includes('central') || combined.includes('bank') || combined.includes('monetary') || combined.includes('boj') || combined.includes('fed') || combined.includes('ecb') || combined.includes('boe')) return 'Central Bank';
+  if (combined.includes('holiday')) return 'Holiday';
+  if (combined.includes('interest rate') || combined.includes('policy rate') || combined.includes('central') || combined.includes('bank') || combined.includes('monetary') || combined.includes('boj') || combined.includes('fed') || combined.includes('ecb') || combined.includes('boe')) return 'Central Bank';
   if (combined.includes('inflation') || combined.includes('cpi') || combined.includes('ppi') || combined.includes('price')) return 'Inflation';
   if (combined.includes('employ') || combined.includes('job') || combined.includes('labour') || combined.includes('labor') || combined.includes('payroll') || combined.includes('claims')) return 'Labour';
   if (combined.includes('gdp') || combined.includes('growth') || combined.includes('production') || combined.includes('trade')) return 'GDP';
