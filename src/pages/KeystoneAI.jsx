@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -7,15 +7,15 @@ import { Send, RotateCcw, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import PageBackground from '@/components/layout/PageBackground';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import ChatMessageBubble from '@/components/ailab/ChatMessageBubble';
+import ChatTypingIndicator from '@/components/ailab/ChatTypingIndicator';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 import ChatHistorySidebar from '@/components/ailab/ChatHistorySidebar';
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
 
 const STARTERS = [
-  "What's your view on Fed policy and duration risk in 2025?",
+  "Compare the main risks for equities, bonds and gold in a table.",
   "How should I position for persistent dollar strength?",
   "Walk me through the European fiscal pivot and implications for EUR assets.",
   "What does China's recovery mean for commodity markets?",
@@ -25,92 +25,27 @@ const STARTERS = [
   "Break down the oil supply/demand picture and geopolitical risk premium.",
 ];
 
-const markdownComponents = {
-  h2: ({ children }) => <h2 className="text-sm font-semibold mt-4 mb-2 text-foreground border-b border-border/30 pb-1">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-xs font-semibold mt-3 mb-1.5 text-primary uppercase tracking-wide">{children}</h3>,
-  p: ({ children }) => <p className="text-sm leading-6 text-foreground/90 mb-2.5 last:mb-0">{children}</p>,
-  ul: ({ children }) => <ul className="my-2 space-y-1">{children}</ul>,
-  ol: ({ children }) => <ol className="my-2 space-y-1 pl-4 list-decimal">{children}</ol>,
-  li: ({ children }) => (
-    <li className="flex items-start gap-2 text-sm text-foreground/85 leading-5.5">
-      <span className="mt-1.5 w-1 h-1 rounded-full bg-primary/50 shrink-0" />
-      <span>{children}</span>
-    </li>
-  ),
-  strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
-  em: ({ children }) => <em className="italic text-muted-foreground">{children}</em>,
-  blockquote: ({ children }) => (
-    <blockquote className="my-2 pl-3 border-l-2 border-primary/40 text-muted-foreground text-sm italic">{children}</blockquote>
-  ),
-  code: ({ inline, children }) => inline
-    ? <code className="px-1 py-0.5 rounded bg-muted text-xs font-mono text-primary">{children}</code>
-    : <pre className="my-3 p-3 rounded-lg bg-muted/60 overflow-x-auto text-xs font-mono leading-relaxed">{children}</pre>,
-  hr: () => <hr className="my-3 border-border/30" />,
-};
-
-function MessageBubble({ msg }) {
-  const isUser = msg.role === 'user';
-  return (
-    <motion.div
-      className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      {!isUser && (
-        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-1">
-          <KeystoneIcon className="w-3.5 h-3.5 text-primary" />
-        </div>
-      )}
-      <div className={`rounded-xl ${
-        isUser
-          ? 'max-w-[72%] px-4 py-2.5 bg-primary text-primary-foreground rounded-tr-sm text-sm leading-relaxed'
-          : 'w-full max-w-[90%] px-4 py-3.5 bg-card/60 border border-border/40 rounded-tl-sm'
-      }`}>
-        {isUser ? (
-          <p>{msg.content}</p>
-        ) : (
-          <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
-            {msg.content}
-          </ReactMarkdown>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-function TypingIndicator() {
-  return (
-    <div className="flex gap-3 justify-start">
-      <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-        <KeystoneIcon className="w-4 h-4 text-primary" />
-      </div>
-      <div className="glass rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
-        {[0, 1, 2].map(i => (
-          <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60"
-            animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function makeTitle(text) {
   const clean = text.trim().replace(/\s+/g, ' ');
   return clean.length > 45 ? clean.slice(0, 45) + '…' : clean;
 }
 
 export default function KeystoneAI() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [activeId, setActiveId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [messages, loading]);
 
   const { data: conversations = [], isLoading: loadingConvos } = useQuery({
     queryKey: ['chatConversations'],
@@ -141,23 +76,29 @@ export default function KeystoneAI() {
     setMessages(newMessages);
     setLoading(true);
 
-    const response = await base44.functions.invoke('keystoneChat', {
-      mode: 'analyst',
-      message: userMsg,
-      history: messages,
-    });
-    const reply = response?.data?.reply || '';
-    const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
-    setMessages(finalMessages);
-    setLoading(false);
-
-    // Persist for logged-in users only
-    persistConversation(finalMessages, userMsg).catch(err => console.error('Chat save failed:', err));
+    setSendError('');
+    try {
+      const response = await base44.functions.invoke('keystoneChat', {
+        mode: 'analyst', message: userMsg, history: messages,
+      });
+      const reply = response?.data?.reply;
+      if (!reply) throw new Error('No response was returned. Please try again.');
+      const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
+      setMessages(finalMessages);
+      persistConversation(finalMessages, userMsg).catch(err => console.error('Chat save failed:', err));
+    } catch {
+      setMessages(messages);
+      setInput(userMsg);
+      setSendError('Unable to get a response. Your question is ready to send again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
   const handleNewChat = () => {
+    setSendError('');
     setMessages([]);
     setActiveId(null);
     setSidebarOpen(false);
@@ -182,7 +123,7 @@ export default function KeystoneAI() {
   return (
     <div className="pt-24 lg:pt-28 pb-10 min-h-screen relative">
       <PageBackground />
-      <div className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isAuthenticated ? 'lg:flex lg:gap-6' : ''}`}>
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isAuthenticated ? 'lg:flex lg:gap-6' : ''}`}>
 
         {/* Sidebar for logged-in users */}
         {isAuthenticated && (
@@ -220,15 +161,15 @@ export default function KeystoneAI() {
                 <KeystoneIcon className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="font-display text-2xl font-semibold">Keystone Research Assistant</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">Keystone AI</h1>
                 <p className="text-xs text-muted-foreground">Macro Intelligence Analyst</p>
               </div>
             </div>
           </motion.div>
 
-          <div className="flex flex-col rounded-xl border border-border/55 bg-card/35 p-4 sm:p-5" style={{ minHeight: 'calc(100vh - 230px)' }}>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-muted-foreground">Institutional-grade macro analysis on demand.</p>
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-6" style={{ minHeight: 'calc(100vh - 230px)' }}>
+            <div className="flex items-center justify-between gap-3 border-b border-border pb-4 mb-6">
+              <p className="text-xs font-medium text-muted-foreground">Research conversation</p>
               {isAuthenticated && messages.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleNewChat} className="gap-1.5 text-muted-foreground hidden lg:flex">
                   <RotateCcw className="w-3.5 h-3.5" /> New Chat
@@ -254,19 +195,20 @@ export default function KeystoneAI() {
                   </div>
                 </motion.div>
               ) : (
-                <div className="flex-1 overflow-y-auto space-y-6 pb-4 pr-1" style={{ maxHeight: 'calc(100vh - 380px)' }}>
-                  {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
-                  {loading && <TypingIndicator />}
+                <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden space-y-8 pb-6 pr-1 sm:pr-3" style={{ maxHeight: 'calc(100dvh - 380px)' }} aria-live="polite" aria-busy={loading}>
+                  {messages.map((msg, i) => <ChatMessageBubble key={i} msg={msg} />)}
+                  {loading && <ChatTypingIndicator />}
                   <div ref={bottomRef} />
                 </div>
               )}
 
               <div className="pt-4 pb-2">
-                <div className="rounded-xl border border-border/60 bg-background/55 p-3 flex gap-3 items-end">
+                {sendError && <p role="alert" className="mb-3 text-sm text-destructive">{sendError}</p>}
+                <div className="rounded-2xl border border-border bg-background p-4 flex gap-3 items-end focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
                   <Textarea ref={textareaRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
                     placeholder="Ask about macro, markets, positioning, or portfolio construction…"
                     className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 p-0 text-sm min-h-[44px] max-h-36" rows={1} />
-                  <Button onClick={() => sendMessage()} disabled={!input.trim() || loading} size="icon" className="rounded-xl h-9 w-9 shrink-0">
+                  <Button aria-label="Send message" onClick={() => sendMessage()} disabled={!input.trim() || loading} size="icon" className="rounded-xl h-9 w-9 shrink-0">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
