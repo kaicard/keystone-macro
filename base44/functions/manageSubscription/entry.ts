@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
+import { secrets } from 'base44:runtime';
+import { limitRequests } from '../../shared/requestSecurity.ts';
 
 async function sendCancellationEmail(base44, email, paid, periodEnd) {
   const accessText = paid && periodEnd
@@ -13,16 +15,19 @@ async function sendCancellationEmail(base44, email, paid, periodEnd) {
   }).catch(() => {});
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
     if (!user?.email) return Response.json({ error: 'Sign in to manage your subscription.' }, { status: 401 });
+    const limited = await limitRequests(base44, user, 'subscription-management', { minute: 5, day: 20, exemptAdmins: false });
+    if (limited) return limited;
 
     const { action } = await req.json().catch(() => ({}));
     if (action === 'cancel_free') {
       const record = (await base44.asServiceRole.entities.NewsletterSubscriber.filter({ email: user.email }))?.[0];
       if (!record) return Response.json({ error: 'No free subscription found for this account.' }, { status: 404 });
+      if (record.status === 'unsubscribed') return Response.json({ success: true, type: 'free' });
       await base44.asServiceRole.entities.NewsletterSubscriber.update(record.id, { status: 'unsubscribed' });
       await sendCancellationEmail(base44, user.email, false, null);
       return Response.json({ success: true, type: 'free' });
@@ -31,11 +36,14 @@ Deno.serve(async (req) => {
     if (action === 'cancel_paid') {
       const record = (await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email }))?.[0];
       if (!record) return Response.json({ error: 'No paid subscription found for this account.' }, { status: 404 });
+      if (['cancelling', 'cancelled'].includes(record.status)) {
+        return Response.json({ success: true, type: 'paid', status: record.status, current_period_end: record.current_period_end || null });
+      }
 
       let currentPeriodEnd = record.current_period_end || null;
       let status = 'cancelled';
       if (record.stripe_subscription_id) {
-        const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+        const stripeKey = secrets.get('STRIPE_SECRET_KEY');
         if (!stripeKey) return Response.json({ error: 'Stripe is not configured.' }, { status: 503 });
         const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
         const subscription = await stripe.subscriptions.update(record.stripe_subscription_id, { cancel_at_period_end: true });
@@ -56,4 +64,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message || 'Unable to manage subscription.' }, { status: 500 });
   }
-});
+}

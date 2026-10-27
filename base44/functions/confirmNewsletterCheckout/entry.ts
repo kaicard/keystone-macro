@@ -1,7 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
+import { secrets } from 'base44:runtime';
+import { limitRequests } from '../../shared/requestSecurity.ts';
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
@@ -10,7 +12,10 @@ Deno.serve(async (req) => {
     const { session_id } = await req.json().catch(() => ({}));
     if (!session_id) return Response.json({ error: 'Missing checkout session.' }, { status: 400 });
 
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    const limited = await limitRequests(base44, user, 'newsletter-checkout-confirmation', { minute: 6, day: 30, exemptAdmins: false });
+    if (limited) return limited;
+
+    const stripeKey = secrets.get('STRIPE_SECRET_KEY');
     if (!stripeKey) return Response.json({ error: 'Stripe is not configured.' }, { status: 503 });
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
@@ -24,7 +29,8 @@ Deno.serve(async (req) => {
     const subscription = typeof session.subscription === 'string'
       ? await stripe.subscriptions.retrieve(session.subscription)
       : session.subscription;
-    const active = subscription && ['active', 'trialing'].includes(subscription.status);
+    const active = subscription && ['active', 'trialing'].includes(subscription.status)
+      && subscription.current_period_end * 1000 > Date.now();
     if (!active || !['paid', 'no_payment_required'].includes(session.payment_status)) {
       return Response.json({ active: false, status: subscription?.status || session.payment_status });
     }
@@ -48,4 +54,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message || 'Unable to confirm checkout.' }, { status: 500 });
   }
-});
+}

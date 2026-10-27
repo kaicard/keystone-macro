@@ -1,7 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
+import { secrets } from 'base44:runtime';
+import { limitRequests } from '../../shared/requestSecurity.ts';
+import { resolvePremiumAccess } from '../../shared/newsletterAccess.ts';
 
-function getSafeOrigin(req: Request) {
+function getSafeOrigin(req) {
   const fallback = 'https://keystonemacro.com';
   const raw = req.headers.get('origin') || req.headers.get('referer') || fallback;
   try {
@@ -14,7 +17,7 @@ function getSafeOrigin(req: Request) {
   return fallback;
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
@@ -22,19 +25,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Sign in before subscribing.' }, { status: 401 });
     }
 
+    const limited = await limitRequests(base44, user, 'newsletter-checkout', { minute: 3, day: 10, exemptAdmins: false });
+    if (limited) return limited;
+
     const { name } = await req.json().catch(() => ({}));
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    const stripeKey = secrets.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
       return Response.json({ error: 'Stripe is not configured.' }, { status: 503 });
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
-    const existingRecords = await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email });
-    const existing = existingRecords?.[0];
-
-    if (existing?.status === 'active' || existing?.status === 'cancelling') {
+    const access = await resolvePremiumAccess(base44);
+    if (access.active) {
       return Response.json({ error: 'This account already has premium access.' }, { status: 409 });
     }
+    const existingRecords = await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email });
+    const existing = existingRecords?.[0];
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customer = customers.data[0] || await stripe.customers.create({
@@ -96,4 +102,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message || 'Unable to create checkout.' }, { status: 500 });
   }
-});
+}

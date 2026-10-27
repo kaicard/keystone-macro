@@ -1,4 +1,5 @@
 import Stripe from 'npm:stripe@14.21.0';
+import { secrets } from 'base44:runtime';
 
 // Resolves the current user's premium newsletter entitlement, verifying against
 // stored status first and falling back to Stripe. Shared by every function that
@@ -10,9 +11,11 @@ export async function resolvePremiumAccess(base44) {
   const records = (await base44.asServiceRole.entities.NewsletterSubscription.filter({ email: user.email })) || [];
   if (records.length === 0) return { authenticated: true, active: false, user };
 
-  // An email can hold more than one row (e.g. a stale pending row alongside a live
-  // subscription). Access is granted if ANY record for this email is active.
-  const activeRecord = records.find((r) => ['active', 'cancelling'].includes(r.status));
+  // Stored access is valid only for an unexpired paid period. Expired or missing
+  // dates must be checked with Stripe, including subscriptions that may have renewed.
+  const activeRecord = records.find((r) =>
+    ['active', 'cancelling'].includes(r.status) && Date.parse(r.current_period_end) > Date.now()
+  );
   if (activeRecord) {
     return {
       authenticated: true,
@@ -25,14 +28,16 @@ export async function resolvePremiumAccess(base44) {
 
   const record = records.find((r) => r.stripe_customer_id) || records[0];
 
-  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+  const stripeKey = secrets.get('STRIPE_SECRET_KEY');
   if (!stripeKey || !record.stripe_customer_id) {
     return { authenticated: true, active: false, status: record.status, user };
   }
 
   const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
   const subscriptions = await stripe.subscriptions.list({ customer: record.stripe_customer_id, status: 'all', limit: 10 });
-  const subscription = subscriptions.data.find((item) => ['active', 'trialing'].includes(item.status));
+  const subscription = subscriptions.data.find((item) =>
+    ['active', 'trialing'].includes(item.status) && item.current_period_end * 1000 > Date.now()
+  );
   if (!subscription) return { authenticated: true, active: false, status: record.status, user };
 
   const status = subscription.cancel_at_period_end ? 'cancelling' : 'active';

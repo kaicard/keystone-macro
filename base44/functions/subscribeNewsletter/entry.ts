@@ -1,10 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { limitRequests } from '../../shared/requestSecurity.ts';
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
     if (!user?.email) return Response.json({ error: 'Sign in before subscribing.' }, { status: 401 });
+    const limited = await limitRequests(base44, user, 'newsletter-signup', { minute: 2, day: 10, exemptAdmins: false });
+    if (limited) return limited;
 
     const { name } = await req.json().catch(() => ({}));
     const records = await base44.asServiceRole.entities.NewsletterSubscriber.filter({ email: user.email });
@@ -27,4 +30,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message || 'Unable to subscribe.' }, { status: 500 });
   }
-});
+}

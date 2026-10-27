@@ -10,9 +10,9 @@ export function signInRequired() {
   return Response.json({ error: 'Please sign in to use this feature.' }, { status: 401 });
 }
 
-export async function limitRequests(base44, user, action, { minute = 6, day = 60 } = {}) {
+export async function limitRequests(base44, user, action, { minute = 6, day = 60, exemptAdmins = true } = {}) {
   if (!user?.id) return signInRequired();
-  if (user.role === 'admin') return null; // Trusted scheduled/admin operations keep their existing cadence.
+  if (exemptAdmins && user.role === 'admin') return null; // Existing scheduled/admin operations keep their cadence.
   const key = `${user.id}:${action}`;
   const requests = base44.asServiceRole.entities.SecurityRequest;
   const now = Date.now();
