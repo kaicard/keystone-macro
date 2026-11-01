@@ -11,6 +11,7 @@ import ChatMessageBubble from '@/components/ailab/ChatMessageBubble';
 import ChatTypingIndicator from '@/components/ailab/ChatTypingIndicator';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 import ChatHistorySidebar from '@/components/ailab/ChatHistorySidebar';
+import useReplyReveal from '@/components/ailab/useReplyReveal';
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ export default function KeystoneAI() {
   const queryClient = useQueryClient();
 
   const [messages, setMessages] = useState([]);
+  const { revealReply, cancelReveal } = useReplyReveal(setMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sendError, setSendError] = useState('');
@@ -85,8 +87,8 @@ export default function KeystoneAI() {
       const reply = response?.data?.reply;
       if (!reply) throw new Error('No response was returned. Please try again.');
       const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
-      setMessages(finalMessages);
-      persistConversation(finalMessages, userMsg).catch(err => console.error('Chat save failed:', err));
+      const completed = await revealReply(newMessages, reply);
+      if (completed) persistConversation(finalMessages, userMsg).catch(err => console.error('Chat save failed:', err));
     } catch (error) {
       setMessages(messages);
       setInput(userMsg);
@@ -99,6 +101,7 @@ export default function KeystoneAI() {
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
   const handleNewChat = () => {
+    cancelReveal();
     setSendError('');
     setMessages([]);
     setActiveId(null);
@@ -106,6 +109,7 @@ export default function KeystoneAI() {
   };
 
   const handleSelectConversation = (conv) => {
+    cancelReveal();
     setMessages(conv.messages || []);
     setActiveId(conv.id);
     setSidebarOpen(false);
@@ -198,7 +202,7 @@ export default function KeystoneAI() {
               ) : (
                 <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden space-y-8 pb-6 pr-1 sm:pr-3" style={{ maxHeight: 'calc(100dvh - 380px)' }} aria-live="polite" aria-busy={loading}>
                   {messages.map((msg, i) => <ChatMessageBubble key={i} msg={msg} />)}
-                  {loading && <ChatTypingIndicator />}
+                  {loading && messages[messages.length - 1]?.role !== 'assistant' && <ChatTypingIndicator />}
                   <div ref={bottomRef} />
                 </div>
               )}

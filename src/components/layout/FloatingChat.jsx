@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 import { useAuth } from '@/lib/AuthContext';
+import useReplyReveal from '@/components/ailab/useReplyReveal';
 
 function TypingDots() {
   return (
@@ -23,6 +24,7 @@ export default function FloatingChat() {
   const [sendError, setSendError] = useState('');
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
+  const { revealReply, cancelReveal } = useReplyReveal(setMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
@@ -47,7 +49,7 @@ export default function FloatingChat() {
         mode: 'widget', message: text, history: messages,
       });
       const reply = response?.data?.reply || '';
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      await revealReply(newMsgs, reply);
     } catch (error) {
       setMessages(messages);
       setInput(text);
@@ -104,7 +106,7 @@ export default function FloatingChat() {
               </div>
               <div className="flex items-center gap-1">
                 {messages.length > 0 && (
-                  <button onClick={() => setMessages([])} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <button onClick={() => { cancelReveal(); setMessages([]); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -157,7 +159,7 @@ export default function FloatingChat() {
                   </div>
                 </div>
               ))}
-              {loading && (
+              {loading && messages[messages.length - 1]?.role !== 'assistant' && (
                 <div className="flex gap-2 justify-start">
                   <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
                     <KeystoneIcon className="w-3 h-3 text-primary" />
