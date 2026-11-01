@@ -34,7 +34,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-border/35 bg-card/20">
+    <footer className="editorial-footer relative border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>

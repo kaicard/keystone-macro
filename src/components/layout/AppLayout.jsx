@@ -6,11 +6,12 @@ import Footer from './Footer';
 import PageTransition from './PageTransition';
 import FloatingChat from './FloatingChat';
 import RouteMetadata from './RouteMetadata';
+import '@/components/layout/InstitutionalTheme.css';
 
 export default function AppLayout() {
   return (
     <ThemeProvider>
-      <div className="min-h-screen flex flex-col">
+      <div className="institutional-site min-h-screen flex flex-col">
         <RouteMetadata />
         <Navbar />
         <main className="flex-1">

@@ -44,7 +44,7 @@ function generateSlug(title) {
 function NoteCard({ note, viewMode, delay, onClick }) {
   return (
     <motion.div
-      className={`rounded-xl border border-border/55 bg-card/55 p-5 hover:border-primary/25 hover:bg-card/75 transition-colors duration-200 cursor-pointer group flex flex-col ${
+      className={`editorial-research-card transition-colors duration-200 cursor-pointer group flex flex-col ${
         viewMode === 'list' ? 'gap-4' : 'h-full'
       }`}
       initial={{ opacity: 0, y: 12 }}
@@ -168,7 +168,7 @@ export default function Research() {
           </div>
         </div>
 
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 items-stretch' : 'space-y-4'}>
           <AnimatePresence>
             {visibleNotes.map((note, i) => (
               <NoteCard key={note.id} note={note} viewMode={viewMode} delay={i * 0.04} onClick={() => handleNoteClick(note)} />

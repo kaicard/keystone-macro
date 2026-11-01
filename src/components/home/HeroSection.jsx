@@ -7,19 +7,19 @@ import HeroBackground from './HeroBackground';
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-[88vh] items-center justify-center overflow-hidden border-b border-border/20">
+    <section className="editorial-hero relative flex min-h-[600px] items-center overflow-hidden border-b border-border pb-16 pt-32 sm:pb-20 sm:pt-40">
       <HeroBackground />
       
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background pointer-events-none" />
       
-      <div className="relative z-10 mx-auto max-w-5xl px-4 pt-20 text-center sm:px-6">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 text-left sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="mb-7 inline-flex items-center gap-2 rounded-lg border border-border/35 bg-card/35 px-3 py-1.5 backdrop-blur-lg">
+          <div className="editorial-hero-kicker mb-7 inline-flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">
               Keystone Macro · Independent Market Intelligence
@@ -28,7 +28,7 @@ export default function HeroSection() {
         </motion.div>
 
         <motion.h1
-          className="mb-6 font-display text-4xl font-semibold leading-[1.08] tracking-[-0.04em] sm:text-5xl md:text-6xl lg:text-[68px]"
+          className="mb-6 max-w-4xl font-display text-4xl font-medium leading-[1.1] tracking-[-0.01em] sm:text-5xl lg:text-[56px]"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -39,7 +39,7 @@ export default function HeroSection() {
         </motion.h1>
 
         <motion.p
-          className="mx-auto mb-9 max-w-2xl text-base font-normal leading-7 text-muted-foreground/75 sm:text-lg"
+          className="mb-9 max-w-2xl text-base font-normal leading-7 text-muted-foreground sm:text-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -48,14 +48,14 @@ export default function HeroSection() {
         </motion.p>
 
         <motion.div
-          className="mb-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <Link to="/Research">
             <Button size="lg" className="group relative gap-2 overflow-hidden px-6">
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+
               <BookOpen className="w-4 h-4" />
               View Research
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -61,7 +61,7 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${scrolled ? 'border-border/45 bg-background/[0.92] shadow-[0_12px_40px_-34px_rgba(0,0,0,0.8)] backdrop-blur-xl' : 'border-border/25 bg-background/[0.72] backdrop-blur-lg'}`}
+        className={`editorial-nav fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${scrolled ? 'bg-background border-border' : 'bg-background border-border'}`}
         initial={{ y: -72 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -69,12 +69,13 @@ export default function Navbar() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Brand />
 
-          <div className="hidden items-center rounded-xl border border-border/25 bg-card/25 p-1 lg:flex">
+          <div className="editorial-nav-links hidden items-center lg:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all ${isActive(link.path) ? 'bg-foreground/[0.07] text-foreground shadow-sm' : 'text-muted-foreground/70 hover:bg-foreground/[0.035] hover:text-foreground'}`}
+                aria-current={isActive(link.path) ? 'page' : undefined}
+                className={`editorial-nav-link transition-colors ${isActive(link.path) ? 'text-foreground' : 'text-muted-foreground hover:text-primary'}`}
               >
                 {link.label}
               </Link>

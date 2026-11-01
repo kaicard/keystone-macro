@@ -9,7 +9,7 @@ import NewsletterSection from '@/components/home/NewsletterSection';
 
 export default function Home() {
   return (
-    <div className="relative">
+    <div className="editorial-home relative">
       <HeroSection />
       <CredibilityStrip />
       <FeaturedResearch />

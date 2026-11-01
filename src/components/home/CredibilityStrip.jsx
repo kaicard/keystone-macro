@@ -11,7 +11,7 @@ const capabilities = [
 
 export default function CredibilityStrip() {
   return (
-    <section className="relative border-y border-border/30 bg-card/20">
+    <section className="editorial-credibility relative border-y border-border bg-card">
       <div className="mx-auto grid max-w-7xl grid-cols-1 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-5 lg:px-8">
         {capabilities.map((item, index) => (
           <div key={item.title} className={`flex gap-3 py-5 sm:px-4 lg:py-6 ${index > 0 ? 'border-t border-border/25 sm:border-t-0' : ''} ${index % 2 === 1 ? 'sm:border-l' : ''} ${index > 0 ? 'lg:border-l' : ''}`}>
