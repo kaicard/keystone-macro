@@ -25,11 +25,9 @@ export async function selectIntelligencePhoto(item) {
   if (!subject) return null;
   const [, name, query] = subject;
   const photos = await findPhotos({ headline: `${text} ${name}`, image_subject: name, image_query: query }, new Set());
-  for (const photo of photos.slice(0, 2)) {
-    const available = await fetch(photo.url, { method: 'HEAD', signal: AbortSignal.timeout(7000) }).catch(() => null);
-    if (available?.ok && available.headers.get('content-type')?.startsWith('image/')) return photo;
-  }
-  return null;
+  // Commons supplies the licensed image URL. Avoid a separate HEAD request,
+  // which can be throttled even when the photograph itself is available.
+  return photos.sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0] || null;
 }
 
 export async function withIntelligencePhoto(item, analysis) {

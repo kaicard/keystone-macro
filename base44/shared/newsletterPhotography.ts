@@ -29,7 +29,10 @@ export async function findPhotos(section, excluded) {
     gsrsearch: `${query} filetype:bitmap`, gsrnamespace: '6', gsrlimit: '20',
     prop: 'imageinfo', iiprop: 'url|mime|size|extmetadata', iiurlwidth: '1000' });
   const response = await fetch(`${API}?${params}`, { headers: HEADERS, signal: AbortSignal.timeout(10000) });
-  if (!response.ok) return [];
+  if (!response.ok) {
+    console.warn('Editorial photography search unavailable:', response.status);
+    return [];
+  }
   const result = await response.json();
   return Object.values(result.query?.pages || {}).sort((a, b) => a.index - b.index).flatMap(page => {
     const info = page.imageinfo?.[0];
