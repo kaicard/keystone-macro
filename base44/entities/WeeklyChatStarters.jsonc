@@ -1,0 +1,68 @@
+{
+  "name": "WeeklyChatStarters",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "source_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "source_date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "text",
+          "source_url",
+          "source_date"
+        ]
+      }
+    }
+  },
+  "required": [
+    "key",
+    "week_start",
+    "generated_at",
+    "questions"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

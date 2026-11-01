@@ -12,19 +12,9 @@ import ChatTypingIndicator from '@/components/ailab/ChatTypingIndicator';
 import KeystoneIcon from '@/components/ailab/KeystoneIcon';
 import ChatHistorySidebar from '@/components/ailab/ChatHistorySidebar';
 import useReplyReveal from '@/components/ailab/useReplyReveal';
+import WeeklyChatSuggestions from '@/components/ailab/WeeklyChatSuggestions';
 
 // ─── Analyst Chat ────────────────────────────────────────────────────────────
-
-const STARTERS = [
-  "Compare the main risks for equities, bonds and gold in a table.",
-  "How should I position for persistent dollar strength?",
-  "Walk me through the European fiscal pivot and implications for EUR assets.",
-  "What does China's recovery mean for commodity markets?",
-  "Is gold's rally sustainable or a positioning trade?",
-  "What are the biggest macro risks investors are underpricing right now?",
-  "How do you think about EM currency stress in this environment?",
-  "Break down the oil supply/demand picture and geopolitical risk premium.",
-];
 
 function makeTitle(text) {
   const clean = text.trim().replace(/\s+/g, ' ');
@@ -190,14 +180,7 @@ export default function KeystoneAI() {
                   </div>
                   <h2 className="font-display text-2xl font-semibold mb-2">Ask the Desk</h2>
                   <p className="text-muted-foreground mb-6 max-w-md text-sm">Ask about markets, policy, positioning, or portfolio construction.</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl">
-                    {STARTERS.map(s => (
-                      <button key={s} onClick={() => sendMessage(s)}
-                        className="rounded-lg border border-border/50 bg-background/30 px-4 py-3 text-left text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 hover:bg-background/50 transition-colors duration-200">
-                        {s}
-                      </button>
-                    ))}
-                  </div>
+                  <WeeklyChatSuggestions onSelect={sendMessage} />
                 </motion.div>
               ) : (
                 <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden space-y-8 pb-6 pr-1 sm:pr-3" style={{ maxHeight: 'calc(100dvh - 380px)' }} aria-live="polite" aria-busy={loading}>

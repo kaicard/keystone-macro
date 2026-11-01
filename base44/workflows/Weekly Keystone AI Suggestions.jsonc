@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "weekly_keystone_ai_suggestions",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "refresh_suggestions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "refreshWeeklyChatStarters",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Refresh weekly chat suggestions",
+            "description": "Eight prompts grounded in current market news"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Refresh the eight shared Keystone AI starter prompts from current sourced market news every Monday at 6am London time.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * 1",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Weekly Keystone AI Suggestions"
+}
