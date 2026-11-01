@@ -8,6 +8,17 @@
   :root {
     --font-inter: 'Inter', system-ui, sans-serif;
     --font-display: 'Playfair Display', Georgia, serif;
+    --font-research-heading: Georgia, 'Times New Roman', serif;
+    --font-research-body: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --paper-background: #F5F2EB;
+    --paper-ink: #202B39;
+    --paper-accent: #7B6951;
+    --paper-border: #DCD6CA;
+    --paper-subtitle: #4a5462;
+    --paper-muted: #5b6573;
+    --paper-tag-surface: #faf8f3;
+    --paper-body: #2d3846;
+    --paper-footer: #7b8491;
 
     --background: 220 22% 98%;
     --foreground: 222 28% 9%;
@@ -45,6 +56,15 @@
   }
 
   .dark {
+    --paper-background: #F5F2EB;
+    --paper-ink: #202B39;
+    --paper-accent: #7B6951;
+    --paper-border: #DCD6CA;
+    --paper-subtitle: #4a5462;
+    --paper-muted: #5b6573;
+    --paper-tag-surface: #faf8f3;
+    --paper-body: #2d3846;
+    --paper-footer: #7b8491;
     --background: 222 29% 5%;
     --foreground: 215 19% 91%;
     --card: 222 23% 8%;
