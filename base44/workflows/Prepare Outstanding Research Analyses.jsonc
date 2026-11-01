@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "prepare_outstanding_research_analyses",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "prepare_outstanding": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "preparePendingIntelligence",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Prepare outstanding analyses",
+            "description": "Fill missing saved analyses in bounded batches"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Prepare existing outstanding research analyses, newest first, and recover missed preparations every five minutes without requiring an open browser.",
+  "name": "Prepare Outstanding Research Analyses"
+}

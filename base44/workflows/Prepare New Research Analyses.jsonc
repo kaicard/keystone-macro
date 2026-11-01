@@ -1,0 +1,40 @@
+{
+  "name": "Prepare New Research Analyses",
+  "description": "Prepare and save full analysis as soon as a research intelligence story is created, independently of readers or browser sessions.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "IntelligenceItem",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ (.trigger.data.full_analysis == null) and ((.trigger.data.slug // \"\") != \"\") }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "prepare_new_research_analyses",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "prepare_analysis": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "getIntelligenceAnalysis",
+            "args": {
+              "slug": "${ .trigger.data.slug }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Prepare full analysis",
+            "description": "Save analysis before a reader opens it"
+          }
+        }
+      }
+    ]
+  }
+}
