@@ -28,7 +28,7 @@ export function KeystoneMark({ className = 'h-7 w-10', title = 'Keystone Macro' 
 
 export default function KeystoneLogo({
   className = '',
-  markClassName = 'h-7 w-10 text-primary',
+  markClassName = 'h-7 w-10 text-brand',
   wordmarkClassName = '',
 }) {
   return (
@@ -38,7 +38,7 @@ export default function KeystoneLogo({
         <span className="font-display text-[14px] font-semibold uppercase tracking-[0.045em] text-foreground">
           Keystone
         </span>
-        <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.38em] text-primary">
+        <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.38em] text-brand">
           Macro
         </span>
       </span>

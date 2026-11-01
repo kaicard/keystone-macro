@@ -75,8 +75,8 @@
   box-shadow: none;
 }
 .institutional-site .editorial-nav-link[aria-current="page"] {
-  border-bottom-color: hsl(var(--foreground));
-  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--primary));
+  color: hsl(var(--primary));
 }
 .institutional-site .editorial-nav-link:hover {
   color: hsl(var(--primary));
@@ -101,6 +101,9 @@
 }
 .institutional-site .editorial-hero p {
   line-height: 1.85;
+}
+.institutional-site .editorial-brand-wash {
+  background-image: radial-gradient(ellipse at 78% 30%, hsl(var(--brand) / .08), transparent 65%);
 }
 .institutional-site .editorial-research-card {
   background: transparent;

@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { cleanMarketCopy, truncateWords } from '@/lib/cleanMarketCopy';
+import IntelligencePhoto from '@/components/research/IntelligencePhoto';
 
 const BEATS = [
   { key: 'all', label: 'All coverage' },
@@ -185,6 +186,7 @@ function IntelligenceItem({ item, index }) {
           >
             <div className="grid gap-6 px-10 pb-6 sm:px-12 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
               <div className="space-y-5">
+                {item.is_top_story && <IntelligencePhoto photo={item.full_analysis?.photo} compact />}
                 {impact && (
                   <div>
                     <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/45">Market impact</p>

@@ -20,7 +20,7 @@ const navLinks = [
 function Brand() {
   return (
     <Link to="/Home" className="transition-opacity hover:opacity-[0.85]" aria-label="Keystone Macro home">
-      <KeystoneLogo markClassName="h-7 w-10 text-primary" />
+      <KeystoneLogo markClassName="h-7 w-10 text-brand" />
     </Link>
   );
 }

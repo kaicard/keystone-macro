@@ -9,7 +9,11 @@ export default async function(req) {
     if (user.role !== 'admin') return Response.json({ error: 'Admin access required.' }, { status: 403 });
     // New-item preparation has ten minutes to finish before the recovery job picks it up.
     const query = {
-      $or: [{ full_analysis: { $exists: false } }, { full_analysis: null }],
+      $or: [
+        { full_analysis: { $exists: false } },
+        { full_analysis: null },
+        { is_top_story: true, 'full_analysis.photo_checked_at': { $exists: false } },
+      ],
       created_date: { $lt: new Date(Date.now() - 10 * 60000).toISOString() },
       slug: { $exists: true, $ne: '' },
     };

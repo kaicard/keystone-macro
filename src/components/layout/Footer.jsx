@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <KeystoneLogo markClassName="h-8 w-12 text-primary" />
+            <KeystoneLogo markClassName="h-8 w-12 text-brand" />
             <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground/70">
               Independent macro research, portfolio intelligence, and live cross-asset market context.
             </p>

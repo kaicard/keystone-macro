@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import IntelligenceAnalysisBody from '@/components/research/IntelligenceAnalysisBody';
 import AnalysisDisclaimer from '@/components/research/AnalysisDisclaimer';
+import IntelligencePhoto from '@/components/research/IntelligencePhoto';
 import {
   ArrowLeft, Clock, CalendarDays, ExternalLink, CheckCircle2,
   AlertTriangle, Star, Radio, Activity, Eye,
@@ -185,6 +186,8 @@ export default function ResearchIntelligence() {
             </div>
           </div>
         </motion.header>
+
+        {item.is_top_story && <IntelligencePhoto photo={analysis?.photo} />}
 
         {/* ── EXECUTIVE SUMMARY ────────────────────────────────────────── */}
         {summary && (

@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { HOUSE_STYLE } from '../../shared/writingStyle.ts';
 import { getCaller, signInRequired, limitRequests } from '../../shared/requestSecurity.ts';
+import { withIntelligencePhoto } from '../../shared/intelligencePhotography.ts';
 
 const ANALYSIS_SCHEMA = {
   type: 'object',
@@ -47,7 +48,15 @@ export default async function (req) {
     }
 
     if (item.full_analysis) {
-      return Response.json({ ok: true, cached: true, analysis: item.full_analysis });
+      let analysis = item.full_analysis;
+      if (item.is_top_story && !analysis.photo_checked_at) {
+        const caller = await getCaller(base44);
+        if (caller?.role === 'admin') {
+          analysis = await withIntelligencePhoto(item, analysis);
+          await base44.entities.IntelligenceItem.update(item.id, { full_analysis: analysis });
+        }
+      }
+      return Response.json({ ok: true, cached: true, analysis });
     }
 
     // Existing published analysis remains public; only signed-in readers can commission new AI work.
@@ -92,11 +101,12 @@ ${HOUSE_STYLE}
 - Do not address the reader directly as an investor and never imply the reader should act.
 - Do not fabricate data, quotes or sources.`;
 
-    const analysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const draftAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       add_context_from_internet: true,
       response_json_schema: ANALYSIS_SCHEMA,
     });
+    const analysis = await withIntelligencePhoto(item, draftAnalysis);
 
     await base44.asServiceRole.entities.IntelligenceItem.update(item.id, {
       full_analysis: analysis,

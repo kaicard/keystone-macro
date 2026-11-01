@@ -54,7 +54,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <Link to="/Research">
-            <Button size="lg" className="group relative gap-2 overflow-hidden px-6">
+            <Button size="lg" className="group relative gap-2 overflow-hidden border-brand bg-brand px-6 text-brand-foreground hover:border-brand hover:bg-brand/90 hover:text-brand-foreground">
 
               <BookOpen className="w-4 h-4" />
               View Research

@@ -18,7 +18,7 @@ function words(value) {
   return plain(value).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 1 && !['the', 'of', 'and', 'in', 'at'].includes(w));
 }
 
-async function findPhotos(section, excluded) {
+export async function findPhotos(section, excluded) {
   const query = words(section.image_query).join(' ').slice(0, 120);
   const subject = words(section.image_subject);
   if (!query || !subject.length) return [];
