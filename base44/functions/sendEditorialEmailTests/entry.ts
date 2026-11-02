@@ -11,6 +11,31 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Sign in required.' }, { status: 401 });
     if (user.role !== 'admin' || user.id !== '69b9efd1e34861737a4d8958' || user.email !== 'kaicard05@gmail.com') return Response.json({ error: 'Only the owner can request these self-addressed samples.' }, { status: 403 });
     const body = await req.json().catch(() => null);
+    if (body?.morning_preview === true) {
+      if (body.confirm_test_only !== true || Object.keys(body).some(key => !['confirm_test_only', 'morning_preview', 'dry_run'].includes(key))) return Response.json({ error: 'Only an owner-addressed morning preview is allowed.' }, { status: 400 });
+      const editions = await base44.entities.NewsletterEdition.filter({ slug: 'morning-2026-11-02', status: 'published' }, { sort: '-published_at', limit: 1 });
+      const edition = editions.items[0];
+      if (!edition) return Response.json({ error: 'This morning\'s published edition was not found. Nothing sent.' }, { status: 404 });
+      const chunks = String(edition.body || '').split(/\n\s*---\s*\n/).filter(chunk => chunk.trim());
+      if (chunks.length !== 6) return Response.json({ error: 'Expected the six original morning sections. Nothing sent.' }, { status: 400 });
+      const variables = { headline: edition.title, issue_date: 'Monday, 2 November 2026', market_summary: edition.market_summary, bank_photo_source: 'https://commons.wikimedia.org/wiki/File:Bank_of_England_Building,_London,_UK_-_Diliff.jpg', bank_photo_licence: 'https://creativecommons.org/licenses/by-sa/3.0/', brazil_photo_source: 'https://commons.wikimedia.org/wiki/File:Banco_Central_do_Brasil.jpg', brazil_photo_licence: 'https://creativecommons.org/licenses/by-sa/2.0/' };
+      const names = ['one', 'two', 'three', 'four', 'five', 'six'];
+      for (let index = 0; index < chunks.length; index++) {
+        const match = chunks[index].trim().match(/^##\s+([^:]+):\s*([^\n]+)\n+([\s\S]+)$/);
+        if (!match) return Response.json({ error: 'Cannot read an original section. Nothing sent.' }, { status: 400 });
+        const paragraphs = match[3].split(/\n\n>\s*/);
+        variables['label_' + names[index]] = match[1];
+        variables['title_' + names[index]] = match[2];
+        variables['body_' + names[index]] = paragraphs[0].trim();
+        variables['watch_' + names[index]] = paragraphs.slice(1).join(' ').trim();
+      }
+      if (body.dry_run === true) return Response.json({ dry_run: true, subject: edition.title, sections: chunks.length, images: 2, recipients: 1 });
+      const limited = await limitRequests(base44, user, 'morning-editorial-preview', { minute: 1, day: 3, exemptAdmins: false });
+      if (limited) return limited;
+      const result = await base44.asServiceRole.integrations.Core.SendEmail({ to: 'kaicard05@gmail.com', from_name: 'Keystone Macro', template_name: 'MorningEditorialPreview', variables });
+      if (result?.success === false) return Response.json({ error: result.message || result.reason || 'Send refused. Nothing sent.' }, { status: 400 });
+      return Response.json({ accepted: true, recipient: 'kaicard05@gmail.com', subject: edition.title, images: 2, recipients: 1 });
+    }
     if (!body || body.confirm_test_only !== true || Object.keys(body).some(key => !['confirm_test_only', 'types'].includes(key))) return Response.json({ error: 'Confirm a test-only send. Recipients and content cannot be supplied.' }, { status: 400 });
     const account = (test_title, label, headline, intro, detail_label, detail_value, detail_body, closing, cta_label) => ({ type: test_title, template: 'TestEditorialAccount', category: 'transactional', variables: { test_title, label, headline, intro, detail_label, detail_value, detail_body, closing, cta_label } });
     const newsletter = (test_title, label, headline, intro, cta_intro, cta_label) => ({ type: test_title, template: 'TestEditorialNewsletter', category: 'marketing', variables: {
