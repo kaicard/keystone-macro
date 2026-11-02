@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
+import EditorialEmailTests from '@/components/admin/EditorialEmailTests';
 
 const categories = ['Macro', 'Equities', 'Fixed Income', 'Multi-Asset', 'Commodities', 'Wealth Strategy', 'Behavioural Finance', 'Risk Management', 'Trade Reviews'];
 
@@ -218,6 +219,8 @@ export default function Admin() {
           <h1 className="font-display text-4xl font-semibold mb-2">Administration</h1>
           <p className="text-muted-foreground">Manage content, research notes, and subscribers.</p>
         </motion.div>
+
+        <EditorialEmailTests user={user} />
 
         <Tabs defaultValue="research" className="space-y-6">
           <TabsList className="glass">
