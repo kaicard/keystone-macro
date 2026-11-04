@@ -52,6 +52,7 @@ Reply directly to: ${email}`;
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Contact submission failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

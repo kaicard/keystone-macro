@@ -135,6 +135,7 @@ CRITICAL: NEVER write numbered citation markers such as [1], [4] or [4, 9] anywh
 
     return Response.json({ success: true, note_id: note.id, title: result.title, status: 'draft', review_required: true });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Research generation failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 });

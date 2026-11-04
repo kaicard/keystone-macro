@@ -100,6 +100,7 @@ export default async function(req) {
 
     return Response.json({ url: session.url });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to create checkout.' }, { status: 500 });
+    console.error('Checkout creation failed:', error);
+    return Response.json({ error: 'Unable to create checkout.' }, { status: 500 });
   }
 }

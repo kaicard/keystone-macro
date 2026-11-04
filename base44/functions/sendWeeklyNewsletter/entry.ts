@@ -376,6 +376,7 @@ Return JSON:
 
     return Response.json({ message: `Weekly newsletter sent`, sent, skipped: skipped.length, subject, weekRange, test: !!testEmail });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Weekly newsletter failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 });

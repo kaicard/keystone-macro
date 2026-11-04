@@ -17,7 +17,8 @@ export default async function(req) {
     const events = result.events.map(normalise).filter(event => range === 'week' || event.date === today);
     return Response.json({ events, source, range, cached: result.cached, stale: result.stale, fetched_at: result.fetchedAt });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 503 });
+    console.error('Calendar request failed:', err);
+    return Response.json({ error: 'Unable to load the calendar.' }, { status: 503 });
   }
 }
 

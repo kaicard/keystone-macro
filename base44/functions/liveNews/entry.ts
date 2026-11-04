@@ -132,6 +132,7 @@ export default async function(req) {
     const headlines = freshEntry?.payload ? JSON.parse(freshEntry.payload) : [];
     return Response.json({ ok: true, headlines, cached: false, fetched_at: freshEntry?.fetched_at || new Date().toISOString() });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message, headlines: [] }, { status: 200 });
+    console.error('News request failed:', error);
+    return Response.json({ ok: false, error: 'Unable to load news.', headlines: [] }, { status: 200 });
   }
 }

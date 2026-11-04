@@ -62,6 +62,7 @@ export default async function(req) {
 
     return Response.json({ error: 'Unknown subscription action.' }, { status: 400 });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to manage subscription.' }, { status: 500 });
+    console.error('Subscription request failed:', error);
+    return Response.json({ error: 'Unable to manage subscription.' }, { status: 500 });
   }
 }

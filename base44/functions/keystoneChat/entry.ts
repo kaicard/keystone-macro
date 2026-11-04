@@ -93,6 +93,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ reply: extractReply(response) });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Chat request failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

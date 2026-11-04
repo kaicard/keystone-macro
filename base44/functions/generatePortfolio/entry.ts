@@ -143,6 +143,7 @@ ${HOUSE_STYLE}`;
 
     return Response.json(result || {});
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Portfolio generation failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

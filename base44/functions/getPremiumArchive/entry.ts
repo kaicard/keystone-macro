@@ -26,6 +26,7 @@ Deno.serve(async (req) => {
       editions: (editions || []).map(({ body, ...rest }) => rest),
     });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to load the archive.' }, { status: 500 });
+    console.error('Archive request failed:', error);
+    return Response.json({ error: 'Unable to load the archive.' }, { status: 500 });
   }
 });

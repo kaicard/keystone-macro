@@ -242,6 +242,7 @@ export default async function(req) {
     const freshData = await refreshInBackground(base44, entry?.id || null);
     return Response.json({ ok: true, data: freshData, cached: false, fetched_at: new Date().toISOString() });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Market context request failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

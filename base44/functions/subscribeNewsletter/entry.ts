@@ -28,6 +28,7 @@ export default async function(req) {
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to subscribe.' }, { status: 500 });
+    console.error('Newsletter signup failed:', error);
+    return Response.json({ error: 'Unable to subscribe.' }, { status: 500 });
   }
 }

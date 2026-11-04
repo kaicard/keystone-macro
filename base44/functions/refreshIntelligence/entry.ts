@@ -236,6 +236,7 @@ For EACH event provide:
       batch_id: batchId,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Intelligence refresh failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

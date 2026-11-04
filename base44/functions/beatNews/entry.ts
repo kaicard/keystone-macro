@@ -118,6 +118,7 @@ IMPORTANT: Return the articles ordered by published_time, newest first (most rec
 
     return Response.json({ articles, fetched_at: now, from_cache: false });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Request failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

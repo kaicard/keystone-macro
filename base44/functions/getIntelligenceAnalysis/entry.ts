@@ -115,6 +115,7 @@ ${HOUSE_STYLE}
 
     return Response.json({ ok: true, cached: false, analysis });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Intelligence analysis failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

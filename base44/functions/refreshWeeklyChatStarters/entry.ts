@@ -81,6 +81,7 @@ ${JSON.stringify(articles.map((article, source_index) => ({ source_index, title:
     else await base44.entities.WeeklyChatStarters.create(data);
     return Response.json({ ok: true, generated_at: data.generated_at, questions });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to refresh weekly suggestions.' }, { status: 500 });
+    console.error('Weekly suggestions refresh failed:', error);
+    return Response.json({ error: 'Unable to refresh weekly suggestions.' }, { status: 500 });
   }
 }

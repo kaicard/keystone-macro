@@ -242,6 +242,7 @@ export default async function(req) {
     return Response.json({ ok: true, data: organized, cached: false, ts: new Date(fetched_at).getTime() });
 
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Quotes request failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

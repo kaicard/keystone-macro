@@ -19,6 +19,7 @@ export default async function(req) {
     await base44.asServiceRole.integrations.Core.SendEmail({ to: user.email, subject, body, from_name: 'Keystone Macro' });
     return Response.json({ success: true, type });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to send welcome email.' }, { status: 500 });
+    console.error('Welcome email failed:', error);
+    return Response.json({ error: 'Unable to send welcome email.' }, { status: 500 });
   }
 }

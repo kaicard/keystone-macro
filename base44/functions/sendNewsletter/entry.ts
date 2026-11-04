@@ -468,7 +468,8 @@ export default async function(req) {
           });
           sent.push(to);
         } catch (err) {
-          errors.push({ email: to, error: err.message });
+          console.error('Newsletter delivery failed:', err);
+          errors.push({ email: to, error: 'Unable to send newsletter.' });
         }
       }
       return Response.json({ message: `${label} ${ed.publish_date} resent`, sent, errors: errors.length > 0 ? errors : undefined });
@@ -651,7 +652,8 @@ Return JSON:
         });
         sent++;
       } catch (err) {
-        errors.push({ email: subscriber.email, error: err.message });
+        console.error('Newsletter delivery failed:', err);
+        errors.push({ email: subscriber.email, error: 'Unable to send newsletter.' });
       }
     }
 
@@ -682,6 +684,7 @@ Return JSON:
 
     return Response.json({ message: `The Keystone Macro Brief - ${editionLabel} sent successfully`, sent, subject, errors: errors.length > 0 ? errors : undefined });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Newsletter request failed:', error);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

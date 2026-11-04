@@ -34,6 +34,7 @@ export default async function(req) {
       ts: new Date().toISOString()
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Cache refresh failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

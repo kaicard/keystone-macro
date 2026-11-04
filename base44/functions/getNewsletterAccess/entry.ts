@@ -7,6 +7,7 @@ Deno.serve(async (req) => {
     const { user, ...access } = await resolvePremiumAccess(base44);
     return Response.json(access);
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to verify access.' }, { status: 500 });
+    console.error('Access verification failed:', error);
+    return Response.json({ error: 'Unable to verify access.' }, { status: 500 });
   }
 });

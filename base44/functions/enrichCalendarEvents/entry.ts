@@ -68,6 +68,7 @@ Events: ${JSON.stringify(eventList)}`,
 
     return Response.json({ analyses });
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    console.error('Calendar analysis failed:', err);
+    return Response.json({ error: 'Unable to process the request.' }, { status: 500 });
   }
 }

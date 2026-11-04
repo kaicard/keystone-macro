@@ -52,6 +52,7 @@ export default async function(req) {
 
     return Response.json({ active: true, status: record.status, current_period_end: record.current_period_end });
   } catch (error) {
-    return Response.json({ error: error.message || 'Unable to confirm checkout.' }, { status: 500 });
+    console.error('Checkout confirmation failed:', error);
+    return Response.json({ error: 'Unable to confirm checkout.' }, { status: 500 });
   }
 }

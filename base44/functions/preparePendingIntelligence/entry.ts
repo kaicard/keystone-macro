@@ -32,6 +32,7 @@ export default async function(req) {
     }
     return Response.json({ ok: failed === 0, prepared, failed }, { status: failed ? 500 : 200 });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Intelligence preparation failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 }

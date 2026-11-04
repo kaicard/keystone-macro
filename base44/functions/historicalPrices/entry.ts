@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, data, cached: false });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('Historical prices request failed:', error);
+    return Response.json({ ok: false, error: 'Unable to process the request.' }, { status: 500 });
   }
 });
